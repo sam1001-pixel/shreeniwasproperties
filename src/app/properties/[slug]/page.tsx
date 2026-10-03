@@ -6,8 +6,9 @@ import {
   ChevronRight, MapPin, Share2, Heart, CheckCircle2, 
   BedDouble, Bath, Square, Car, Shield, Wifi, 
   Trees, Phone, MessageSquare, Calendar, Building2,
-  Image as ImageIcon, Video, Home
+  Image as ImageIcon, Video, Home, X, Crown, CreditCard, Clock, Map
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const PROPERTY = {
   title: 'Royal Heritage Villa',
@@ -50,6 +51,12 @@ export default function PropertyDetailPage({ params }: { params: { slug: string 
   const [emiAmount, setEmiAmount] = useState(150000);
   const [emiInterest, setEmiInterest] = useState(8.5);
   const [emiYears, setEmiYears] = useState(20);
+  
+  const [inquiryMode, setInquiryMode] = useState<'free' | 'vip'>('free');
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState('');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pb-24">
@@ -301,42 +308,88 @@ export default function PropertyDetailPage({ params }: { params: { slug: string 
         <div className="lg:col-span-1">
           <div className="sticky top-28 space-y-6">
             
-            {/* Lead Form */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl">
-              <h3 className="text-xl font-serif font-bold mb-4">Interested in this property?</h3>
-              <form className="space-y-4">
-                <div>
-                  <input type="text" placeholder="Your Name" className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" />
-                </div>
-                <div>
-                  <input type="tel" placeholder="Phone Number" className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" />
-                </div>
-                <div>
-                  <input type="email" placeholder="Email Address" className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" />
-                </div>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
-                  <input type="date" className="w-full pl-10 p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E] text-gray-600" />
-                </div>
-                <div>
-                  <textarea placeholder="I am interested in this property..." rows={3} className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E] resize-none"></textarea>
-                </div>
-                <button type="button" className="w-full py-4 bg-[#C9A96E] text-white font-bold rounded-lg hover:bg-[#b5955a] transition-colors shadow-lg shadow-[#C9A96E]/20">
-                  Request Callback
+            {/* Lead Form - Inquiry Options */}
+            <div className="bg-white p-1 rounded-2xl border border-gray-100 shadow-xl overflow-hidden">
+              <div className="flex bg-gray-50 p-1 rounded-t-xl">
+                <button 
+                  onClick={() => setInquiryMode('free')}
+                  className={`flex-1 py-3 text-sm font-medium rounded-lg transition-all ${inquiryMode === 'free' ? 'bg-white shadow-sm text-[#0A1628]' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Free Inquiry
                 </button>
-              </form>
-
-              <div className="my-6 flex items-center gap-4 before:h-px before:flex-1 before:bg-gray-200 after:h-px after:flex-1 after:bg-gray-200">
-                <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">OR</span>
+                <button 
+                  onClick={() => setInquiryMode('vip')}
+                  className={`flex-1 py-3 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${inquiryMode === 'vip' ? 'bg-[#0A1628] text-[#C9A96E] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  <Crown className="w-4 h-4" /> VIP Visit
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <button className="flex items-center justify-center gap-2 py-3 bg-[#0A1628] text-white rounded-lg hover:bg-[#0A1628]/90 transition-colors">
-                  <Phone className="w-4 h-4" /> Call Now
-                </button>
-                <button className="flex items-center justify-center gap-2 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                  <MessageSquare className="w-4 h-4" /> WhatsApp
-                </button>
+              <div className="p-5">
+                {inquiryMode === 'free' ? (
+                  <form className="space-y-4">
+                    <h3 className="text-lg font-serif font-bold text-[#0A1628] mb-4">Request Information</h3>
+                    <div>
+                      <input type="text" placeholder="Your Name" className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" />
+                    </div>
+                    <div>
+                      <input type="tel" placeholder="Phone Number" className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" />
+                    </div>
+                    <div>
+                      <input type="email" placeholder="Email Address" className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" />
+                    </div>
+                    <div>
+                      <textarea placeholder="I am interested in this property..." rows={3} className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E] resize-none"></textarea>
+                    </div>
+                    <button type="button" className="w-full py-4 bg-[#C9A96E] text-white font-bold rounded-lg hover:bg-[#b5955a] transition-colors shadow-lg shadow-[#C9A96E]/20">
+                      Request Callback
+                    </button>
+                    
+                    <div className="my-6 flex items-center gap-4 before:h-px before:flex-1 before:bg-gray-200 after:h-px after:flex-1 after:bg-gray-200">
+                      <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">OR</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <button className="flex items-center justify-center gap-2 py-3 bg-[#0A1628] text-white rounded-lg hover:bg-[#0A1628]/90 transition-colors">
+                        <Phone className="w-4 h-4" /> Call Now
+                      </button>
+                      <button className="flex items-center justify-center gap-2 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                        <MessageSquare className="w-4 h-4" /> WhatsApp
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-[#C9A96E]/10 border border-[#C9A96E]/20 rounded-xl p-4 mb-2">
+                      <h3 className="text-lg font-serif font-bold text-[#0A1628] flex items-center gap-2 mb-2">
+                        <Crown className="w-5 h-5 text-[#C9A96E]" /> Premium Site Visit
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4">Book a personalized property tour with our senior experts.</p>
+                      <ul className="space-y-2 mb-4">
+                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                          <CheckCircle2 className="w-4 h-4 text-[#C9A96E] mt-0.5" /> Dedicated agent escort
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                          <CheckCircle2 className="w-4 h-4 text-[#C9A96E] mt-0.5" /> Doorstep pickup & drop
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                          <CheckCircle2 className="w-4 h-4 text-[#C9A96E] mt-0.5" /> Direct owner meeting
+                        </li>
+                      </ul>
+                      <div className="flex items-center justify-between pt-3 border-t border-[#C9A96E]/20">
+                        <span className="text-sm font-medium text-gray-600">Booking Fee</span>
+                        <span className="text-xl font-bold text-[#0A1628]">₹499</span>
+                      </div>
+                    </div>
+                    
+                    <button 
+                      onClick={() => setIsBookingModalOpen(true)}
+                      className="w-full py-4 bg-[#0A1628] text-[#C9A96E] font-bold rounded-lg hover:bg-[#0A1628]/90 transition-colors shadow-xl flex items-center justify-center gap-2"
+                    >
+                      <CreditCard className="w-5 h-5" /> Book VIP Visit Now
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -354,6 +407,162 @@ export default function PropertyDetailPage({ params }: { params: { slug: string 
 
           </div>
         </div>
+
+        {/* Paid Visit Booking Modal */}
+        <AnimatePresence>
+          {isBookingModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-lg my-8 bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col max-h-[90vh]"
+              >
+                {/* Close button */}
+                <button
+                  onClick={() => !isProcessingPayment && setIsBookingModalOpen(false)}
+                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors z-10 bg-white/50 rounded-full"
+                  disabled={isProcessingPayment}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                {!bookingSuccess ? (
+                  <>
+                    <div className="p-6 border-b border-gray-100 shrink-0">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#0A1628] rounded-xl flex items-center justify-center">
+                          <Crown className="w-5 h-5 text-[#C9A96E]" />
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-serif font-bold text-[#0A1628]">VIP Site Visit</h2>
+                          <p className="text-sm text-gray-500">Book your exclusive property tour</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 overflow-y-auto flex-1">
+                      <form className="space-y-6">
+                        {/* Time Slots */}
+                        <div className="space-y-3">
+                          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <Clock className="w-4 h-4" /> Select Time Slot
+                          </label>
+                          <div className="grid grid-cols-3 gap-3">
+                            {['Morning 10 AM', 'Afternoon 2 PM', 'Evening 5 PM'].map((time) => (
+                              <button
+                                key={time}
+                                type="button"
+                                onClick={() => setSelectedSlot(time)}
+                                className={`p-3 text-sm text-center rounded-xl border transition-all ${
+                                  selectedSlot === time 
+                                  ? 'border-[#C9A96E] bg-[#C9A96E]/10 text-[#0A1628] font-medium' 
+                                  : 'border-gray-200 text-gray-600 hover:border-[#C9A96E]/50'
+                                }`}
+                              >
+                                {time}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Personal Details */}
+                        <div className="space-y-4">
+                          <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" placeholder="Enter your name" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-sm font-medium text-gray-700">Phone</label>
+                              <input type="tel" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" placeholder="+91" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-sm font-medium text-gray-700">Email</label>
+                              <input type="email" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A96E]" placeholder="Email address" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Pickup Location */}
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <Map className="w-4 h-4" /> Pickup Address (Optional)
+                          </label>
+                          <textarea rows={2} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A96E] resize-none" placeholder="Enter your full address for pickup..."></textarea>
+                        </div>
+                      </form>
+                    </div>
+
+                    <div className="p-6 border-t border-gray-100 bg-gray-50 shrink-0 rounded-b-2xl">
+                      <button 
+                        onClick={() => {
+                          setIsProcessingPayment(true);
+                          setTimeout(() => {
+                            setIsProcessingPayment(false);
+                            setBookingSuccess(true);
+                          }, 2000);
+                        }}
+                        disabled={!selectedSlot || isProcessingPayment}
+                        className={`w-full py-4 text-white font-bold rounded-xl transition-all shadow-xl flex items-center justify-center gap-2 ${
+                          !selectedSlot 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-[#0A1628] hover:bg-[#0A1628]/90 shadow-[#0A1628]/20'
+                        }`}
+                      >
+                        {isProcessingPayment ? (
+                          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>Pay ₹499 & Confirm VIP Visit</>
+                        )}
+                      </button>
+                      <p className="text-center text-xs text-gray-500 mt-4 flex items-center justify-center gap-1">
+                        <Shield className="w-3 h-3" /> Secure Razorpay Payment
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-8 flex flex-col items-center text-center space-y-6">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-2">
+                      <CheckCircle2 className="w-10 h-10 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-serif font-bold text-[#0A1628] mb-2">Booking Confirmed!</h3>
+                      <p className="text-gray-600">
+                        Your VIP site visit is scheduled for <strong>{selectedSlot}</strong>.
+                      </p>
+                    </div>
+                    
+                    <div className="w-full bg-gray-50 p-4 rounded-xl border border-gray-200 text-left space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Booking ID</span>
+                        <span className="font-medium">#SNP-VIP-8492</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Property</span>
+                        <span className="font-medium truncate max-w-[150px]">{PROPERTY.title}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Amount Paid</span>
+                        <span className="font-medium text-green-600">₹499.00</span>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => {
+                        setIsBookingModalOpen(false);
+                        setTimeout(() => setBookingSuccess(false), 500); // Reset after close animation
+                      }}
+                      className="w-full py-4 bg-[#C9A96E] text-white font-bold rounded-xl hover:bg-[#b5955a] transition-colors"
+                    >
+                      View Receipt & Close
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
       </div>
     </div>

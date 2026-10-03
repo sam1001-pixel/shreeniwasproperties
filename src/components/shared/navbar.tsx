@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, MessageCircle, Heart, User, Building2, PlusCircle, LayoutDashboard } from 'lucide-react';
+import { Menu, X, MessageCircle, Heart, User, Building2, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mainNav } from '@/config/nav';
 import { siteConfig } from '@/config/site';
@@ -93,14 +93,6 @@ export function Navbar() {
               </Link>
 
               <Link
-                href="/dashboard/admin"
-                className="hidden md:flex items-center gap-1.5 text-xs font-semibold bg-[#0A1628] text-white px-3 py-2 rounded-lg hover:bg-[#0A1628]/90 transition-colors border border-white/10"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5 text-[#C9A96E]" />
-                Admin
-              </Link>
-
-              <Link
                 href="/dashboard/landlord/properties/new"
                 className="inline-flex items-center gap-2 rounded-full bg-[#C9A96E] px-5 py-2.5 text-sm font-semibold text-[#0A1628] shadow-md shadow-[#C9A96E]/20 transition-all hover:bg-[#b59760] hover:scale-105 active:scale-95"
               >
@@ -159,14 +151,6 @@ export function Navbar() {
               </nav>
 
               <div className="flex flex-col gap-3 mt-8">
-                <Link
-                  href="/dashboard/admin"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-white/10 rounded-xl text-white font-medium hover:bg-white/20 transition-colors"
-                >
-                  <LayoutDashboard className="w-4 h-4 text-[#C9A96E]" />
-                  Admin Panel
-                </Link>
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}

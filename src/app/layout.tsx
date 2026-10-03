@@ -5,7 +5,7 @@ import { Navbar } from '@/components/shared/navbar';
 import { Footer } from '@/components/shared/footer';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
-
+import { PropertyAlertModal } from '@/components/shared/property-alert-modal';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
@@ -44,6 +44,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <PropertyAlertModal />
       </body>
     </html>
   );
