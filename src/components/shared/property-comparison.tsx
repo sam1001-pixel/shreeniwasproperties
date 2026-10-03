@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scale, X, Check, ArrowRight, Building2, MapPin, IndianRupee, ShieldCheck } from 'lucide-react';
+import { Scale, X, ArrowRight, MapPin, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 
 export interface PropertyCompareItem {
@@ -45,7 +45,7 @@ export default function PropertyComparison({ selectedItems, onRemoveItem, onClea
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-white">Property Compare</span>
+              <span className="text-sm font-bold text-white">Property Comparison</span>
               <span className="bg-[#C9A96E] text-[#0A1628] text-[10px] font-extrabold px-2 py-0.5 rounded-full">
                 {selectedItems.length} / 3
               </span>
@@ -88,7 +88,7 @@ export default function PropertyComparison({ selectedItems, onRemoveItem, onClea
                 <div className="flex items-center gap-3">
                   <Scale className="w-6 h-6 text-[#C9A96E]" />
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-white">99acres Side-by-Side Property Comparison</h3>
+                    <h3 className="text-xl font-serif font-bold text-white">Shreeniwas Side-by-Side Property Comparison</h3>
                     <p className="text-xs text-slate-300">Comparing {selectedItems.length} selected listings</p>
                   </div>
                 </div>

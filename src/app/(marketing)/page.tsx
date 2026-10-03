@@ -31,6 +31,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SearchEngine99Acres from "@/components/shared/search-engine-99acres";
 import PropertyComparison, { PropertyCompareItem } from "@/components/shared/property-comparison";
+import AmenitiesShowcase from "@/components/shared/amenities-showcase";
 
 // Mock Data for Featured Properties
 const FEATURED_PROPERTIES = [
@@ -168,7 +169,7 @@ const EMICalculator = () => {
     <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border border-slate-100 max-w-4xl mx-auto my-12">
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/30 text-[#C9A96E] font-bold text-xs uppercase tracking-wider mb-3">
-          <TrendingUp className="w-3.5 h-3.5" /> 99acres Financial Tool
+          <TrendingUp className="w-3.5 h-3.5" /> Shreeniwas Financial Tool
         </div>
         <h3 className="text-2xl sm:text-3xl font-serif text-[#0A1628] font-bold mb-2">Home Loan & Mortgage EMI Calculator</h3>
         <p className="text-slate-500 text-sm">Instant bank interest rate estimate & monthly payout breakdown</p>
@@ -272,7 +273,7 @@ export default function MarketingPage() {
 
   return (
     <main className="min-h-screen bg-[#FDFBF7] text-[#0A1628]">
-      {/* 1. Hero Section with 99acres Search Engine */}
+      {/* 1. Hero Section with Advanced Search Engine */}
       <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
@@ -315,7 +316,7 @@ export default function MarketingPage() {
             </motion.p>
           </div>
 
-          {/* 99acres Advanced Search Engine */}
+          {/* Advanced Search Engine Component */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -326,13 +327,13 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 2. 99acres Top Localities & Price Trends Section */}
+      {/* 2. Top Localities & Price Trends Section */}
       <section className="py-16 px-4 bg-white border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-2">
-                <TrendingUp className="w-3.5 h-3.5" /> 99acres Market Insights
+                <TrendingUp className="w-3.5 h-3.5" /> Shreeniwas Market Insights
               </div>
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#0A1628]">Top Localities & Price Trends in Rajasthan</h2>
               <p className="text-slate-500 text-sm mt-1">Average per sq.ft prices and annual growth rates across major hubs</p>
@@ -363,7 +364,7 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 3. 99acres Explore by Budget Section */}
+      {/* 3. Explore Properties by Budget Section */}
       <section className="py-16 px-4 bg-slate-50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-10">
@@ -400,7 +401,7 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 4. Featured Properties with 99acres Badges & Compare Tool */}
+      {/* 4. Featured Properties Collection */}
       <section className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
@@ -429,7 +430,7 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          {/* Property Cards */}
+          {/* Property Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {FEATURED_PROPERTIES.map((prop) => {
               const isCompared = compareItems.some(i => i.id === prop.id);
@@ -445,7 +446,7 @@ export default function MarketingPage() {
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
 
-                        {/* 99acres Badges Overlay */}
+                        {/* Property Badges Overlay */}
                         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
                           {prop.reraApproved && (
                             <span className="bg-white/95 backdrop-blur text-[#0A1628] text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1 border border-emerald-500/20">
@@ -495,7 +496,7 @@ export default function MarketingPage() {
                         <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" /> {prop.location}
                       </p>
 
-                      {/* 99acres Key Spec Matrix */}
+                      {/* Key Spec Matrix */}
                       <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl text-center mb-4 text-xs">
                         <div>
                           <span className="text-[10px] text-slate-400 block uppercase">Area</span>
@@ -542,7 +543,12 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 5. 99acres "Post Property Free" Banner */}
+      {/* 5. Interactive Amenities Showcase */}
+      <section className="px-4">
+        <AmenitiesShowcase />
+      </section>
+
+      {/* 6. "Post Property Free" Banner */}
       <section className="py-16 px-4 bg-[#0A1628] text-white relative overflow-hidden">
         <div className="absolute right-0 top-0 w-96 h-96 bg-[#C9A96E]/10 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="container mx-auto max-w-6xl relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 bg-white/5 border border-white/10 p-8 sm:p-12 rounded-3xl backdrop-blur-xl">
@@ -573,14 +579,14 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 6. Interactive EMI / Mortgage Calculator */}
+      {/* 7. Interactive EMI / Mortgage Calculator */}
       <section className="py-16 sm:py-24 px-4 bg-slate-50">
         <div className="container mx-auto">
           <EMICalculator />
         </div>
       </section>
 
-      {/* Floating Property Comparison Drawer Component */}
+      {/* Floating Property Comparison Drawer */}
       <PropertyComparison 
         selectedItems={compareItems} 
         onRemoveItem={(id) => setCompareItems(prev => prev.filter(i => i.id !== id))}

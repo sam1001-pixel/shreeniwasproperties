@@ -35,7 +35,6 @@ export default function SearchEngine99Acres() {
   const [selectedBhk, setSelectedBhk] = useState<string[]>([]);
   const [selectedBudget, setSelectedBudget] = useState("all");
   const [postedBy, setPostedBy] = useState("all");
-  const [showFiltersModal, setShowFiltersModal] = useState(false);
 
   const tabs = [
     { id: 'buy', label: 'Buy', icon: Building2 },
@@ -67,7 +66,7 @@ export default function SearchEngine99Acres() {
 
   return (
     <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-100 max-w-5xl mx-auto relative z-20">
-      {/* 99acres-Style Tab Bar */}
+      {/* Shreeniwas Tab Bar */}
       <div className="flex gap-1.5 sm:gap-2 border-b border-slate-200 pb-3 mb-5 overflow-x-auto no-scrollbar">
         {tabs.map(tab => (
           <button

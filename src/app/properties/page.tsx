@@ -9,8 +9,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PropertyComparison, { PropertyCompareItem } from '@/components/shared/property-comparison';
+import AmenitiesShowcase from '@/components/shared/amenities-showcase';
 
-// Enhanced 99acres Mock Properties Data
 const MOCK_PROPERTIES = [
   {
     id: "1",
@@ -192,7 +192,7 @@ export default function PropertiesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
         <h3 className="text-lg font-bold text-[#0A1628] flex items-center gap-2">
-          <Filter className="w-5 h-5 text-[#C9A96E]" /> 99acres Filters
+          <Filter className="w-5 h-5 text-[#C9A96E]" /> Property Filters
         </h3>
         <button onClick={() => setSearchQuery('')} className="text-xs font-semibold text-rose-500 hover:underline">Reset All</button>
       </div>
@@ -260,7 +260,7 @@ export default function PropertiesPage() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-2xl mb-6">
             <span className="bg-[#C9A96E]/20 text-[#C9A96E] border border-[#C9A96E]/30 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">
-              99acres Verified Listings
+              Shreeniwas Verified Listings
             </span>
             <h1 className="text-3xl md:text-5xl font-serif font-bold text-white leading-tight">
               Browse Properties in <span className="text-[#C9A96E]">Rajasthan</span>
@@ -345,7 +345,7 @@ export default function PropertiesPage() {
                     <div className={`relative rounded-2xl overflow-hidden ${viewMode === 'list' ? 'sm:w-64 h-full min-h-[200px]' : 'aspect-[16/10]'}`}>
                       <img src={property.image} alt={property.title} className="w-full h-full object-cover" />
                       
-                      {/* 99acres Badges */}
+                      {/* Property Badges */}
                       <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
                         {property.reraApproved && (
                           <span className="bg-white/95 backdrop-blur text-[#0A1628] text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1 border border-emerald-500/20">
@@ -397,7 +397,7 @@ export default function PropertiesPage() {
                         <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" /> {property.location}
                       </p>
 
-                      {/* 99acres Spec Matrix Grid */}
+                      {/* Spec Matrix Grid */}
                       <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl text-center mb-4 text-xs">
                         <div>
                           <span className="text-[10px] text-slate-400 block uppercase">Area</span>
@@ -433,6 +433,11 @@ export default function PropertiesPage() {
             })}
           </div>
         </div>
+      </div>
+
+      {/* Interactive Amenities Showcase Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <AmenitiesShowcase />
       </div>
 
       {/* Floating Property Comparison Drawer */}

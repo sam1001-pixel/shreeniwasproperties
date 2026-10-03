@@ -65,9 +65,6 @@ export default function PropertyDetailPage() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  const nextImage = () => setCurrentImageIndex(p => (p + 1) % PROPERTY.images.length);
-  const prevImage = () => setCurrentImageIndex(p => (p - 1 + PROPERTY.images.length) % PROPERTY.images.length);
-
   const sections = [
     { id: 'overview', label: 'Overview' },
     { id: 'photos', label: 'Photos' },
@@ -107,7 +104,7 @@ export default function PropertyDetailPage() {
         </div>
       </div>
 
-      {/* 99acres Sticky Section Navbar */}
+      {/* Sticky Section Navbar */}
       <div className="bg-white border-b border-slate-200 sticky top-16 md:top-16 z-30 shadow-sm hidden sm:block">
         <div className="max-w-7xl mx-auto px-6 flex items-center gap-6 overflow-x-auto no-scrollbar py-3 text-xs font-bold uppercase tracking-wider">
           {sections.map(s => (
@@ -191,7 +188,7 @@ export default function PropertyDetailPage() {
           </div>
         </div>
 
-        {/* 99acres Key Spec Cards */}
+        {/* Key Spec Cards */}
         <div className="px-4 md:px-0 mb-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
             { l: 'Property Type', v: PROPERTY.type },
@@ -218,7 +215,7 @@ export default function PropertyDetailPage() {
               <p className="text-sm md:text-base text-slate-600 leading-relaxed">{PROPERTY.description}</p>
             </section>
 
-            {/* Locality & Distance Matrix (99acres Signature Feature) */}
+            {/* Locality & Distance Matrix */}
             <section id="locality" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
               <div className="flex items-center gap-2 mb-6">
                 <Navigation className="w-5 h-5 text-[#C9A96E]" />
