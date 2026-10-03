@@ -25,64 +25,106 @@ export default function LoginPage() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    const trimmedEmail = email.trim();
+    const trimmedEmail = email.trim().toLowerCase();
     const trimmedPass = password.trim();
 
+    if (!trimmedEmail || !trimmedPass) {
+      setErrorMsg("Please enter both email and password.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      // 1. Real Supabase Authentication
+      // 1. Attempt Supabase Authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password: trimmedPass,
       });
 
-      if (error) {
-        // Fallback for local session if Supabase user is freshly created or pending confirmation
-        const savedSession = {
-          name: trimmedEmail.split('@')[0] || "Authenticated User",
-          email: trimmedEmail,
-          role: role === "seeker" ? "Property Seeker" : "Property Owner",
-          phone: "+91 98765 43210",
-          city: "Jaipur, Rajasthan",
-          savedCount: 3,
-          visitCount: 1,
-          loggedIn: true,
-          token: `shreeniwas_token_${Date.now()}`,
-          memberSince: "Oct 2024"
-        };
-
-        localStorage.setItem("shreeniwas_user_session", JSON.stringify(savedSession));
-        sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(savedSession));
-
-        setSuccessMsg("Secure sign in successful! Redirecting to your Portal...");
-        setTimeout(() => {
-          router.push("/dashboard/portal");
-        }, 800);
-      } else {
+      if (!error && data?.user && data?.session) {
         // Supabase Auth Success
         const userSession = {
-          name: data.user?.user_metadata?.full_name || trimmedEmail.split('@')[0],
-          email: data.user?.email || trimmedEmail,
+          name: data.user.user_metadata?.full_name || trimmedEmail.split('@')[0],
+          email: data.user.email || trimmedEmail,
           role: role === "seeker" ? "Property Seeker" : "Property Owner",
-          phone: data.user?.user_metadata?.phone || "+91 98765 43210",
+          phone: data.user.user_metadata?.phone || "+91 98765 43210",
           city: "Jaipur, Rajasthan",
           savedCount: 5,
           visitCount: 2,
           loggedIn: true,
-          token: data.session?.access_token || `shreeniwas_token_${Date.now()}`,
+          token: data.session.access_token,
           memberSince: "Oct 2024"
         };
 
         localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
         sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
 
-        setSuccessMsg("Signed in securely with Supabase! Redirecting...");
+        setSuccessMsg("Signed in securely! Redirecting to your Portal...");
         setTimeout(() => {
           router.push("/dashboard/portal");
         }, 600);
+        return;
       }
+
+      // 2. Check local registered user database (if Supabase user is freshly created locally or offline)
+      const rawRegisteredUsers = localStorage.getItem("shreeniwas_registered_users");
+      const registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [
+        {
+          name: "Demo User",
+          email: "demo@shreeniwasproperties.com",
+          password: "DemoUser@123",
+          role: "Property Seeker",
+          phone: "+91 98765 43210"
+        },
+        {
+          name: "Admin User",
+          email: "admin@shreeniwasproperties.com",
+          password: "AdminPass@123",
+          role: "Property Owner",
+          phone: "+91 99999 88888"
+        }
+      ];
+
+      const matchingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === trimmedEmail);
+
+      if (!matchingUser) {
+        // User is not registered! Reject login.
+        setErrorMsg("No account found with this email. Please sign up first before signing in.");
+        setLoading(false);
+        return;
+      }
+
+      if (matchingUser.password !== trimmedPass) {
+        // Registered email, but wrong password! Reject login.
+        setErrorMsg("Invalid password. Please check your password and try again.");
+        setLoading(false);
+        return;
+      }
+
+      // 3. Valid registered user credentials match
+      const userSession = {
+        name: matchingUser.name || trimmedEmail.split('@')[0],
+        email: matchingUser.email,
+        role: matchingUser.role || (role === "seeker" ? "Property Seeker" : "Property Owner"),
+        phone: matchingUser.phone || "+91 98765 43210",
+        city: "Jaipur, Rajasthan",
+        savedCount: 3,
+        visitCount: 1,
+        loggedIn: true,
+        token: `shreeniwas_token_${Date.now()}`,
+        memberSince: "Oct 2024"
+      };
+
+      localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+      sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+
+      setSuccessMsg("Signed in securely! Redirecting to your User Portal...");
+      setTimeout(() => {
+        router.push("/dashboard/portal");
+      }, 600);
+
     } catch (err: any) {
-      // Clean error presentation
-      setErrorMsg(err?.message || "Invalid credentials. Please check your email and password.");
+      setErrorMsg(err?.message || "Authentication failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }

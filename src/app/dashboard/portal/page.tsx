@@ -81,36 +81,27 @@ export default function UserProfileDashboard() {
     phone: string;
     city: string;
     memberSince: string;
+    loggedIn?: boolean;
   } | null>(null);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const session = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
     if (session) {
       try {
-        setUserSession(JSON.parse(session));
-      } catch (e) {
-        // Fallback default
-        setUserSession({
-          name: "Vikram Sharma",
-          email: "vikram@shreeniwasproperties.com",
-          role: "Property Seeker",
-          phone: "+91 98765 43210",
-          city: "Jaipur, Rajasthan",
-          memberSince: "Oct 2024"
-        });
-      }
-    } else {
-      // Default session if directly visiting page
-      setUserSession({
-        name: "Rahul Verma",
-        email: "rahul@shreeniwasproperties.com",
-        role: "Property Seeker",
-        phone: "+91 98765 43210",
-        city: "Jaipur, Rajasthan",
-        memberSince: "Oct 2024"
-      });
+        const parsed = JSON.parse(session);
+        if (parsed && parsed.loggedIn) {
+          setUserSession(parsed);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {}
     }
-  }, []);
+    
+    // Unauthenticated user - redirect to login
+    router.push('/login?redirect=/dashboard/portal');
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('shreeniwas_user_session');
@@ -121,6 +112,18 @@ export default function UserProfileDashboard() {
   const removeFavorite = (id: string) => {
     setSavedList(prev => prev.filter(item => item.id !== id));
   };
+
+  if (loading || !userSession) {
+    return (
+      <div className="min-h-screen bg-[#0A1628] flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-[#C9A96E]/30 border-t-[#C9A96E] rounded-full animate-spin mx-auto"></div>
+          <p className="text-[#C9A96E] font-serif text-lg font-bold">Verifying Access...</p>
+          <p className="text-slate-400 text-xs">Redirecting to secure login if unauthenticated.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pt-24 pb-16 px-4 sm:px-6 lg:px-8">

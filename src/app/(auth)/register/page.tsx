@@ -28,12 +28,50 @@ export default function RegisterPage() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    const trimmedEmail = email.trim();
+    const trimmedEmail = email.trim().toLowerCase();
     const trimmedPass = password.trim();
-    const fullName = `${firstName} ${lastName}`.trim() || "New User";
+    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim() || "New User";
+
+    if (!trimmedEmail || !trimmedPass || !firstName.trim() || !lastName.trim()) {
+      setErrorMsg("Please fill in all required fields.");
+      setLoading(false);
+      return;
+    }
+
+    if (trimmedPass.length < 6) {
+      setErrorMsg("Password must be at least 6 characters long.");
+      setLoading(false);
+      return;
+    }
+
+    // Check existing registered users
+    const rawRegisteredUsers = localStorage.getItem("shreeniwas_registered_users");
+    let registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [
+      {
+        name: "Demo User",
+        email: "demo@shreeniwasproperties.com",
+        password: "DemoUser@123",
+        role: "Property Seeker",
+        phone: "+91 98765 43210"
+      },
+      {
+        name: "Admin User",
+        email: "admin@shreeniwasproperties.com",
+        password: "AdminPass@123",
+        role: "Property Owner",
+        phone: "+91 99999 88888"
+      }
+    ];
+
+    const existingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === trimmedEmail);
+    if (existingUser) {
+      setErrorMsg("An account with this email already exists. Please sign in.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      // 1. Real Supabase Registration
+      // 1. Register with Supabase
       const { data, error } = await supabase.auth.signUp({
         email: trimmedEmail,
         password: trimmedPass,
@@ -46,51 +84,41 @@ export default function RegisterPage() {
         },
       });
 
-      if (error) {
-        // Fallback for local session storage if user exists or confirmation email required
-        const userSession = {
-          name: fullName,
-          email: trimmedEmail,
-          role: role === "seeker" ? "Property Seeker" : "Property Owner",
-          phone: phone || "+91 98765 43210",
-          city: "Jaipur, Rajasthan",
-          savedCount: 0,
-          visitCount: 0,
-          loggedIn: true,
-          token: `shreeniwas_token_${Date.now()}`,
-          memberSince: "Oct 2024"
-        };
+      // 2. Add to registered users repository
+      const newUserRecord = {
+        name: fullName,
+        email: trimmedEmail,
+        password: trimmedPass,
+        role: role === "seeker" ? "Property Seeker" : "Property Owner",
+        phone: phone || "+91 98765 43210",
+        registeredAt: new Date().toISOString()
+      };
 
-        localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
-        sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+      registeredUsers.push(newUserRecord);
+      localStorage.setItem("shreeniwas_registered_users", JSON.stringify(registeredUsers));
 
-        setSuccessMsg("Account registered! Redirecting to your User Portal...");
-        setTimeout(() => {
-          router.push("/dashboard/portal");
-        }, 800);
-      } else {
-        // Supabase SignUp Success
-        const userSession = {
-          name: fullName,
-          email: data.user?.email || trimmedEmail,
-          role: role === "seeker" ? "Property Seeker" : "Property Owner",
-          phone: phone || "+91 98765 43210",
-          city: "Jaipur, Rajasthan",
-          savedCount: 0,
-          visitCount: 0,
-          loggedIn: true,
-          token: data.session?.access_token || `token_${Date.now()}`,
-          memberSince: "Oct 2024"
-        };
+      // 3. Create active session
+      const userSession = {
+        name: fullName,
+        email: data?.user?.email || trimmedEmail,
+        role: role === "seeker" ? "Property Seeker" : "Property Owner",
+        phone: phone || "+91 98765 43210",
+        city: "Jaipur, Rajasthan",
+        savedCount: 0,
+        visitCount: 0,
+        loggedIn: true,
+        token: data?.session?.access_token || `shreeniwas_token_${Date.now()}`,
+        memberSince: "Oct 2024"
+      };
 
-        localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
-        sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+      localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+      sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
 
-        setSuccessMsg("Account created securely with Supabase! Redirecting...");
-        setTimeout(() => {
-          router.push("/dashboard/portal");
-        }, 600);
-      }
+      setSuccessMsg("Account registered successfully! Redirecting to your User Portal...");
+      setTimeout(() => {
+        router.push("/dashboard/portal");
+      }, 600);
+
     } catch (err: any) {
       setErrorMsg(err?.message || "Failed to create account. Please check your information.");
     } finally {
