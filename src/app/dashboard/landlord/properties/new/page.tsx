@@ -84,7 +84,7 @@ export default function AddPropertyWizard() {
         </div>
 
         {/* Stepper Progress Header */}
-        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto no-scrollbar">
           <div className="flex items-center justify-between min-w-[500px]">
             {steps.map((step, idx) => (
               <div key={step.id} className="flex items-center gap-2">
@@ -337,7 +337,7 @@ export default function AddPropertyWizard() {
           )}
 
           {/* Buttons Navigation */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-100">
+          <div className="flex justify-between items-center fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 z-50 sm:static sm:bg-transparent sm:p-0 sm:pt-6 sm:border-gray-100">
             <button
               onClick={handleBack}
               disabled={currentStep === 0}

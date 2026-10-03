@@ -51,7 +51,7 @@ export default function ContactPage() {
                   <div>
                     <h4 className="font-semibold text-gray-900">Head Office</h4>
                     <p className="text-gray-600 mt-1">15 Royal Avenue, C-Scheme<br/>Jaipur, Rajasthan 302001</p>
-                    <a href="#" className="text-[#C9A96E] text-sm font-medium mt-2 inline-block hover:underline">View on Map &rarr;</a>
+                    <a href="#" className="text-[#C9A96E] text-base sm:text-sm font-medium mt-2 inline-block hover:underline">View on Map &rarr;</a>
                   </div>
                 </div>
 
@@ -62,7 +62,7 @@ export default function ContactPage() {
                   <div>
                     <h4 className="font-semibold text-gray-900">Direct Contact</h4>
                     <p className="text-gray-600 mt-1">+91 98765 43210</p>
-                    <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded text-sm font-medium hover:bg-green-600 transition">WhatsApp Us</button>
+                    <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded text-base sm:text-sm font-medium hover:bg-green-600 transition">WhatsApp Us</button>
                   </div>
                 </div>
 
@@ -103,9 +103,9 @@ export default function ContactPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Full Name</label>
+                      <label className="text-base sm:text-sm font-medium text-gray-700">Full Name</label>
                       <input 
                         type="text" required
                         value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
@@ -114,7 +114,7 @@ export default function ContactPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Email Address</label>
+                      <label className="text-base sm:text-sm font-medium text-gray-700">Email Address</label>
                       <input 
                         type="email" required
                         value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
@@ -124,9 +124,9 @@ export default function ContactPage() {
                     </div>
                   </div>
                   
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                      <label className="text-base sm:text-sm font-medium text-gray-700">Phone Number</label>
                       <input 
                         type="tel" required
                         value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
@@ -135,7 +135,7 @@ export default function ContactPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Topic</label>
+                      <label className="text-base sm:text-sm font-medium text-gray-700">Topic</label>
                       <select 
                         value={formData.topic} onChange={e => setFormData({...formData, topic: e.target.value})}
                         className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition bg-white"
@@ -149,7 +149,7 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Your Message</label>
+                    <label className="text-base sm:text-sm font-medium text-gray-700">Your Message</label>
                     <textarea 
                       required rows={5}
                       value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})}

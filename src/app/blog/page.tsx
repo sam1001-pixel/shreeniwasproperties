@@ -49,7 +49,7 @@ export default function BlogListingPage() {
         </div>
 
         {/* Categories */}
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2 sm:flex-wrap sm:justify-center">
           {categories.map((cat, idx) => (
             <button
               key={cat}

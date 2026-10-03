@@ -58,7 +58,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-[#0A1628] text-white flex-shrink-0 fixed h-full z-10">
+      <div className="w-full md:w-64 bg-[#0A1628] text-white flex-shrink-0 relative md:fixed h-auto md:h-full z-10">
         <div className="p-6">
           <Link href="/" className="flex items-center gap-3 group mb-8">
             <div className="w-10 h-10 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors">
@@ -70,12 +70,12 @@ export default function AdminDashboard() {
             </div>
           </Link>
 
-          <nav className="space-y-2">
+          <nav className="flex overflow-x-auto no-scrollbar gap-2 border-b border-white/10 pb-2 md:space-y-2 md:flex-col md:overflow-visible md:border-none md:pb-0">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                className={`whitespace-nowrap flex-shrink-0 md:w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                   activeTab === item.id 
                     ? 'bg-[#C9A96E]/10 text-[#C9A96E] font-medium border border-[#C9A96E]/20' 
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -90,9 +90,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 md:ml-64">
         {/* Header */}
-        <header className="bg-white border-b border-slate-200 h-20 px-8 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+        <header className="bg-white border-b border-slate-200 h-auto py-4 px-4 sm:px-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between sticky top-0 z-10 shadow-sm">
           <div>
             <h1 className="text-2xl font-serif font-bold text-[#0A1628]">
               {navItems.find(i => i.id === activeTab)?.label}
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
               <input 
                 type="text" 
                 placeholder="Search anything..." 
-                className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-[#C9A96E] outline-none"
+                className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-base sm:text-sm w-full sm:w-64 focus:ring-2 focus:ring-[#C9A96E] outline-none"
               />
             </div>
             <button className="relative p-2 text-slate-400 hover:text-[#0A1628] transition-colors rounded-full hover:bg-slate-100">
@@ -196,8 +196,8 @@ function PropertiesTab() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex gap-4">
-          <input type="text" placeholder="Search properties..." className="px-4 py-2 border border-slate-200 rounded-lg text-sm w-64 focus:ring-2 focus:ring-[#C9A96E] outline-none" />
-          <select className="px-4 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
+          <input type="text" placeholder="Search properties..." className="px-4 py-2 border border-slate-200 rounded-lg text-base sm:text-sm w-full sm:w-64 focus:ring-2 focus:ring-[#C9A96E] outline-none" />
+          <select className="px-4 py-2 border border-slate-200 rounded-lg text-base sm:text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
             <option>All Status</option>
             <option>Active</option>
             <option>Pending</option>
@@ -210,7 +210,7 @@ function PropertiesTab() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto no-scrollbar">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
@@ -348,7 +348,7 @@ function UsersTab() {
       <div className="flex justify-between items-center">
         <div className="flex gap-4">
           <input type="text" placeholder="Search users by name, email..." className="px-4 py-2 border border-slate-200 rounded-lg text-sm w-72 focus:ring-2 focus:ring-[#C9A96E] outline-none" />
-          <select className="px-4 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
+          <select className="px-4 py-2 border border-slate-200 rounded-lg text-base sm:text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
             <option>All Roles</option>
             <option>Seeker</option>
             <option>Landlord</option>
@@ -358,7 +358,7 @@ function UsersTab() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto no-scrollbar">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
@@ -422,14 +422,14 @@ function InquiriesTab() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-bold text-[#0A1628]">All Inquiries & Visits</h3>
-        <select className="px-4 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
+        <select className="px-4 py-2 border border-slate-200 rounded-lg text-base sm:text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
           <option>All Types</option>
           <option>Paid Visits</option>
           <option>General</option>
         </select>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto no-scrollbar">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">

@@ -60,8 +60,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-24 px-4 max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div className="space-y-6">
             <h2 className="text-4xl font-serif text-[#0A1628]">A Tradition of Excellence</h2>
             <div className="w-20 h-1 bg-[#C9A96E]"></div>
@@ -95,7 +95,7 @@ export default function AboutPage() {
             <h2 className="text-4xl font-serif mb-4">Our Core Values</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">The pillars that uphold our commitment to excellence.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((value, idx) => (
               <div key={idx} className="bg-[#112240] p-8 rounded-lg border border-transparent hover:border-[#C9A96E] transition-all duration-300 transform hover:-translate-y-2 group">
                 <div className="mb-6 p-4 bg-[#0A1628] rounded-full inline-block group-hover:scale-110 transition-transform">
@@ -111,7 +111,7 @@ export default function AboutPage() {
 
       <section className="py-20 px-4 bg-white border-y border-gray-100">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 text-center">
             {stats.map((stat, idx) => (
               <div key={idx} className="space-y-3">
                 <div className="flex justify-center text-[#C9A96E]">{stat.icon}</div>
@@ -123,13 +123,13 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-24 px-4 max-w-7xl mx-auto">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-serif text-[#0A1628] mb-4">Leadership Team</h2>
           <div className="w-20 h-1 bg-[#C9A96E] mx-auto mb-6"></div>
           <p className="text-gray-600 max-w-2xl mx-auto">Meet the visionaries dedicated to elevating your real estate journey.</p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {team.map((member, idx) => (
             <div key={idx} className="group">
               <div className="relative h-80 mb-4 overflow-hidden rounded-sm">

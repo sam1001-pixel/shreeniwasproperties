@@ -52,7 +52,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
       {/* Hero Image */}
       <div className="container mx-auto max-w-5xl px-4 mb-16">
-        <div className="relative h-[400px] md:h-[600px] w-full rounded-2xl overflow-hidden shadow-lg">
+        <div className="relative h-[280px] sm:h-[450px] md:h-[600px] w-full rounded-2xl overflow-hidden shadow-lg">
           <Image src={article.image} alt={article.title} fill className="object-cover" priority />
         </div>
       </div>
@@ -60,7 +60,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       {/* Content Layout */}
       <div className="container mx-auto max-w-4xl px-4 flex flex-col lg:flex-row gap-12">
         {/* Social Share Sidebar */}
-        <div className="lg:w-16 flex lg:flex-col gap-4 items-center shrink-0">
+        <div className="lg:w-16 flex flex-row lg:flex-col gap-3 justify-center items-center shrink-0 my-6 lg:my-0">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider lg:-rotate-90 lg:my-8">Share</span>
           <button className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-[#0A1628] hover:border-[#0A1628] transition-colors"><Share2 className="w-4 h-4" /></button>
           <button className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-green-600 hover:border-green-600 transition-colors"><MessageCircle className="w-4 h-4" /></button>
