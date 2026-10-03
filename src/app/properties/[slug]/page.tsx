@@ -1,270 +1,295 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { MapPin, CheckCircle2, ShieldCheck, Share2, Heart, BedDouble, Bath, Square, Armchair, Building, Car, Compass, Phone, MessageCircle } from 'lucide-react';
+import { useState } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Bed, Bath, Square, CheckCircle2, Share2, Heart, Phone, Mail, Calendar, MessageSquare, ChevronRight, X, Play } from "lucide-react";
 
-export default function PropertyDetailPage() {
-  const params = useParams();
-  
+export default function PropertyDetailsPage({ params }: { params: { slug: string } }) {
+  const [activeTab, setActiveTab] = useState("Photos");
+  const [showGallery, setShowGallery] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success">("idle");
+
+  const images = [
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200", // Main
+    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=800", // Bedroom
+    "https://images.unsplash.com/photo-1600607688142-0f1ba5506048?auto=format&fit=crop&q=80&w=800", // Kitchen
+    "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800", // Balcony
+    "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800"  // Bathroom
+  ];
+
+  const handleInquirySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormStatus("submitting");
+    setTimeout(() => setFormStatus("success"), 1500);
+  };
+
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] font-sans pb-20">
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-500 mb-6 flex items-center space-x-2">
-          <Link href="/" className="hover:text-[#C9A96E]">Home</Link>
-          <span>/</span>
-          <Link href="/properties" className="hover:text-[#C9A96E]">Properties</Link>
-          <span>/</span>
-          <span className="text-gray-400">Rajasthan</span>
-          <span>/</span>
-          <span className="text-gray-400">Jaipur</span>
-          <span>/</span>
-          <span className="text-[#0A1628] font-medium">Luxury 3 BHK Apartment</span>
-        </nav>
+    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] font-sans pb-20 pt-24">
+      
+      {/* Lightbox Gallery */}
+      <AnimatePresence>
+        {showGallery && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 flex flex-col p-4 md:p-10 overflow-y-auto"
+          >
+            <button onClick={() => setShowGallery(false)} className="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20">
+              <X size={24} />
+            </button>
+            <div className="max-w-5xl mx-auto w-full space-y-6 py-10">
+              {images.map((img, i) => (
+                <div key={i} className="relative h-[400px] md:h-[700px] w-full rounded-xl overflow-hidden">
+                  <Image src={img} alt={`Gallery image ${i+1}`} fill className="object-cover" />
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between mb-8 gap-4">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        
+        {/* Title & Actions */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
-            <div className="flex flex-wrap items-center gap-3 mb-2">
-              <span className="bg-[#0A1628] text-[#C9A96E] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                For Rent
-              </span>
-              <span className="flex items-center text-green-700 text-xs font-semibold bg-green-100 px-2 py-1 rounded">
-                <CheckCircle2 className="w-3 h-3 mr-1" /> Verified
-              </span>
-              <span className="flex items-center text-blue-700 text-xs font-semibold bg-blue-100 px-2 py-1 rounded">
-                <ShieldCheck className="w-3 h-3 mr-1" /> RERA Approved
+            <div className="flex items-center gap-3 mb-2">
+              <span className="bg-[#0A1628] text-[#C9A96E] text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider">For Sale</span>
+              <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-sm flex items-center gap-1 border border-green-200">
+                <CheckCircle2 size={12} /> RERA Verified
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold font-serif mb-2">Luxury 3 BHK Apartment</h1>
-            <div className="flex items-center text-gray-600">
-              <MapPin className="w-4 h-4 mr-1 text-[#C9A96E]" />
-              C-Scheme, Jaipur, Rajasthan
-            </div>
+            <h1 className="text-3xl md:text-5xl font-serif font-semibold text-[#0A1628] mb-2">Heritage Luxury Villa</h1>
+            <p className="text-gray-600 flex items-center gap-2 text-sm md:text-base">
+              <MapPin size={18} className="text-[#C9A96E]" /> Vaishali Nagar, Jaipur, Rajasthan
+            </p>
           </div>
-          <div className="flex flex-col md:items-end">
-            <div className="text-3xl font-bold text-[#0A1628] mb-1">₹45,000 <span className="text-lg text-gray-500 font-normal">/month</span></div>
-            <span className="text-sm bg-[#C9A96E]/20 text-[#0A1628] px-3 py-1 rounded-full font-medium">Price Negotiable</span>
-            <div className="flex gap-2 mt-4">
-              <button className="p-2 border border-gray-200 rounded-full hover:bg-gray-50 text-gray-600 transition-colors"><Share2 className="w-5 h-5" /></button>
-              <button className="p-2 border border-gray-200 rounded-full hover:bg-gray-50 text-gray-600 transition-colors"><Heart className="w-5 h-5" /></button>
-            </div>
+          <div className="flex items-center gap-4">
+            <h2 className="text-3xl font-bold text-[#C9A96E] mr-4">₹4.5 Cr</h2>
+            <button className="p-2 border border-gray-300 rounded-full hover:border-[#C9A96E] hover:text-[#C9A96E] transition-colors"><Share2 size={20} /></button>
+            <button onClick={() => setIsFavorite(!isFavorite)} className={`p-2 border border-gray-300 rounded-full transition-colors ${isFavorite ? 'border-red-500 text-red-500 bg-red-50' : 'hover:border-[#C9A96E] hover:text-[#C9A96E]'}`}>
+              <Heart size={20} className={isFavorite ? 'fill-red-500' : ''} />
+            </button>
           </div>
         </div>
 
-        {/* Image Gallery */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[50vh] min-h-[400px] mb-10 rounded-2xl overflow-hidden relative">
-          <div className="md:col-span-2 h-full">
-            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=1200" alt="Main" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-          </div>
-          <div className="hidden md:grid grid-cols-1 gap-2 h-full">
-            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600" alt="Room 1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-            <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=600" alt="Room 2" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-          </div>
-          <div className="hidden md:grid grid-cols-1 gap-2 h-full">
-            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=600" alt="Room 3" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-            <div className="relative w-full h-full overflow-hidden">
-              <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600" alt="Room 4" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer hover:bg-black/50 transition-colors">
-                <span className="text-white font-medium flex flex-col items-center">
-                  <span className="text-2xl mb-1">+8</span>
-                  View All Photos
-                </span>
-              </div>
-            </div>
-          </div>
-          <button className="md:hidden absolute bottom-4 right-4 bg-white px-4 py-2 rounded-lg shadow-md text-sm font-medium">
-            View All Photos (12)
-          </button>
+        {/* Media Tabs */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+          {['Photos', '360° Virtual Tour', 'Floor Plan', 'Video Walkthrough'].map(tab => (
+            <button 
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-2.5 rounded-t-lg text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${activeTab === tab ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E]' : 'bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200'}`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-10">
-          {/* Left Column - Main Content */}
-          <div className="lg:w-[65%]">
-            {/* Specs Bar */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 p-6 bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
-              <div className="flex flex-col items-center text-center">
-                <BedDouble className="w-6 h-6 text-[#C9A96E] mb-2" />
-                <span className="text-lg font-bold">3</span>
-                <span className="text-xs text-gray-500 uppercase">Bedrooms</span>
+        {/* Media Display Area */}
+        <div className="mb-12">
+          {activeTab === 'Photos' && (
+            <div className="relative rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-2 h-[400px] md:h-[500px]">
+              <div className="md:col-span-2 md:row-span-2 relative h-full">
+                <Image src={images[0]} alt="Main" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover hover:scale-105 transition-transform duration-500" />
               </div>
-              <div className="flex flex-col items-center text-center">
-                <Bath className="w-6 h-6 text-[#C9A96E] mb-2" />
-                <span className="text-lg font-bold">3</span>
-                <span className="text-xs text-gray-500 uppercase">Bathrooms</span>
+              <div className="hidden md:block relative h-full">
+                <Image src={images[1]} alt="Bedroom" fill sizes="25vw" className="object-cover hover:scale-105 transition-transform duration-500" />
               </div>
-              <div className="flex flex-col items-center text-center">
-                <Square className="w-6 h-6 text-[#C9A96E] mb-2" />
-                <span className="text-lg font-bold">1800</span>
-                <span className="text-xs text-gray-500 uppercase">Sq.Ft</span>
+              <div className="hidden md:block relative h-full">
+                <Image src={images[2]} alt="Kitchen" fill sizes="25vw" className="object-cover hover:scale-105 transition-transform duration-500" />
               </div>
-              <div className="flex flex-col items-center text-center">
-                <Armchair className="w-6 h-6 text-[#C9A96E] mb-2" />
-                <span className="text-sm font-bold mt-1">Semi</span>
-                <span className="text-xs text-gray-500 uppercase">Furnishing</span>
+              <div className="hidden md:block relative h-full">
+                <Image src={images[3]} alt="Balcony" fill sizes="25vw" className="object-cover hover:scale-105 transition-transform duration-500" />
               </div>
-              <div className="flex flex-col items-center text-center">
-                <Building className="w-6 h-6 text-[#C9A96E] mb-2" />
-                <span className="text-sm font-bold mt-1">4th</span>
-                <span className="text-xs text-gray-500 uppercase">Floor</span>
+              <div className="hidden md:block relative h-full">
+                <Image src={images[4]} alt="Bathroom" fill sizes="25vw" className="object-cover hover:scale-105 transition-transform duration-500" />
+                <div 
+                  onClick={() => setShowGallery(true)}
+                  className="absolute inset-0 bg-black/40 hover:bg-black/50 transition-colors flex items-center justify-center cursor-pointer backdrop-blur-[2px]"
+                >
+                  <span className="text-white font-medium flex items-center gap-2 border border-white/50 px-4 py-2 rounded-lg bg-black/20">
+                    View All 15 Photos <ChevronRight size={16} />
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col items-center text-center">
-                <Car className="w-6 h-6 text-[#C9A96E] mb-2" />
-                <span className="text-lg font-bold">2</span>
-                <span className="text-xs text-gray-500 uppercase">Parking</span>
-              </div>
+              <button 
+                onClick={() => setShowGallery(true)}
+                className="md:hidden absolute bottom-4 right-4 bg-white/90 text-sm font-medium px-4 py-2 rounded-lg shadow-lg border border-gray-200"
+              >
+                View All Photos
+              </button>
             </div>
+          )}
 
-            <section className="mb-10">
-              <h2 className="text-2xl font-serif font-bold mb-4">About This Property</h2>
-              <div className="text-gray-600 leading-relaxed space-y-4">
-                <p>Experience luxury living in the heart of Jaipur with this stunning 3 BHK apartment located in the prestigious C-Scheme area. Spanning 1800 sq.ft, this east-facing property offers breathtaking city views and abundant natural light throughout the day.</p>
-                <p>The apartment features premium vitrified flooring, a modular kitchen with a chimney, and built-in wardrobes in all bedrooms. The society amenities are top-notch, ensuring a comfortable and secure lifestyle for your family.</p>
-              </div>
-            </section>
-
-            <section className="mb-10">
-              <h2 className="text-2xl font-serif font-bold mb-4">Key Highlights & Amenities</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
-                {[
-                  { icon: ShieldCheck, label: '24/7 Security' },
-                  { icon: Building, label: 'High-speed Lift' },
-                  { icon: Car, label: 'Covered Parking' },
-                  { icon: Square, label: 'Swimming Pool' },
-                  { icon: Heart, label: 'Gymnasium' },
-                  { icon: Compass, label: 'East Facing' }
-                ].map((amenity, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <div className="bg-[#0A1628] p-2 rounded-full text-[#C9A96E]">
-                      <amenity.icon className="w-5 h-5" />
-                    </div>
-                    <span className="text-gray-700 font-medium">{amenity.label}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="mb-10">
-              <h2 className="text-2xl font-serif font-bold mb-4">Location & Nearby Places</h2>
-              <div className="bg-gray-100 rounded-xl h-64 mb-4 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center opacity-40 mix-blend-luminosity"></div>
-                <div className="z-10 bg-white/90 backdrop-blur px-6 py-3 rounded-lg shadow-sm font-medium flex items-center gap-2 cursor-pointer hover:bg-white transition-colors">
-                  <MapPin className="text-[#C9A96E]" /> Open in Maps
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="border border-gray-200 rounded-lg p-5">
-                  <h4 className="font-semibold mb-3 text-[#0A1628]">Education</h4>
-                  <ul className="space-y-3 text-sm text-gray-600">
-                    <li className="flex justify-between items-center"><span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]"></div> St. Xavier's School</span> <span className="text-gray-400 font-medium">1.2 km</span></li>
-                    <li className="flex justify-between items-center"><span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]"></div> Maharani College</span> <span className="text-gray-400 font-medium">2.5 km</span></li>
-                  </ul>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-5">
-                  <h4 className="font-semibold mb-3 text-[#0A1628]">Hospitals & Transit</h4>
-                  <ul className="space-y-3 text-sm text-gray-600">
-                    <li className="flex justify-between items-center"><span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]"></div> SMS Hospital</span> <span className="text-gray-400 font-medium">1.8 km</span></li>
-                    <li className="flex justify-between items-center"><span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]"></div> Jaipur Railway Station</span> <span className="text-gray-400 font-medium">3.0 km</span></li>
-                    <li className="flex justify-between items-center"><span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#C9A96E]"></div> International Airport</span> <span className="text-gray-400 font-medium">11.5 km</span></li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-            
-            <section className="mb-10">
-              <div className="bg-[#0A1628] rounded-xl p-8 text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#C9A96E] to-transparent"></div>
-                <h3 className="text-[#FDFBF7] text-2xl font-serif font-bold mb-2">360° Virtual Tour</h3>
-                <p className="text-gray-300 mb-6">Explore the property from the comfort of your home</p>
-                <button className="bg-[#C9A96E] text-[#0A1628] px-8 py-3 rounded-full font-bold hover:bg-opacity-90 transition-colors">
-                  Start Virtual Tour
+          {activeTab === '360° Virtual Tour' && (
+            <div className="relative rounded-2xl overflow-hidden h-[500px] bg-gray-900 flex items-center justify-center">
+              <Image src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=1600" alt="360 Panorama" fill className="object-cover opacity-60" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                <button className="bg-[#C9A96E]/90 hover:bg-[#C9A96E] text-[#0A1628] w-20 h-20 rounded-full flex items-center justify-center pl-2 shadow-2xl backdrop-blur-sm transition-transform hover:scale-110">
+                  <Play size={32} />
                 </button>
+                <p className="text-white mt-6 text-lg font-medium tracking-wide drop-shadow-md">Click to explore 360° Tour</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-12">
+            
+            {/* Specs Bar */}
+            <div className="flex flex-wrap gap-6 md:gap-12 py-6 border-y border-gray-200">
+              <div className="flex flex-col gap-1">
+                <span className="text-gray-500 text-sm flex items-center gap-2"><Bed size={16} className="text-[#C9A96E]"/> Bedrooms</span>
+                <span className="font-semibold text-xl">5 Beds</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-gray-500 text-sm flex items-center gap-2"><Bath size={16} className="text-[#C9A96E]"/> Bathrooms</span>
+                <span className="font-semibold text-xl">6 Baths</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-gray-500 text-sm flex items-center gap-2"><Square size={16} className="text-[#C9A96E]"/> Area</span>
+                <span className="font-semibold text-xl">4,500 sqft</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-gray-500 text-sm">Property Type</span>
+                <span className="font-semibold text-xl">Luxury Villa</span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <section>
+              <h3 className="text-2xl font-serif font-semibold mb-4 text-[#0A1628]">About this Property</h3>
+              <div className="prose prose-lg text-gray-600">
+                <p>
+                  Experience the epitome of luxury living in this exquisite heritage villa nestled in the prestigious Vaishali Nagar area of Jaipur. 
+                  Combining traditional Rajasthani architecture with state-of-the-art modern amenities, this property offers a rare sanctuary in the bustling Pink City.
+                </p>
+                <p className="mt-4">
+                  The ground floor features an expansive grand parlor with double-height ceilings, a chef-grade gourmet kitchen, and a private dining room overlooking the landscaped courtyard. 
+                  Upstairs, the master suite includes a private terrace, walk-in closets, and a spa-like bathroom adorned with imported marble.
+                </p>
               </div>
             </section>
+
           </div>
 
-          {/* Right Column - Sticky Sidebar */}
-          <div className="lg:w-[35%]">
-            <div className="sticky top-6">
-              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-6">
-                <h3 className="text-xl font-bold font-serif mb-4">Interested in this property?</h3>
-                
-                <form className="space-y-4 mb-6">
-                  <div>
-                    <input type="text" placeholder="Your Name" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-[#C9A96E] transition-colors" />
-                  </div>
-                  <div>
-                    <input type="tel" placeholder="Phone Number" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-[#C9A96E] transition-colors" />
-                  </div>
-                  <div>
-                    <input type="email" placeholder="Email Address" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-[#C9A96E] transition-colors" />
-                  </div>
-                  <div className="relative">
-                    <input type="date" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-[#C9A96E] text-gray-500 transition-colors" />
-                  </div>
-                  <div>
-                    <textarea placeholder="I am interested in this property..." rows={3} className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-[#C9A96E] transition-colors"></textarea>
-                  </div>
-                  <button type="button" className="w-full bg-[#0A1628] text-[#C9A96E] py-3 rounded-lg font-bold hover:bg-opacity-90 transition-colors">
-                    Schedule Visit
-                  </button>
-                </form>
-
-                <div className="flex gap-3">
-                  <button className="flex-1 flex items-center justify-center gap-2 border-2 border-[#0A1628] text-[#0A1628] py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                    <Phone className="w-4 h-4" /> Call
-                  </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white py-2.5 rounded-lg font-semibold hover:bg-opacity-90 transition-colors">
-                    <MessageCircle className="w-4 h-4" /> WhatsApp
-                  </button>
+          {/* Sidebar */}
+          <div className="space-y-8">
+            
+            {/* Lead Form */}
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 sticky top-28">
+              <h3 className="text-xl font-serif font-semibold mb-6">Schedule a Tour</h3>
+              
+              {formStatus === "success" ? (
+                <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-6 text-center">
+                  <CheckCircle2 size={40} className="text-green-500 mx-auto mb-4" />
+                  <h4 className="font-semibold text-lg mb-2">Request Sent!</h4>
+                  <p className="text-sm">Our premium property consultant will contact you shortly.</p>
+                  <button onClick={() => setFormStatus("idle")} className="mt-6 text-sm text-[#0A1628] underline">Send another inquiry</button>
                 </div>
-              </div>
+              ) : (
+                <form onSubmit={handleInquirySubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input required type="text" className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-[#C9A96E] outline-none transition-colors" placeholder="John Doe" />
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-full">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <input required type="tel" className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-[#C9A96E] outline-none transition-colors" placeholder="+91 98765 43210" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input required type="email" className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-[#C9A96E] outline-none transition-colors" placeholder="john@example.com" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                      <input type="date" className="w-full pl-10 p-3 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-[#C9A96E] outline-none transition-colors" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea rows={3} className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-[#C9A96E] outline-none transition-colors" placeholder="I'm interested in this property..."></textarea>
+                  </div>
+                  <button 
+                    disabled={formStatus === "submitting"}
+                    className="w-full bg-[#0A1628] text-[#C9A96E] py-4 rounded-lg font-semibold hover:bg-[#0A1628]/90 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {formStatus === "submitting" ? "Sending..." : "Request Details"}
+                  </button>
+                  <a 
+                    href={`https://wa.me/919876543210?text=I'm%20interested%20in%20Heritage%20Luxury%20Villa`} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="w-full bg-[#25D366] text-white py-4 rounded-lg font-semibold hover:bg-[#20b958] transition-colors flex items-center justify-center gap-2 mt-3"
+                  >
+                    <MessageSquare size={18} /> WhatsApp Inquiry
+                  </a>
+                </form>
+              )}
+            </div>
 
-              {/* Agent Info */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-                <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden border-2 border-[#C9A96E]">
-                  <img src="https://ui-avatars.com/api/?name=Rajesh+Kumar&background=0A1628&color=C9A96E" alt="Agent" className="w-full h-full object-cover" />
+            {/* Agent Profile */}
+            <div className="bg-[#0A1628] p-6 rounded-2xl shadow-xl text-white">
+              <h3 className="text-lg font-semibold text-[#C9A96E] mb-6 border-b border-gray-700 pb-3">Listed by Premium Agent</h3>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#C9A96E]">
+                  <Image src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200" alt="Agent" width={64} height={64} className="object-cover" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-[#0A1628]">Rajesh Kumar</h4>
-                  <p className="text-sm text-gray-500">Senior Property Consultant</p>
-                  <p className="text-xs text-gray-400 mt-1">RERA: RAJ/A/2021/1542</p>
+                  <p className="font-semibold text-lg">Rajesh Sharma</p>
+                  <p className="text-sm text-gray-400">Senior Luxury Consultant</p>
+                  <div className="mt-1 flex items-center gap-1 text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-300 w-fit border border-gray-700">
+                    <CheckCircle2 size={10} className="text-[#C9A96E]" /> RERA: RAJ/A/2021/193
+                  </div>
                 </div>
               </div>
+              <div className="space-y-3">
+                <a href="tel:+919876543210" className="flex items-center gap-3 bg-white/10 p-3 rounded-lg hover:bg-white/20 transition-colors">
+                  <Phone size={18} className="text-[#C9A96E]" /> +91 98765 43210
+                </a>
+                <a href="mailto:rajesh@shreeniwas.com" className="flex items-center gap-3 bg-white/10 p-3 rounded-lg hover:bg-white/20 transition-colors">
+                  <Mail size={18} className="text-[#C9A96E]" /> rajesh@shreeniwas.com
+                </a>
+              </div>
             </div>
+
           </div>
         </div>
 
-        {/* Similar Properties */}
-        <section className="mt-16 pt-10 border-t border-gray-200">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-serif font-bold">Similar Properties</h2>
-            <Link href="/properties" className="text-[#C9A96E] font-medium hover:underline">View All</Link>
-          </div>
+        {/* Similar Properties Carousel */}
+        <div className="mt-20 border-t border-gray-200 pt-16">
+          <h3 className="text-3xl font-serif font-semibold mb-8 text-[#0A1628]">Similar Luxury Properties</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((item) => (
-              <div key={item} className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm p-2 hover:shadow-lg transition-shadow cursor-pointer">
-                <div className="relative h-48 rounded-lg overflow-hidden mb-4">
-                  <img src={`https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600&random=${item}`} alt="Similar" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-3 left-3 bg-[#0A1628] text-[#C9A96E] text-xs font-bold px-3 py-1 rounded-full">RENT</div>
-                </div>
-                <div className="px-3 pb-3">
-                  <h3 className="font-bold font-serif text-lg mb-1 line-clamp-1">Premium 3 BHK in Vaishali</h3>
-                  <div className="text-gray-500 text-sm mb-3 flex items-center"><MapPin className="w-4 h-4 mr-1 text-[#C9A96E]" /> Vaishali Nagar, Jaipur</div>
-                  <div className="flex justify-between items-center border-t border-gray-100 pt-3">
-                    <div className="text-[#0A1628] font-bold">₹38,000 <span className="text-xs text-gray-500 font-normal">/month</span></div>
-                    <div className="flex gap-2 text-gray-500 text-xs font-medium">
-                      <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" /> 3</span>
-                      <span className="flex items-center gap-1"><Bath className="w-3 h-3" /> 3</span>
-                    </div>
+              <div key={item} className="group relative bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300">
+                <div className="relative h-56 overflow-hidden">
+                  <Image src={`https://images.unsplash.com/photo-${1600596542815 + item}-ffad4c1539a9?auto=format&fit=crop&q=80&w=800`} alt="Similar" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="absolute top-3 left-3 bg-[#0A1628] text-[#C9A96E] text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider shadow-md">
+                    Buy
                   </div>
+                </div>
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="text-lg font-serif font-semibold text-[#0A1628]">Royal Palace Villa</h4>
+                    <span className="text-base font-bold text-[#C9A96E]">₹5.2 Cr</span>
+                  </div>
+                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <MapPin size={12} /> C-Scheme, Jaipur
+                  </p>
                 </div>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+
       </div>
     </div>
   );

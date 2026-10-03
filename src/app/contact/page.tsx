@@ -1,166 +1,198 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, MessageCircle, Send } from 'lucide-react';
+import { useState } from "react";
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, ChevronDown } from "lucide-react";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    type: 'buy',
-    message: ''
+    name: "", email: "", phone: "", topic: "Rent Inquiry", message: ""
   });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted", formData);
-    alert("Message sent successfully!");
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      setFormData({ name: "", email: "", phone: "", topic: "Rent Inquiry", message: "" });
+      setTimeout(() => setIsSuccess(false), 5000);
+    }, 1500);
   };
 
+  const faqs = [
+    { q: "What areas in Rajasthan do you cover?", a: "We primarily operate in Jaipur, Udaipur, Jodhpur, and Ajmer, focusing on premium residential and commercial spaces." },
+    { q: "Do you offer property management services?", a: "Yes, we offer comprehensive end-to-end property management for NRIs and out-of-state investors." },
+    { q: "How long does it take to list a property?", a: "After initial inspection and documentation, your property can be live on our exclusive network within 48 hours." },
+    { q: "Are virtual tours available?", a: "Absolutely. We provide high-quality virtual tours and live video walkthroughs for all our premium listings." }
+  ];
+
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628]">
-      {/* Hero Section */}
-      <section className="bg-[#0A1628] text-white py-20 px-6 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold font-serif mb-4 text-[#C9A96E]">
-          Get in Touch with Us
-        </h1>
-        <p className="text-lg max-w-xl mx-auto font-light text-gray-300">
-          Whether you're looking to buy, sell, or rent, our team of experts is here to help you every step of the way.
-        </p>
-      </section>
-
-      {/* Main Content */}
-      <section className="py-16 px-6 md:px-12 max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16">
-          
-          {/* Left Column: Contact Info */}
-          <div>
-            <h2 className="text-3xl font-serif font-bold mb-8">Contact Information</h2>
-            
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#0A1628]/5 flex items-center justify-center shrink-0">
-                  <Phone className="text-[#C9A96E] w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold">Phone</h4>
-                  <p className="text-gray-600 mt-1">+91 98765 43210</p>
-                  <p className="text-gray-600">+91 12345 67890</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#0A1628]/5 flex items-center justify-center shrink-0">
-                  <Mail className="text-[#C9A96E] w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold">Email</h4>
-                  <p className="text-gray-600 mt-1">info@shreeniwasproperties.com</p>
-                  <p className="text-gray-600">support@shreeniwasproperties.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#0A1628]/5 flex items-center justify-center shrink-0">
-                  <MapPin className="text-[#C9A96E] w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold">Office Address</h4>
-                  <p className="text-gray-600 mt-1">
-                    123, Shreeniwas Tower, MI Road,<br />
-                    Jaipur, Rajasthan 302001
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#0A1628]/5 flex items-center justify-center shrink-0">
-                  <Clock className="text-[#C9A96E] w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold">Business Hours</h4>
-                  <p className="text-gray-600 mt-1">Monday - Saturday: 9:00 AM - 7:00 PM</p>
-                  <p className="text-gray-600">Sunday: Closed</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-10 pt-10 border-t border-gray-200">
-              <button className="flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#20b858] transition-colors">
-                <MessageCircle className="w-5 h-5" />
-                Chat on WhatsApp
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column: Form */}
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-2xl font-serif font-bold mb-6">Send us a Message</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Full Name</label>
-                <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-[#C9A96E]" placeholder="John Doe" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Phone Number</label>
-                  <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-[#C9A96E]" placeholder="+91" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email Address</label>
-                  <input required type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-[#C9A96E]" placeholder="john@example.com" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Inquiry Type</label>
-                <select name="type" value={formData.type} onChange={handleChange} className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-[#C9A96E]">
-                  <option value="buy">Looking to Buy</option>
-                  <option value="sell">Looking to Sell</option>
-                  <option value="rent">Looking to Rent</option>
-                  <option value="other">Other Inquiry</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Message</label>
-                <textarea required name="message" value={formData.message} onChange={handleChange} rows={4} className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-[#C9A96E]" placeholder="How can we help you?"></textarea>
-              </div>
-              <button type="submit" className="w-full bg-[#0A1628] text-white py-3 rounded-lg font-medium hover:bg-[#0A1628]/90 transition-colors flex items-center justify-center gap-2">
-                Send Message
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-
+    <main className="min-h-screen bg-[#FDFBF7] py-20 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-serif text-[#0A1628] mb-4">Get in Touch</h1>
+          <div className="w-20 h-1 bg-[#C9A96E] mx-auto mb-6"></div>
+          <p className="text-gray-600 max-w-2xl mx-auto">Whether you're looking to buy, sell, or rent, our expert advisors are here to guide you through your real estate journey.</p>
         </div>
-      </section>
 
-      {/* FAQs */}
-      <section className="bg-gray-50 py-16 px-6 md:px-12">
+        <div className="grid lg:grid-cols-3 gap-12 mb-24">
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 h-full">
+              <h3 className="text-2xl font-serif text-[#0A1628] mb-8">Contact Information</h3>
+              
+              <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 bg-[#0A1628]/5 rounded-full text-[#0A1628]">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Head Office</h4>
+                    <p className="text-gray-600 mt-1">15 Royal Avenue, C-Scheme<br/>Jaipur, Rajasthan 302001</p>
+                    <a href="#" className="text-[#C9A96E] text-sm font-medium mt-2 inline-block hover:underline">View on Map &rarr;</a>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 bg-[#0A1628]/5 rounded-full text-[#0A1628]">
+                    <Phone className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Direct Contact</h4>
+                    <p className="text-gray-600 mt-1">+91 98765 43210</p>
+                    <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded text-sm font-medium hover:bg-green-600 transition">WhatsApp Us</button>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 bg-[#0A1628]/5 rounded-full text-[#0A1628]">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Email</h4>
+                    <p className="text-gray-600 mt-1">inquiries@shreeniwas.com</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 bg-[#0A1628]/5 rounded-full text-[#0A1628]">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Business Hours</h4>
+                    <p className="text-gray-600 mt-1">Mon - Sat: 9:00 AM - 7:00 PM<br/>Sunday: By Appointment Only</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2">
+            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
+              <h3 className="text-2xl font-serif text-[#0A1628] mb-6">Send us a Message</h3>
+              
+              {isSuccess ? (
+                <div className="bg-green-50 text-green-800 p-6 rounded-lg flex items-center space-x-4 border border-green-200">
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                  <div>
+                    <h4 className="font-semibold text-lg">Message Sent Successfully!</h4>
+                    <p className="text-green-700">Thank you for reaching out. Our team will contact you within 24 hours.</p>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Full Name</label>
+                      <input 
+                        type="text" required
+                        value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+                        className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Email Address</label>
+                      <input 
+                        type="email" required
+                        value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+                        className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
+                        placeholder="john@example.com"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                      <input 
+                        type="tel" required
+                        value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
+                        className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
+                        placeholder="+91 98765 43210"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Topic</label>
+                      <select 
+                        value={formData.topic} onChange={e => setFormData({...formData, topic: e.target.value})}
+                        className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition bg-white"
+                      >
+                        <option>Rent Inquiry</option>
+                        <option>Buy Inquiry</option>
+                        <option>List Property</option>
+                        <option>General</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Your Message</label>
+                    <textarea 
+                      required rows={5}
+                      value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})}
+                      className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition resize-none"
+                      placeholder="Tell us about your requirements..."
+                    ></textarea>
+                  </div>
+
+                  <button 
+                    type="submit" disabled={isSubmitting}
+                    className="w-full bg-[#0A1628] text-white py-4 rounded-md font-medium hover:bg-[#112240] transition flex justify-center items-center space-x-2 disabled:opacity-70"
+                  >
+                    <span>{isSubmitting ? "Sending..." : "Send Message"}</span>
+                    {!isSubmitting && <Send className="w-4 h-4" />}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-serif font-bold text-center mb-10">Frequently Asked Questions</h2>
+          <h3 className="text-3xl font-serif text-center text-[#0A1628] mb-8">Frequently Asked Questions</h3>
           <div className="space-y-4">
-            {/* Simple static FAQ representation for visual */}
-            {[
-              { q: "What areas in Rajasthan do you cover?", a: "We primarily operate in Jaipur, Jodhpur, Udaipur, Kota, Ajmer, and Bikaner." },
-              { q: "Do you help with property loans?", a: "Yes, we have tie-ups with leading banks to assist you with home loans at competitive interest rates." },
-              { q: "How much is your consultation fee?", a: "Our initial consultation is completely free. We only charge standard brokerage fees upon successful transactions." }
-            ].map((faq, i) => (
-              <details key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 cursor-pointer group">
-                <summary className="font-bold text-lg list-none flex justify-between items-center">
-                  {faq.q}
-                  <span className="text-[#C9A96E] group-open:rotate-45 transition-transform text-2xl">+</span>
-                </summary>
-                <p className="mt-4 text-gray-600 leading-relaxed">{faq.a}</p>
-              </details>
+            {faqs.map((faq, idx) => (
+              <div key={idx} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                <button 
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none"
+                >
+                  <span className="font-medium text-gray-900">{faq.q}</span>
+                  <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
+                </button>
+                {openFaq === idx && (
+                  <div className="px-6 pb-4 text-gray-600 border-t border-gray-100 pt-4">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </main>
   );
 }
