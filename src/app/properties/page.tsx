@@ -1,306 +1,431 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Heart, MapPin, Bed, Bath, Square, Search, SlidersHorizontal, ChevronDown, CheckCircle2 } from "lucide-react";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { 
+  Search, MapPin, Filter, Grid, List, Map as MapIcon, 
+  Heart, Share2, CheckCircle2, Phone, MessageSquare, 
+  ChevronDown, X, Building, Home, Building2, Store,
+  BedDouble, Bath, Square
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Mock Data
-const allProperties = [
+const MOCK_PROPERTIES = [
   {
-    id: "p1",
-    slug: "luxury-villa-jaipur",
-    title: "Heritage Luxury Villa",
-    locality: "Vaishali Nagar",
-    city: "Jaipur",
-    price: "₹4.5 Cr",
-    priceValue: 45000000,
-    type: "Villa",
-    purpose: "Buy",
-    bhk: "4+ BHK",
-    bhkNum: 4,
-    beds: 5,
-    baths: 6,
-    area: "4,500 sqft",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800",
+    id: '1',
+    slug: 'luxury-villa-jaipur',
+    title: 'Royal Heritage Villa',
+    location: 'Vaishali Nagar, Jaipur',
+    city: 'Jaipur',
+    price: '₹2.5 Cr',
+    purpose: 'Buy',
+    type: 'Villa',
+    bhk: '4 BHK',
+    area: '3,200 sq.ft',
+    baths: 4,
+    furnishing: 'Fully Furnished',
+    verified: true,
     rera: true,
-    new: true,
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800',
   },
   {
-    id: "p2",
-    slug: "premium-apartment-udaipur",
-    title: "Lakeview Premium Apartment",
-    locality: "Fateh Sagar",
-    city: "Udaipur",
-    price: "₹1.2 Lakh/mo",
-    priceValue: 120000,
-    type: "Apartment",
-    purpose: "Rent",
-    bhk: "3 BHK",
-    bhkNum: 3,
-    beds: 3,
+    id: '2',
+    slug: 'premium-apartment-jodhpur',
+    title: 'Sunset View Heights',
+    location: 'Sardarpura, Jodhpur',
+    city: 'Jodhpur',
+    price: '₹85 L',
+    purpose: 'Buy',
+    type: 'Apartment',
+    bhk: '3 BHK',
+    area: '1,800 sq.ft',
     baths: 3,
-    area: "2,200 sqft",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800",
+    furnishing: 'Semi-Furnished',
+    verified: true,
     rera: true,
-    new: false,
+    image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800',
   },
   {
-    id: "p3",
-    slug: "modern-penthouse-jodhpur",
-    title: "Desert View Penthouse",
-    locality: "Umaid Heritage",
-    city: "Jodhpur",
-    price: "₹6.8 Cr",
-    priceValue: 68000000,
-    type: "Penthouse",
-    purpose: "Buy",
-    bhk: "4+ BHK",
-    bhkNum: 4,
-    beds: 4,
-    baths: 5,
-    area: "5,100 sqft",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=800",
-    rera: false,
-    new: true,
-  },
-  {
-    id: "p4",
-    slug: "commercial-space-kota",
-    title: "Prime Retail Space",
-    locality: "Rajeev Gandhi Nagar",
-    city: "Kota",
-    price: "₹2.5 Lakh/mo",
-    priceValue: 250000,
-    type: "Commercial",
-    purpose: "Commercial",
-    bhk: "All",
-    bhkNum: 0,
-    beds: 0,
+    id: '3',
+    slug: 'lake-view-apartment-udaipur',
+    title: 'Fateh Sagar Residences',
+    location: 'Fatehpura, Udaipur',
+    city: 'Udaipur',
+    price: '₹45,000/mo',
+    purpose: 'Rent',
+    type: 'Apartment',
+    bhk: '2 BHK',
+    area: '1,200 sq.ft',
     baths: 2,
-    area: "3,000 sqft",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800",
+    furnishing: 'Fully Furnished',
+    verified: true,
+    rera: false,
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800',
+  },
+  {
+    id: '4',
+    slug: 'commercial-office-kota',
+    title: 'Vibrant Business Park',
+    location: 'Rajeev Gandhi Nagar, Kota',
+    city: 'Kota',
+    price: '₹1.2 Cr',
+    purpose: 'Commercial',
+    type: 'Commercial Office',
+    bhk: 'N/A',
+    area: '1,500 sq.ft',
+    baths: 2,
+    furnishing: 'Unfurnished',
+    verified: true,
     rera: true,
-    new: false,
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800',
+  },
+  {
+    id: '5',
+    slug: 'independent-house-ajmer',
+    title: 'Aravali View Homes',
+    location: 'Pushkar Road, Ajmer',
+    city: 'Ajmer',
+    price: '₹95 L',
+    purpose: 'Buy',
+    type: 'Independent House',
+    bhk: '3 BHK',
+    area: '2,100 sq.ft',
+    baths: 3,
+    furnishing: 'Semi-Furnished',
+    verified: false,
+    rera: false,
+    image: 'https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?auto=format&fit=crop&q=80&w=800',
+  },
+  {
+    id: '6',
+    slug: 'retail-shop-bikaner',
+    title: 'City Center Plaza Shop',
+    location: 'KEM Road, Bikaner',
+    city: 'Bikaner',
+    price: '₹25,000/mo',
+    purpose: 'Commercial',
+    type: 'Retail Shop',
+    bhk: 'N/A',
+    area: '400 sq.ft',
+    baths: 1,
+    furnishing: 'Unfurnished',
+    verified: true,
+    rera: false,
+    image: 'https://images.unsplash.com/photo-1555529771-835f59fc5efe?auto=format&fit=crop&q=80&w=800',
   }
 ];
 
-export default function PropertiesPage() {
-  const [search, setSearch] = useState("");
-  const [purpose, setPurpose] = useState("All");
-  const [city, setCity] = useState("All Cities");
-  const [type, setType] = useState("All Types");
-  const [bhk, setBhk] = useState("All");
-  const [sort, setSort] = useState("Newest");
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [visibleCount, setVisibleCount] = useState(6);
+const CITIES = ['All Cities', 'Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Bikaner'];
+const PROPERTY_TYPES = ['All Types', 'Apartment', 'Villa', 'Independent House', 'Penthouse', 'Commercial Office', 'Retail Shop', 'Plot'];
+const BHK_OPTIONS = ['All', '1 BHK', '2 BHK', '3 BHK', '4+ BHK'];
+const FURNISHING_OPTIONS = ['All', 'Unfurnished', 'Semi-Furnished', 'Fully Furnished'];
+const AMENITIES = ['Lift', 'Swimming Pool', 'Gym', 'Car Parking', 'Power Backup', '24/7 Security', 'CCTV', 'Vastu Compliant'];
 
-  const toggleFavorite = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+export default function PropertiesPage() {
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [purpose, setPurpose] = useState('All');
+  const [city, setCity] = useState('All Cities');
+  const [type, setType] = useState('All Types');
+  const [bhk, setBhk] = useState('All');
+  const [furnishing, setFurnishing] = useState('All');
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+
+  const toggleFavorite = (id: string) => {
+    setFavorites(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const filteredProperties = useMemo(() => {
-    return allProperties.filter(p => {
-      const matchSearch = p.title.toLowerCase().includes(search.toLowerCase()) || p.locality.toLowerCase().includes(search.toLowerCase());
-      const matchPurpose = purpose === "All" || p.purpose === purpose;
-      const matchCity = city === "All Cities" || p.city === city;
-      const matchType = type === "All Types" || p.type === type;
-      const matchBhk = bhk === "All" || p.bhk === bhk;
-      return matchSearch && matchPurpose && matchCity && matchType && matchBhk;
-    }).sort((a, b) => {
-      if (sort === "Price: Low to High") return a.priceValue - b.priceValue;
-      if (sort === "Price: High to Low") return b.priceValue - a.priceValue;
-      return 0; // Newest logic would be here
-    });
-  }, [search, purpose, city, type, bhk, sort]);
+  const clearFilters = () => {
+    setSearchQuery('');
+    setPurpose('All');
+    setCity('All Cities');
+    setType('All Types');
+    setBhk('All');
+    setFurnishing('All');
+  };
+
+  const hasActiveFilters = purpose !== 'All' || city !== 'All Cities' || type !== 'All Types' || bhk !== 'All' || furnishing !== 'All' || searchQuery !== '';
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] font-sans pb-20">
-      {/* Header section */}
-      <div className="bg-[#0A1628] text-white pt-32 pb-16 px-6">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628]">
+      {/* Header / Search Area */}
+      <div className="bg-[#0A1628] text-white pt-24 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-serif text-[#C9A96E] mb-6">Discover Your Signature Space</h1>
+          <h1 className="text-4xl md:text-5xl font-serif mb-6">Discover Premium Properties</h1>
           
-          {/* Search Bar */}
-          <div className="bg-white rounded-lg p-2 flex items-center shadow-lg max-w-4xl">
-            <Search className="text-gray-400 ml-3 mr-2" size={20} />
-            <input 
-              type="text" 
-              placeholder="Search by title, locality..." 
-              className="flex-1 bg-transparent text-gray-800 outline-none p-2"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <button className="bg-[#C9A96E] text-[#0A1628] px-6 py-2 rounded-md font-medium hover:bg-[#b0925d] transition-colors">
-              Search
-            </button>
+          <div className="bg-white rounded-xl p-4 shadow-xl flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+              <input 
+                type="text" 
+                placeholder="Search by location, builder, or project..." 
+                className="w-full pl-10 pr-10 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E] text-black"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+            
+            <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+              {['All', 'Rent', 'Buy', 'Commercial'].map(p => (
+                <button 
+                  key={p}
+                  onClick={() => setPurpose(p)}
+                  className={`px-6 py-3 rounded-lg whitespace-nowrap font-medium transition-colors ${
+                    purpose === p ? 'bg-[#C9A96E] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Filters */}
-          <div className="w-full lg:w-1/4 space-y-8">
-            <div>
-              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 border-b border-gray-200 pb-2">
-                <SlidersHorizontal size={18} /> Filters
-              </h3>
-              
-              <div className="space-y-6">
-                {/* Purpose */}
-                <div>
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">Purpose</label>
-                  <div className="flex flex-wrap gap-2">
-                    {["All", "Rent", "Buy", "Commercial"].map(p => (
-                      <button 
-                        key={p} 
-                        onClick={() => setPurpose(p)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${purpose === p ? 'bg-[#0A1628] text-[#C9A96E]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+      <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8">
+        
+        {/* Filters Sidebar */}
+        <div className="w-full lg:w-80 flex-shrink-0 space-y-8">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Filter className="w-5 h-5" /> Filters
+              </h2>
+              {hasActiveFilters && (
+                <button onClick={clearFilters} className="text-sm text-red-500 hover:underline">
+                  Clear All
+                </button>
+              )}
+            </div>
 
-                {/* City */}
-                <div>
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">City</label>
-                  <select 
-                    className="w-full p-2.5 border border-gray-300 rounded-md bg-white outline-none focus:border-[#C9A96E]"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
+            {/* City */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+              <select 
+                value={city} 
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E]"
+              >
+                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            {/* Property Type */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+              <select 
+                value={type} 
+                onChange={(e) => setType(e.target.value)}
+                className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A96E]"
+              >
+                {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+
+            {/* BHK */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">BHK</label>
+              <div className="flex flex-wrap gap-2">
+                {BHK_OPTIONS.map(b => (
+                  <button 
+                    key={b}
+                    onClick={() => setBhk(b)}
+                    className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                      bhk === b ? 'border-[#C9A96E] bg-[#C9A96E]/10 text-[#C9A96E]' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
                   >
-                    {["All Cities", "Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer", "Bikaner"].map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Property Type */}
-                <div>
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">Property Type</label>
-                  <select 
-                    className="w-full p-2.5 border border-gray-300 rounded-md bg-white outline-none focus:border-[#C9A96E]"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                  >
-                    {["All Types", "Apartment", "Villa", "Penthouse", "Commercial", "Plot"].map(t => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* BHK */}
-                <div>
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">Bedrooms</label>
-                  <div className="flex flex-wrap gap-2">
-                    {["All", "1 BHK", "2 BHK", "3 BHK", "4+ BHK"].map(b => (
-                      <button 
-                        key={b} 
-                        onClick={() => setBhk(b)}
-                        className={`px-3 py-1.5 border rounded-md text-sm transition-colors ${bhk === b ? 'border-[#C9A96E] bg-[#C9A96E]/10 text-[#0A1628]' : 'border-gray-200 hover:border-[#C9A96E]'}`}
-                      >
-                        {b}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                    {b}
+                  </button>
+                ))}
               </div>
+            </div>
+
+            {/* Furnishing */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Furnishing</label>
+              <div className="flex flex-wrap gap-2">
+                {FURNISHING_OPTIONS.map(f => (
+                  <button 
+                    key={f}
+                    onClick={() => setFurnishing(f)}
+                    className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                      furnishing === f ? 'border-[#C9A96E] bg-[#C9A96E]/10 text-[#C9A96E]' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Amenities */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Amenities</label>
+              <div className="space-y-2">
+                {AMENITIES.map(amenity => (
+                  <label key={amenity} className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#C9A96E] focus:ring-[#C9A96E]" />
+                    <span className="text-sm text-gray-600">{amenity}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1">
+          
+          {/* Top Bar */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+              <h2 className="text-2xl font-serif">Showing {MOCK_PROPERTIES.length} Properties</h2>
+              {hasActiveFilters && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {purpose !== 'All' && <span className="px-3 py-1 bg-[#0A1628]/5 text-sm rounded-full">{purpose}</span>}
+                  {city !== 'All Cities' && <span className="px-3 py-1 bg-[#0A1628]/5 text-sm rounded-full">{city}</span>}
+                  {type !== 'All Types' && <span className="px-3 py-1 bg-[#0A1628]/5 text-sm rounded-full">{type}</span>}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-200">
+              <button 
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[#0A1628] text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+              >
+                <Grid className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded ${viewMode === 'list' ? 'bg-[#0A1628] text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+              >
+                <List className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => setViewMode('map')}
+                className={`p-2 rounded ${viewMode === 'map' ? 'bg-[#0A1628] text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+              >
+                <MapIcon className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
-          {/* Results Area */}
-          <div className="w-full lg:w-3/4">
-            <div className="flex justify-between items-center mb-6">
-              <p className="text-gray-600 font-medium">
-                Showing <span className="text-[#0A1628] font-bold">{filteredProperties.length}</span> properties
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Sort by:</span>
-                <select 
-                  className="p-2 border border-gray-300 rounded-md bg-white outline-none text-sm font-medium focus:border-[#C9A96E]"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                >
-                  <option>Newest</option>
-                  <option>Price: Low to High</option>
-                  <option>Price: High to Low</option>
-                </select>
-              </div>
+          {/* Properties Grid/List */}
+          {viewMode === 'map' ? (
+            <div className="w-full h-[600px] bg-gray-200 rounded-xl flex items-center justify-center text-gray-500">
+              <MapIcon className="w-12 h-12 mb-2" />
+              <p>Map View Placeholder</p>
             </div>
-
-            {filteredProperties.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-xl border border-gray-100 shadow-sm">
-                <p className="text-gray-500 text-lg">No properties found matching your criteria.</p>
-                <button onClick={() => { setSearch(""); setPurpose("All"); setCity("All Cities"); setType("All Types"); setBhk("All"); }} className="mt-4 text-[#C9A96E] hover:underline">Clear Filters</button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredProperties.slice(0, visibleCount).map((property) => (
-                  <Link href={`/properties/${property.slug}`} key={property.id}>
-                    <motion.div 
-                      whileHover={{ y: -5 }}
-                      className="group relative bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300"
-                    >
-                      {/* Double Bezel Inner Border effect */}
-                      <div className="absolute inset-1 border border-white/40 pointer-events-none z-10 rounded-lg"></div>
-                      
-                      <div className="relative h-64 overflow-hidden">
-                        <Image src={property.image} alt={property.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                        <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
-                          <span className="bg-[#0A1628] text-[#C9A96E] text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider shadow-md">
+          ) : (
+            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-2' : 'grid-cols-1'}`}>
+              <AnimatePresence>
+                {MOCK_PROPERTIES.map((property, index) => (
+                  <motion.div 
+                    key={property.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 ${
+                      viewMode === 'list' ? 'flex flex-col sm:flex-row' : 'flex flex-col'
+                    }`}
+                  >
+                    {/* Double Bezel / Image Area */}
+                    <div className={`relative p-2 ${viewMode === 'list' ? 'sm:w-2/5' : 'w-full'}`}>
+                      <div className={`relative rounded-lg overflow-hidden ${viewMode === 'list' ? 'h-full min-h-[200px]' : 'aspect-[4/3]'}`}>
+                        <img 
+                          src={property.image} 
+                          alt={property.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute top-3 left-3 flex flex-col gap-2">
+                          <span className="px-3 py-1 bg-white/90 backdrop-blur text-[#0A1628] text-xs font-semibold rounded-full uppercase tracking-wider">
                             {property.purpose}
                           </span>
                           {property.rera && (
-                            <span className="bg-green-600/90 text-white text-xs font-bold px-3 py-1 rounded-sm flex items-center gap-1 shadow-md">
-                              <CheckCircle2 size={12} /> RERA Verified
+                            <span className="px-3 py-1 bg-[#C9A96E]/90 backdrop-blur text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> RERA
                             </span>
                           )}
                         </div>
                         <button 
-                          onClick={(e) => toggleFavorite(property.id, e)}
-                          className="absolute top-4 right-4 z-20 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white text-gray-400 hover:text-red-500 transition-colors shadow-sm"
+                          onClick={(e) => { e.preventDefault(); toggleFavorite(property.id); }}
+                          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur rounded-full hover:bg-white transition-colors"
                         >
-                          <Heart size={20} className={favorites.includes(property.id) ? "fill-red-500 text-red-500" : ""} />
+                          <Heart className={`w-5 h-5 ${favorites[property.id] ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
                         </button>
                       </div>
+                    </div>
 
-                      <div className="p-5">
+                    {/* Content Area */}
+                    <div className={`p-5 flex flex-col flex-1 ${viewMode === 'list' ? 'justify-between' : ''}`}>
+                      <div>
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-xl font-serif font-semibold text-[#0A1628] line-clamp-1">{property.title}</h3>
-                          <span className="text-lg font-bold text-[#C9A96E] whitespace-nowrap ml-3">{property.price}</span>
+                          <div>
+                            <Link href={`/properties/${property.slug}`} className="hover:text-[#C9A96E] transition-colors">
+                              <h3 className="text-xl font-serif font-semibold">{property.title}</h3>
+                            </Link>
+                            <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">
+                              <MapPin className="w-4 h-4" /> {property.location}
+                            </p>
+                          </div>
+                          <p className="text-[#0A1628] font-bold text-xl">{property.price}</p>
                         </div>
-                        <p className="text-sm text-gray-500 flex items-center gap-1 mb-4">
-                          <MapPin size={14} /> {property.locality}, {property.city}
-                        </p>
-                        
-                        <div className="flex items-center gap-4 text-sm text-gray-600 pt-4 border-t border-gray-100">
-                          {property.beds > 0 && <span className="flex items-center gap-1.5"><Bed size={16} className="text-[#C9A96E]" /> {property.beds} Beds</span>}
-                          {property.baths > 0 && <span className="flex items-center gap-1.5"><Bath size={16} className="text-[#C9A96E]" /> {property.baths} Baths</span>}
-                          <span className="flex items-center gap-1.5"><Square size={16} className="text-[#C9A96E]" /> {property.area}</span>
+
+                        <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-100 my-4">
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <BedDouble className="w-5 h-5 text-[#C9A96E] mb-1" />
+                            <span className="text-xs text-gray-500">{property.bhk}</span>
+                          </div>
+                          <div className="flex flex-col items-center justify-center text-center border-x border-gray-100">
+                            <Bath className="w-5 h-5 text-[#C9A96E] mb-1" />
+                            <span className="text-xs text-gray-500">{property.baths} Baths</span>
+                          </div>
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <Square className="w-5 h-5 text-[#C9A96E] mb-1" />
+                            <span className="text-xs text-gray-500">{property.area}</span>
+                          </div>
                         </div>
                       </div>
-                    </motion.div>
-                  </Link>
-                ))}
-              </div>
-            )}
 
-            {visibleCount < filteredProperties.length && (
-              <div className="mt-10 flex justify-center">
-                <button 
-                  onClick={() => setVisibleCount(prev => prev + 4)}
-                  className="border border-[#0A1628] text-[#0A1628] px-8 py-3 rounded-md font-medium hover:bg-[#0A1628] hover:text-[#C9A96E] transition-colors"
-                >
-                  Load More Properties
-                </button>
-              </div>
-            )}
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                          {property.type}
+                        </span>
+                        <div className="flex gap-2">
+                          <button className="p-2 text-green-600 bg-green-50 rounded-full hover:bg-green-100 transition-colors">
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+                          <Link 
+                            href={`/properties/${property.slug}`}
+                            className="px-4 py-2 bg-[#0A1628] text-white text-sm font-medium rounded-lg hover:bg-[#0A1628]/90 transition-colors"
+                          >
+                            View Details
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Pagination */}
+          <div className="flex justify-center mt-12">
+            <button className="px-8 py-3 border border-[#0A1628] text-[#0A1628] font-medium rounded-lg hover:bg-[#0A1628] hover:text-white transition-colors">
+              Load More Properties
+            </button>
           </div>
+
         </div>
       </div>
     </div>
