@@ -27,7 +27,7 @@ const BUDGET_OPTIONS = [
   { label: "₹2.5 Cr+ Luxury", min: 25000000, max: 100000000 },
 ];
 
-export default function SearchEngine99Acres() {
+export default function ShreeniwasSearchEngine() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'buy' | 'rent' | 'commercial' | 'plots' | 'pg'>('buy');
   const [selectedCity, setSelectedCity] = useState("Jaipur");

@@ -68,22 +68,7 @@ export default function LoginPage() {
 
       // 2. Check local registered user database (if Supabase user is freshly created locally or offline)
       const rawRegisteredUsers = localStorage.getItem("shreeniwas_registered_users");
-      const registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [
-        {
-          name: "Demo User",
-          email: "demo@shreeniwasproperties.com",
-          password: "DemoUser@123",
-          role: "Property Seeker",
-          phone: "+91 98765 43210"
-        },
-        {
-          name: "Admin User",
-          email: "admin@shreeniwasproperties.com",
-          password: "AdminPass@123",
-          role: "Property Owner",
-          phone: "+91 99999 88888"
-        }
-      ];
+      const registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [];
 
       const matchingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === trimmedEmail);
 

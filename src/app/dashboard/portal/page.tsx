@@ -73,7 +73,8 @@ const MOCK_VIP_VISITS = [
 export default function UserProfileDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'favorites' | 'visits' | 'profile' | 'notifications'>('favorites');
-  const [savedList, setSavedList] = useState(MOCK_SAVED_PROPERTIES);
+  const [savedList, setSavedList] = useState<any[]>([]);
+  const [vipVisits, setVipVisits] = useState<any[]>([]);
   const [userSession, setUserSession] = useState<{
     name: string;
     email: string;
@@ -93,6 +94,25 @@ export default function UserProfileDashboard() {
         const parsed = JSON.parse(session);
         if (parsed && parsed.loggedIn) {
           setUserSession(parsed);
+
+          // Load user-specific favorites (starts empty [] for new users)
+          const userFavsKey = `shreeniwas_saved_favorites_${parsed.email}`;
+          const storedFavs = localStorage.getItem(userFavsKey);
+          if (storedFavs) {
+            try { setSavedList(JSON.parse(storedFavs)); } catch (e) { setSavedList([]); }
+          } else {
+            setSavedList([]);
+          }
+
+          // Load user-specific VIP site visits (starts empty [] for new users)
+          const userVisitsKey = `shreeniwas_vip_visits_${parsed.email}`;
+          const storedVisits = localStorage.getItem(userVisitsKey);
+          if (storedVisits) {
+            try { setVipVisits(JSON.parse(storedVisits)); } catch (e) { setVipVisits([]); }
+          } else {
+            setVipVisits([]);
+          }
+
           setLoading(false);
           return;
         }
@@ -110,7 +130,11 @@ export default function UserProfileDashboard() {
   };
 
   const removeFavorite = (id: string) => {
-    setSavedList(prev => prev.filter(item => item.id !== id));
+    const updated = savedList.filter(item => item.id !== id);
+    setSavedList(updated);
+    if (userSession?.email) {
+      localStorage.setItem(`shreeniwas_saved_favorites_${userSession.email}`, JSON.stringify(updated));
+    }
   };
 
   if (loading || !userSession) {
@@ -269,45 +293,58 @@ export default function UserProfileDashboard() {
               <p className="text-xs text-slate-500">Guaranteed dedicated cab walkthroughs and paperwork verification</p>
             </div>
 
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto no-scrollbar">
-                <table className="w-full text-left border-collapse min-w-[650px]">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                      <th className="p-4 pl-6">Visit ID</th>
-                      <th className="p-4">Property</th>
-                      <th className="p-4">Date & Time</th>
-                      <th className="p-4">Assigned Agent</th>
-                      <th className="p-4">Fee Status</th>
-                      <th className="p-4 text-right pr-6">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs">
-                    {MOCK_VIP_VISITS.map((visit) => (
-                      <tr key={visit.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="p-4 pl-6 font-mono font-bold text-slate-500">{visit.id}</td>
-                        <td className="p-4">
-                          <p className="font-bold text-[#0A1628]">{visit.property}</p>
-                          <p className="text-[10px] text-slate-400">{visit.location}</p>
-                        </td>
-                        <td className="p-4 font-semibold text-slate-700">{visit.date}</td>
-                        <td className="p-4 font-medium text-slate-800">{visit.agent}</td>
-                        <td className="p-4">
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#C9A96E]/15 text-[#0A1628] border border-[#C9A96E]/30">
-                            {visit.fee}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right pr-6">
-                          <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                            {visit.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {vipVisits.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm max-w-md mx-auto my-8">
+                <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <h4 className="text-lg font-serif font-bold text-[#0A1628]">No VIP Visits Scheduled Yet</h4>
+                <p className="text-xs text-slate-500 mt-1 mb-6">Book a ₹499 VIP site visit for any property to schedule your dedicated cab walkthrough.</p>
+                <Link href="/properties">
+                  <button className="px-6 py-3 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow-md cursor-pointer">
+                    Browse Properties & Schedule
+                  </button>
+                </Link>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[650px]">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                        <th className="p-4 pl-6">Visit ID</th>
+                        <th className="p-4">Property</th>
+                        <th className="p-4">Date & Time</th>
+                        <th className="p-4">Assigned Agent</th>
+                        <th className="p-4">Fee Status</th>
+                        <th className="p-4 text-right pr-6">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {vipVisits.map((visit) => (
+                        <tr key={visit.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="p-4 pl-6 font-mono font-bold text-slate-500">{visit.id}</td>
+                          <td className="p-4">
+                            <p className="font-bold text-[#0A1628]">{visit.property}</p>
+                            <p className="text-[10px] text-slate-400">{visit.location}</p>
+                          </td>
+                          <td className="p-4 font-semibold text-slate-700">{visit.date}</td>
+                          <td className="p-4 font-medium text-slate-800">{visit.agent}</td>
+                          <td className="p-4">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#C9A96E]/15 text-[#0A1628] border border-[#C9A96E]/30">
+                              {visit.fee}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right pr-6">
+                            <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              {visit.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

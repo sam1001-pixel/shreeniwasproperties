@@ -26,10 +26,10 @@ const PROPERTIES = [
 ];
 
 const USERS = [
-  { id: 1, name: "Rahul Sharma", role: "Agent", email: "rahul@example.com", status: "Verified" },
-  { id: 2, name: "Priya Singh", role: "Landlord", email: "priya@example.com", status: "Pending" },
-  { id: 3, name: "Amit Kumar", role: "Seeker", email: "amit@example.com", status: "Verified" },
-  { id: 4, name: "Neha Verma", role: "Agent", email: "neha@example.com", status: "Verified" },
+  { id: 1, name: "Rahul Sharma", role: "Agent", email: "rahul@shreeniwasproperties.com", status: "Verified" },
+  { id: 2, name: "Priya Singh", role: "Landlord", email: "priya@shreeniwasproperties.com", status: "Pending" },
+  { id: 3, name: "Amit Kumar", role: "Seeker", email: "amit@shreeniwasproperties.com", status: "Verified" },
+  { id: 4, name: "Neha Verma", role: "Agent", email: "neha@shreeniwasproperties.com", status: "Verified" },
 ];
 
 const INQUIRIES = [

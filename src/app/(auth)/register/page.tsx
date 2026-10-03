@@ -46,22 +46,7 @@ export default function RegisterPage() {
 
     // Check existing registered users
     const rawRegisteredUsers = localStorage.getItem("shreeniwas_registered_users");
-    let registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [
-      {
-        name: "Demo User",
-        email: "demo@shreeniwasproperties.com",
-        password: "DemoUser@123",
-        role: "Property Seeker",
-        phone: "+91 98765 43210"
-      },
-      {
-        name: "Admin User",
-        email: "admin@shreeniwasproperties.com",
-        password: "AdminPass@123",
-        role: "Property Owner",
-        phone: "+91 99999 88888"
-      }
-    ];
+    let registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [];
 
     const existingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === trimmedEmail);
     if (existingUser) {

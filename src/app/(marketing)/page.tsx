@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import SearchEngine99Acres from "@/components/shared/search-engine-99acres";
+import ShreeniwasSearchEngine from "@/components/shared/shreeniwas-search-engine";
 import PropertyComparison, { PropertyCompareItem } from "@/components/shared/property-comparison";
 import AmenitiesShowcase from "@/components/shared/amenities-showcase";
 
@@ -378,7 +378,7 @@ export default function MarketingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <SearchEngine99Acres />
+            <ShreeniwasSearchEngine />
           </motion.div>
         </div>
       </section>
