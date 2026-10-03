@@ -1,26 +1,169 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Playfair Display", serif;
+
+  --radius-sm: var(--radius);
+  --radius-md: calc(var(--radius) + 2px);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 6px);
 }
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #FDFBF7;
+    --foreground: #1A1A2E;
+    --card: #FFFFFF;
+    --card-foreground: #1A1A2E;
+    --popover: #FFFFFF;
+    --popover-foreground: #1A1A2E;
+    --primary: #0A1628;
+    --primary-foreground: #FDFBF7;
+    --secondary: #C9A96E;
+    --secondary-foreground: #FDFBF7;
+    --muted: #F1ECE4;
+    --muted-foreground: #737373;
+    --accent: #C9A96E;
+    --accent-foreground: #FDFBF7;
+    --destructive: #ef4444;
+    --destructive-foreground: #FDFBF7;
+    --border: #E5DDD0;
+    --input: #E5DDD0;
+    --ring: #0A1628;
+    --radius: 0.5rem;
+    --chart-1: #0A1628;
+    --chart-2: #C9A96E;
+    --chart-3: #4A5568;
+    --chart-4: #2D3748;
+    --chart-5: #1A202C;
+  }
+
+  .dark {
+    --background: #0A0A0F;
+    --foreground: #F5F5F5;
+    --card: #141420;
+    --card-foreground: #F5F5F5;
+    --popover: #141420;
+    --popover-foreground: #F5F5F5;
+    --primary: #0A1628;
+    --primary-foreground: #FDFBF7;
+    --secondary: #C9A96E;
+    --secondary-foreground: #FDFBF7;
+    --muted: #1E1E2E;
+    --muted-foreground: #A1A1AA;
+    --accent: #C9A96E;
+    --accent-foreground: #FDFBF7;
+    --destructive: #ef4444;
+    --destructive-foreground: #FDFBF7;
+    --border: #2A2A3A;
+    --input: #2A2A3A;
+    --ring: #C9A96E;
+    --chart-1: #C9A96E;
+    --chart-2: #0A1628;
+    --chart-3: #A0AEC0;
+    --chart-4: #CBD5E0;
+    --chart-5: #E2E8F0;
   }
 }
 
-body {
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .film-grain::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    z-index: 50;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Selection Color */
+::selection {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+.animate-slideUp { animation: slideUp 0.5s ease-out forwards; }
+.animate-slideDown { animation: slideDown 0.5s ease-out forwards; }
+.animate-scaleIn { animation: scaleIn 0.3s ease-out forwards; }
+.animate-shimmer {
+  background: linear-gradient(to right, var(--muted) 4%, var(--background) 25%, var(--muted) 36%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
 }
