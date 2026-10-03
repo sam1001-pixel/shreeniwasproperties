@@ -25,7 +25,14 @@ import {
   LandPlot,
   Award,
   Zap,
-  Building
+  Building,
+  Check,
+  Calendar,
+  KeyRound,
+  FileCheck,
+  Quote,
+  Clock,
+  BookOpen
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,7 +40,7 @@ import SearchEngine99Acres from "@/components/shared/search-engine-99acres";
 import PropertyComparison, { PropertyCompareItem } from "@/components/shared/property-comparison";
 import AmenitiesShowcase from "@/components/shared/amenities-showcase";
 
-// Mock Data for Featured Properties
+// Featured Properties
 const FEATURED_PROPERTIES = [
   {
     id: 1,
@@ -141,6 +148,56 @@ const LOCALITY_PRICE_TRENDS = [
   { name: "Fatehpura", city: "Udaipur", avgPrice: "₹7,200", growth: "+16.1%", type: "Lake View", count: "95+ Properties" },
   { name: "Ratanada", city: "Jodhpur", avgPrice: "₹5,400", growth: "+11.0%", type: "Heritage & Villas", count: "140+ Properties" },
   { name: "Panchsheel Nagar", city: "Ajmer", avgPrice: "₹3,600", growth: "+8.4%", type: "Affordable", count: "80+ Properties" },
+];
+
+// Market Insights & Blog Articles
+const BLOG_POSTS = [
+  {
+    id: 1,
+    slug: "top-10-investment-locations-jaipur-2024",
+    title: "Top 10 High-Return Property Investment Hotspots in Jaipur",
+    category: "Market Trends",
+    date: "Oct 12, 2024",
+    readTime: "5 min read",
+    excerpt: "Discover why Mansarovar Extension and Jagatpura are yielding up to 14.2% annual capital appreciation.",
+    image: "https://images.unsplash.com/photo-1599661559886-41b80c541b00?q=80&w=600"
+  },
+  {
+    id: 2,
+    slug: "understanding-rera-guidelines-rajasthan",
+    title: "Complete Guide to RERA Guidelines & Buyer Safety in Rajasthan",
+    category: "Legal & RERA",
+    date: "Oct 08, 2024",
+    readTime: "7 min read",
+    excerpt: "Everything you need to verify before handing over down payments for under-construction flats.",
+    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600"
+  },
+  {
+    id: 3,
+    slug: "vastu-tips-for-luxury-villas",
+    title: "Essential Vastu Shastra Guidelines for Buying Luxury Villas in Udaipur",
+    category: "Architecture & Vastu",
+    date: "Oct 02, 2024",
+    readTime: "4 min read",
+    excerpt: "How East-facing entrances and north-east water bodies enhance prosperity and peace.",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600"
+  }
+];
+
+// Testimonials Data
+const TESTIMONIALS = [
+  {
+    name: "Dr. Alok & Sunita Mehta",
+    role: "Villa Buyers in Jaipur",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200",
+    quote: "Shreeniwas Properties made buying our 4 BHK villa in Vaishali Nagar effortless. The VIP site visit with guaranteed cab pickup and RERA title checks gave us 100% peace of mind."
+  },
+  {
+    name: "Vikramaditya Singh",
+    role: "Heritage Property Investor",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200",
+    quote: "Their team has unmatched local authority across Udaipur & Jodhpur. I found a prime lakeview commercial plot with 0% brokerage direct from owner!"
+  }
 ];
 
 // EMI Calculator Component
@@ -273,7 +330,7 @@ export default function MarketingPage() {
 
   return (
     <main className="min-h-screen bg-[#FDFBF7] text-[#0A1628]">
-      {/* 1. Hero Section with Advanced Search Engine */}
+      {/* 1. Hero Section with Search Engine */}
       <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
@@ -316,7 +373,6 @@ export default function MarketingPage() {
             </motion.p>
           </div>
 
-          {/* Advanced Search Engine Component */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -543,12 +599,76 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 5. Interactive Amenities Showcase */}
+      {/* 5. Interactive Home Buying Journey Steps */}
+      <section className="py-20 px-4 bg-slate-50 border-y border-slate-200/80">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold text-[#C9A96E] uppercase tracking-wider block mb-2">Hassle-Free Process</span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#0A1628]">Your Seamless Home Buying Journey</h2>
+            <p className="text-slate-500 text-sm mt-2 max-w-2xl mx-auto">From online search to physical cab walkthrough and key handover in 4 simple steps.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage options.", icon: Search },
+              { step: "02", title: "Schedule VIP Visit (₹499)", desc: "Book guaranteed cab pickup with senior advisor for on-site physical tour.", icon: Calendar },
+              { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of registry, land titles & encumbrance certificates.", icon: FileCheck },
+              { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive your luxury home keys.", icon: KeyRound },
+            ].map((st, idx) => (
+              <div key={idx} className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm relative group hover:border-[#C9A96E] transition-all">
+                <span className="text-3xl font-serif font-extrabold text-[#C9A96E]/40 group-hover:text-[#C9A96E] transition-colors block mb-4">
+                  {st.step}
+                </span>
+                <div className="w-12 h-12 rounded-2xl bg-[#0A1628] flex items-center justify-center text-[#C9A96E] mb-4 shadow-md">
+                  <st.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-serif font-bold text-[#0A1628] mb-2">{st.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">{st.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Interactive Amenities Showcase */}
       <section className="px-4">
         <AmenitiesShowcase />
       </section>
 
-      {/* 6. "Post Property Free" Banner */}
+      {/* 7. Verified Buyer Testimonials */}
+      <section className="py-20 px-4 bg-white border-b border-slate-100">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold text-[#C9A96E] uppercase tracking-wider block mb-2">Verified Reviews</span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#0A1628]">What Our Buyers & Landlords Say</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {TESTIMONIALS.map((t, idx) => (
+              <div key={idx} className="bg-[#FDFBF7] p-8 rounded-3xl border border-slate-200/80 shadow-sm relative">
+                <Quote className="w-10 h-10 text-[#C9A96E]/20 absolute top-6 right-6" />
+                <div className="flex items-center gap-1 text-amber-500 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed font-normal mb-6">"{t.quote}"</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full overflow-hidden relative border-2 border-[#C9A96E]">
+                    <Image src={t.image} alt={t.name} fill className="object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-[#0A1628] text-base">{t.name}</h4>
+                    <p className="text-xs text-slate-500">{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 8. "Post Property Free" Banner */}
       <section className="py-16 px-4 bg-[#0A1628] text-white relative overflow-hidden">
         <div className="absolute right-0 top-0 w-96 h-96 bg-[#C9A96E]/10 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="container mx-auto max-w-6xl relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 bg-white/5 border border-white/10 p-8 sm:p-12 rounded-3xl backdrop-blur-xl">
@@ -579,7 +699,62 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 7. Interactive EMI / Mortgage Calculator */}
+      {/* 9. Latest News & Market Insights Blog Section (Positioned at bottom before EMI/Footer) */}
+      <section className="py-20 px-4 bg-white border-b border-slate-100">
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A96E]/10 text-[#0A1628] border border-[#C9A96E]/30 text-xs font-bold uppercase tracking-wider mb-2">
+                <BookOpen className="w-3.5 h-3.5 text-[#C9A96E]" /> Real Estate News & Guides
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#0A1628]">Rajasthan Market Insights & Guides</h2>
+              <p className="text-slate-500 text-sm mt-1">Expert analysis on property investment, RERA laws & architectural trends</p>
+            </div>
+            <Link href="/blog">
+              <span className="text-xs font-bold text-[#C9A96E] hover:underline flex items-center gap-1">
+                View All Articles <ArrowRight className="w-3.5 h-3.5" />
+              </span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {BLOG_POSTS.map((post) => (
+              <article key={post.id} className="bg-[#FDFBF7] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+                <div>
+                  <div className="relative aspect-[16/10] overflow-hidden p-2">
+                    <div className="relative h-full w-full rounded-2xl overflow-hidden">
+                      <Image src={post.image} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <span className="absolute top-3 left-3 bg-white/95 backdrop-blur text-[#0A1628] text-[10px] font-bold px-2.5 py-1 rounded-full shadow">
+                        {post.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6 pt-2">
+                    <div className="flex items-center gap-3 text-xs text-slate-400 mb-2">
+                      <span>{post.date}</span> • <span>{post.readTime}</span>
+                    </div>
+                    <h3 className="text-lg font-serif font-bold text-[#0A1628] mb-2 line-clamp-2 group-hover:text-[#C9A96E] transition-colors leading-snug">
+                      {post.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 line-clamp-2 font-normal leading-relaxed">{post.excerpt}</p>
+                  </div>
+                </div>
+
+                <div className="p-6 pt-0">
+                  <Link href={`/blog/${post.slug}`}>
+                    <span className="text-xs font-bold text-[#0A1628] hover:text-[#C9A96E] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      Read Full Article <ArrowRight className="w-3.5 h-3.5 text-[#C9A96E]" />
+                    </span>
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 10. Interactive EMI / Mortgage Calculator */}
       <section className="py-16 sm:py-24 px-4 bg-slate-50">
         <div className="container mx-auto">
           <EMICalculator />

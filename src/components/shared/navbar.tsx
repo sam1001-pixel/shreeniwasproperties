@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, MessageCircle, Heart, User, Building2, PlusCircle } from 'lucide-react';
+import { Menu, X, Heart, User, Building2, PlusCircle, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mainNav } from '@/config/nav';
-import { siteConfig } from '@/config/site';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
   const pathname = usePathname();
 
   useEffect(() => {
@@ -19,8 +20,21 @@ export function Navbar() {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+
+    // Check user session
+    const session = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
+    if (session) {
+      try {
+        const parsed = JSON.parse(session);
+        if (parsed?.loggedIn) {
+          setIsLoggedIn(true);
+          setUserName(parsed.name || 'User');
+        }
+      } catch (e) {}
+    }
+
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
 
   return (
     <>
@@ -28,14 +42,14 @@ export function Navbar() {
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
           scrolled
-            ? 'bg-white/90 dark:bg-[#0A1628]/90 backdrop-blur-md shadow-md border-b border-border/40 py-2 sm:py-3'
-            : 'bg-white/70 dark:bg-[#0A1628]/70 backdrop-blur-sm py-3 sm:py-4'
+            ? 'bg-white/95 shadow-md border-b border-slate-200/80 py-2 sm:py-3'
+            : 'bg-white/90 backdrop-blur-md py-3 sm:py-4 border-b border-slate-100'
         )}
       >
         <div className="h-16 sm:h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group whitespace-nowrap">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors shrink-0 shadow-sm">
               <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9A96E]" />
             </div>
             <div className="flex flex-col">
@@ -43,7 +57,7 @@ export function Navbar() {
                 <span className="text-lg sm:text-xl font-serif font-bold text-[#C9A96E]">
                   Shreeniwas
                 </span>
-                <span className="text-lg sm:text-xl font-bold text-[#0A1628] dark:text-white">
+                <span className="text-lg sm:text-xl font-bold text-[#0A1628]">
                   Properties
                 </span>
               </div>
@@ -60,8 +74,8 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-sm font-medium transition-colors relative py-1",
-                    isActive ? "text-[#C9A96E] font-semibold" : "text-[#0A1628]/80 dark:text-white/80 hover:text-[#C9A96E]"
+                    "text-sm font-semibold transition-colors relative py-1",
+                    isActive ? "text-[#C9A96E]" : "text-[#0A1628] hover:text-[#C9A96E]"
                   )}
                 >
                   {item.title}
@@ -76,40 +90,44 @@ export function Navbar() {
           {/* Right Side Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              href="/dashboard/portal/saved"
-              className="hidden sm:flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-[#C9A96E] p-2 rounded-full hover:bg-slate-100 transition-colors"
-              title="Saved Properties"
+              href="/dashboard/portal"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-[#0A1628] hover:text-[#C9A96E] p-2 rounded-xl hover:bg-slate-100 transition-colors"
+              title="View Saved Favorites"
             >
-              <Heart className="w-5 h-5 text-rose-500" />
+              <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+              <span>Saved</span>
             </Link>
 
-            <Link
-              href="/login"
-              className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-[#0A1628] hover:text-[#C9A96E] px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <User className="w-4 h-4" />
-              Sign In
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href="/dashboard/portal"
+                className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0A1628] text-[#C9A96E] font-bold text-xs shadow-md"
+              >
+                <div className="w-5 h-5 rounded-full bg-[#C9A96E] text-[#0A1628] flex items-center justify-center font-bold text-[10px]">
+                  {userName.charAt(0)}
+                </div>
+                <span>{userName}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-[#0A1628] bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition-all border border-slate-200"
+              >
+                <User className="w-4 h-4 text-[#C9A96E]" />
+                Sign In
+              </Link>
+            )}
 
             <Link
               href="/dashboard/landlord/properties/new"
-              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-[#C9A96E] px-5 py-2.5 text-sm font-semibold text-[#0A1628] shadow-md shadow-[#C9A96E]/20 transition-all hover:bg-[#b59760] hover:scale-105 active:scale-95"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-[#C9A96E] hover:bg-[#b59760] px-4 py-2.5 text-xs font-extrabold text-[#0A1628] shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>List Property</span>
+              <span>Post Free Listing</span>
             </Link>
-            
-            {/* Mobile quick list button */}
-            <Link
-              href="/dashboard/landlord/properties/new"
-              className="sm:hidden inline-flex items-center gap-1 rounded-full bg-[#C9A96E] px-3 py-1.5 text-xs font-semibold text-[#0A1628]"
-            >
-              <PlusCircle className="w-3 h-3" />
-              <span>List</span>
-            </Link>
-            
+
             <button
-              className="lg:hidden p-2 text-slate-800 dark:text-white rounded-lg hover:bg-slate-100 transition-colors"
+              className="lg:hidden p-2 text-[#0A1628] rounded-xl hover:bg-slate-100 transition-colors"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open menu"
             >
@@ -127,7 +145,7 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '-10%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-50 bg-[#0A1628]/95 backdrop-blur-xl text-white flex flex-col p-6 h-[100dvh] overflow-y-auto"
+            className="fixed inset-0 z-50 bg-[#0A1628] text-white flex flex-col p-6 h-[100dvh] overflow-y-auto"
           >
             <div className="flex-1">
               <div className="flex items-center justify-between pb-6 border-b border-white/10">
@@ -153,66 +171,37 @@ export function Navbar() {
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        "flex items-center min-h-[48px] px-4 text-lg font-medium rounded-xl transition-colors",
-                        isActive ? "bg-white/10 text-[#C9A96E]" : "text-white/90 hover:bg-white/5 hover:text-[#C9A96E]"
+                        "py-3 px-4 rounded-xl text-base font-medium transition-colors flex items-center justify-between",
+                        isActive ? "bg-[#C9A96E]/20 text-[#C9A96E] font-bold border border-[#C9A96E]/30" : "text-slate-300 hover:bg-white/5 hover:text-white"
                       )}
                     >
-                      {item.title}
+                      <span>{item.title}</span>
                     </Link>
-                  )
+                  );
                 })}
               </nav>
-            </div>
 
-            <div className="mt-auto pt-6 flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="mt-8 space-y-3 pt-6 border-t border-white/10">
                 <Link
-                  href="/login"
+                  href="/dashboard/portal"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 py-3 px-4 bg-white/10 rounded-xl text-white font-medium hover:bg-white/20 transition-colors min-h-[48px]"
+                  className="w-full py-3 bg-white/10 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"
                 >
-                  <User className="w-4 h-4" />
-                  Sign In
+                  <User className="w-4 h-4 text-[#C9A96E]" /> My Profile & Saved Favorites
                 </Link>
+
                 <Link
-                  href="/dashboard/portal/saved"
+                  href="/dashboard/landlord/properties/new"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 py-3 px-4 bg-white/10 rounded-xl text-white font-medium hover:bg-white/20 transition-colors min-h-[48px]"
+                  className="w-full py-3 bg-[#C9A96E] text-[#0A1628] font-extrabold text-sm rounded-xl flex items-center justify-center gap-2"
                 >
-                  <Heart className="w-4 h-4 text-rose-500" />
-                  Saved
+                  <PlusCircle className="w-4 h-4" /> Post Free Property Listing
                 </Link>
               </div>
-              <Link
-                href="/dashboard/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-white/10 rounded-xl text-white font-medium hover:bg-white/20 transition-colors min-h-[48px]"
-              >
-                Admin Panel
-              </Link>
-              <Link
-                href="/dashboard/landlord/properties/new"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-3.5 px-4 bg-[#C9A96E] text-[#0A1628] font-bold rounded-xl shadow-lg min-h-[48px]"
-              >
-                <PlusCircle className="w-5 h-5" />
-                List Your Property
-              </Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* WhatsApp Floating Button */}
-      <a
-        href={siteConfig?.links?.whatsapp || 'https://wa.me/919999999999'}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-xl transition-all hover:scale-110 hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300"
-        aria-label="Chat on WhatsApp"
-      >
-        <MessageCircle className="h-7 w-7" />
-      </a>
     </>
   );
 }

@@ -2,101 +2,181 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Building2, ShieldCheck, Mail, Lock, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"seeker" | "owner">("seeker");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const userSession = {
+      name: email.split('@')[0] || "Vikram Sharma",
+      email: email || "user@shreeniwas.com",
+      role: role === "seeker" ? "Property Seeker" : "Property Owner",
+      phone: "+91 98765 43210",
+      city: "Jaipur, Rajasthan",
+      savedCount: 5,
+      visitCount: 2,
+      loggedIn: true,
+      memberSince: "Oct 2024"
+    };
+
+    localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+    sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+
+    setTimeout(() => {
+      setLoading(false);
+      router.push("/dashboard/portal");
+    }, 600);
+  };
+
+  const handleQuickDemoLogin = () => {
+    setEmail("demo@shreeniwasproperties.com");
+    setPassword("demo123");
+    
+    const userSession = {
+      name: "Rahul Verma",
+      email: "demo@shreeniwasproperties.com",
+      role: "Property Seeker",
+      phone: "+91 99887 76655",
+      city: "Jaipur, Rajasthan",
+      savedCount: 6,
+      visitCount: 2,
+      loggedIn: true,
+      memberSince: "Oct 2024"
+    };
+
+    localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+    sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
+
+    setTimeout(() => {
+      router.push("/dashboard/portal");
+    }, 400);
+  };
 
   return (
-    <main className="min-h-screen bg-[#0A1628] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" 
-           style={{ backgroundImage: 'linear-gradient(#C9A96E 1px, transparent 1px), linear-gradient(90deg, #C9A96E 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
-      </div>
-      
-      <div className="w-full max-w-md mx-4 relative z-10">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center space-x-2 text-white mb-6">
-            <Building2 className="w-8 h-8 text-[#C9A96E]" />
-            <span className="text-2xl font-serif font-bold">Shreeniwas</span>
+    <main className="min-h-screen bg-[#0A1628] flex items-center justify-center p-4 relative overflow-hidden py-16">
+      {/* Background Glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#C9A96E]/10 blur-[140px] rounded-full pointer-events-none"></div>
+
+      <div className="w-full max-w-md mx-auto relative z-10">
+        <div className="text-center mb-6">
+          <Link href="/" className="inline-flex items-center justify-center space-x-2 text-white mb-4 group">
+            <div className="w-10 h-10 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E] shadow-md">
+              <Building2 className="w-5 h-5 text-[#C9A96E]" />
+            </div>
+            <span className="text-2xl font-serif font-bold text-[#C9A96E]">Shreeniwas Properties</span>
           </Link>
-          <h1 className="text-3xl font-serif text-white mb-2">Welcome Back</h1>
-          <p className="text-gray-400">Sign in to access your exclusive portal</p>
+          <h1 className="text-3xl font-serif font-bold text-white mb-1">User Sign In</h1>
+          <p className="text-slate-300 text-sm">Access your saved properties, profile & VIP visits</p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
-          {/* Role Toggle */}
-          <div className="flex p-1 bg-black/20 rounded-lg mb-8">
+        {/* High Contrast Pure White Card */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 text-[#0A1628]">
+          {/* Role Selector */}
+          <div className="flex p-1 bg-slate-100 rounded-xl mb-6 border border-slate-200">
             <button 
+              type="button"
               onClick={() => setRole("seeker")}
-              className={`flex-1 py-2 text-base sm:text-sm font-medium rounded-md transition ${role === "seeker" ? "bg-[#C9A96E] text-white shadow-sm" : "text-gray-400 hover:text-white"}`}
+              className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${role === "seeker" ? "bg-[#0A1628] text-[#C9A96E] shadow-md" : "text-slate-600 hover:text-slate-900"}`}
             >
               Property Seeker
             </button>
             <button 
+              type="button"
               onClick={() => setRole("owner")}
-              className={`flex-1 py-2 text-base sm:text-sm font-medium rounded-md transition ${role === "owner" ? "bg-[#C9A96E] text-white shadow-sm" : "text-gray-400 hover:text-white"}`}
+              className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${role === "owner" ? "bg-[#0A1628] text-[#C9A96E] shadow-md" : "text-slate-600 hover:text-slate-900"}`}
             >
               Property Owner
             </button>
           </div>
 
-          <form className="space-y-5">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-base sm:text-sm font-medium text-gray-300 block mb-2">Email Address</label>
-              <input 
-                type="email" 
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
-                placeholder="Enter your email"
-              />
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1">Email Address</label>
+              <div className="relative">
+                <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] placeholder-slate-400 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white transition-all"
+                  placeholder="name@example.com"
+                />
+              </div>
             </div>
             
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-base sm:text-sm font-medium text-gray-300">Password</label>
-                <Link href="#" className="text-base sm:text-sm text-[#C9A96E] hover:text-white transition">Forgot?</Link>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Password</label>
+                <Link href="#" className="text-xs font-bold text-[#C9A96E] hover:underline">Forgot?</Link>
               </div>
               <div className="relative">
+                <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input 
-                  type={showPassword ? "text" : "password"} 
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
-                  placeholder="Enter your password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] placeholder-slate-400 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white transition-all"
+                  placeholder="••••••••"
                 />
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-gray-400 hover:text-white transition"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            <button type="submit" className="w-full py-3 bg-[#C9A96E] text-white rounded-lg font-medium hover:bg-[#b89a61] transition mt-2">
-              Sign In
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full py-3.5 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] font-bold text-sm rounded-xl transition-all shadow-lg shadow-[#0A1628]/20 flex items-center justify-center gap-2 cursor-pointer border border-[#C9A96E]/30"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-[#C9A96E]/30 border-t-[#C9A96E] rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4" />
+                  Sign In to Account
+                </>
+              )}
             </button>
           </form>
 
-          <div className="mt-8 flex items-center space-x-4">
-            <div className="flex-1 h-px bg-white/10"></div>
-            <span className="text-xs text-gray-500 uppercase tracking-wider">Or continue with</span>
-            <div className="flex-1 h-px bg-white/10"></div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button className="flex items-center justify-center space-x-2 py-2.5 border border-white/10 rounded-lg text-base sm:text-sm text-gray-300 hover:bg-white/5 transition">
-              <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-              <span>Google</span>
-            </button>
-            <button className="flex items-center justify-center space-x-2 py-2.5 border border-white/10 rounded-lg text-base sm:text-sm text-gray-300 hover:bg-white/5 transition">
-              <span>OTP Login</span>
+          {/* Quick Demo Login Option */}
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={handleQuickDemoLogin}
+              className="w-full py-2.5 bg-[#C9A96E]/10 hover:bg-[#C9A96E]/20 text-[#0A1628] border border-[#C9A96E]/40 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#C9A96E]" />
+              1-Click Demo Sign In (Instant Access)
             </button>
           </div>
 
-          <p className="mt-8 text-center text-base sm:text-sm text-gray-400">
-            Don't have an account? <Link href="/register" className="text-[#C9A96E] hover:text-white transition">Register now</Link>
+          <p className="mt-6 text-center text-xs text-slate-600 font-medium">
+            Don't have an account? <Link href="/register" className="text-[#C9A96E] font-bold hover:underline">Create Account Free</Link>
           </p>
+        </div>
+
+        <div className="mt-6 text-center">
+          <Link href="/" className="text-xs text-slate-400 hover:text-[#C9A96E] transition-colors">
+            ← Back to Homepage
+          </Link>
         </div>
       </div>
     </main>
