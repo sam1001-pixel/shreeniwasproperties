@@ -8,7 +8,7 @@ import {
   BedDouble, Bath, Square, Car, Shield, Wifi, 
   Trees, Phone, MessageSquare, Building2, ImageIcon, Video, Home, Crown, CreditCard, ChevronLeft,
   Clock, ShieldCheck, Zap, Compass, Navigation, School, Stethoscope, Plane, Train, Sparkles, Check,
-  AlertCircle
+  AlertCircle, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -216,7 +216,8 @@ export default function PropertyDetailPage() {
             ],
             images: match.image ? [match.image] : [
               'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200'
-            ]
+            ],
+            googleMapsUrl: match.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${match.title} ${match.location}`)}`
           });
           return;
         }
@@ -383,9 +384,24 @@ export default function PropertyDetailPage() {
               )}
             </div>
             <h1 className="text-2xl md:text-4xl font-serif font-bold text-[#0A1628] mb-2">{property.title}</h1>
-            <p className="text-slate-600 flex items-center gap-1.5 text-sm md:text-base">
-              <MapPin className="w-4 h-4 text-[#C9A96E]" /> {property.location} • <span className="text-emerald-700 font-semibold">{property.status}</span>
-            </p>
+            <div className="flex flex-wrap items-center gap-2 text-slate-600 text-sm md:text-base">
+              <span className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-[#C9A96E]" /> {property.location}
+              </span>
+              <span>•</span>
+              <span className="text-emerald-700 font-semibold">{property.status}</span>
+              <span>•</span>
+              <a
+                href={property.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.title} ${property.location}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200 transition-colors"
+                title="Open location in Google Maps"
+              >
+                <span>📍 Map Location</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
 
           <div className="flex md:flex-col items-baseline md:items-end justify-between w-full md:w-auto pt-4 md:pt-0 border-t border-slate-200 md:border-none">
@@ -422,11 +438,23 @@ export default function PropertyDetailPage() {
               <p className="text-sm md:text-base text-slate-600 leading-relaxed">{property.description}</p>
             </section>
 
-            {/* Locality & Distance Matrix */}
+            {/* Locality & Distance Matrix with Google Maps Redirect */}
             <section id="locality" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <Navigation className="w-5 h-5 text-[#C9A96E]" />
-                <h2 className="text-xl md:text-2xl font-serif font-bold text-[#0A1628]">Locality & Nearby Highlights</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Navigation className="w-5 h-5 text-[#C9A96E]" />
+                  <h2 className="text-xl md:text-2xl font-serif font-bold text-[#0A1628]">Locality & Nearby Highlights</h2>
+                </div>
+                <a
+                  href={property.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${property.title} ${property.location}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition-all shadow-sm group"
+                >
+                  <MapPin className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+                  <span>View on Google Maps / Directions</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                </a>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {property.nearbyHighlights?.map((item: any, idx: number) => (

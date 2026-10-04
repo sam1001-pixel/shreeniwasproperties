@@ -1,13 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Search, MapPin, Building2, Home, Briefcase, LandPlot, Users, 
-  IndianRupee, ChevronDown, Check, Sparkles, Filter 
+  IndianRupee, ChevronDown, Check, Sparkles, Filter, Navigation, LocateFixed, Loader2
 } from 'lucide-react';
+import { 
+  detectUserCityViaGPS, 
+  getSavedDetectedCity, 
+  saveDetectedCity, 
+  EVENT_NAME_LOCATION_DETECTED, 
+  RAJASTHAN_CITIES_COORDS 
+} from '@/lib/location-service';
 
-const CITIES = ["Jaipur", "Udaipur", "Jodhpur", "Kota", "Ajmer", "Bikaner", "Bhilwara"];
+const CITIES = ["Jaipur", "Udaipur", "Jodhpur", "Kota", "Ajmer", "Bikaner", "Bhilwara", "Alwar"];
 
 const POPULAR_LOCALITIES: Record<string, string[]> = {
   "Jaipur": ["Mansarovar", "Vaishali Nagar", "C-Scheme", "Malviya Nagar", "Jagatpura", "Raja Park"],
@@ -35,6 +42,48 @@ export default function ShreeniwasSearchEngine() {
   const [selectedBhk, setSelectedBhk] = useState<string[]>([]);
   const [selectedBudget, setSelectedBudget] = useState("all");
   const [postedBy, setPostedBy] = useState("all");
+  const [isLocating, setIsLocating] = useState(false);
+  const [detectedLocalityInfo, setDetectedLocalityInfo] = useState<string | null>(null);
+
+  // Auto-load previously detected or stored city
+  useEffect(() => {
+    const saved = getSavedDetectedCity();
+    if (saved && CITIES.includes(saved)) {
+      setSelectedCity(saved);
+      setDetectedLocalityInfo(`Auto-set from location: ${saved}`);
+    }
+
+    const handleLocationUpdate = (e: any) => {
+      if (e.detail && CITIES.includes(e.detail)) {
+        setSelectedCity(e.detail);
+        setDetectedLocalityInfo(`Updated: ${e.detail}`);
+      }
+    };
+
+    window.addEventListener(EVENT_NAME_LOCATION_DETECTED, handleLocationUpdate);
+    return () => {
+      window.removeEventListener(EVENT_NAME_LOCATION_DETECTED, handleLocationUpdate);
+    };
+  }, []);
+
+  const handleDetectGPS = async () => {
+    setIsLocating(true);
+    setDetectedLocalityInfo('Locating nearest Rajasthan hub...');
+    try {
+      const res = await detectUserCityViaGPS();
+      if (res.success && res.cityName) {
+        setSelectedCity(res.cityName);
+        setSelectedLocality("");
+        setDetectedLocalityInfo(`📍 Detected: ${res.cityName} (${res.distanceKm || 0}km away)`);
+      } else {
+        setDetectedLocalityInfo(res.error || 'Using default: Jaipur');
+      }
+    } catch (err) {
+      setDetectedLocalityInfo('Could not access GPS');
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
   const tabs = [
     { id: 'buy', label: 'Buy', icon: Building2 },
@@ -86,9 +135,30 @@ export default function ShreeniwasSearchEngine() {
 
       {/* Main Search Controls */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center">
-        {/* City Dropdown */}
-        <div className="md:col-span-3 relative">
-          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Select City</label>
+        {/* City Dropdown with GPS Button */}
+        <div className="md:col-span-4 relative">
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Select City</label>
+            <button
+              type="button"
+              onClick={handleDetectGPS}
+              disabled={isLocating}
+              className="text-[11px] font-bold text-[#C9A96E] hover:text-[#0A1628] flex items-center gap-1 transition-colors cursor-pointer"
+              title="Detect closest Rajasthan city automatically using your GPS"
+            >
+              {isLocating ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin text-[#C9A96E]" />
+                  <span>Locating...</span>
+                </>
+              ) : (
+                <>
+                  <LocateFixed className="w-3 h-3 text-[#C9A96E]" />
+                  <span>📍 GPS Near Me</span>
+                </>
+              )}
+            </button>
+          </div>
           <div className="relative">
             <MapPin className="w-4 h-4 text-[#C9A96E] absolute left-3 top-1/2 -translate-y-1/2" />
             <select
@@ -96,6 +166,7 @@ export default function ShreeniwasSearchEngine() {
               onChange={(e) => {
                 setSelectedCity(e.target.value);
                 setSelectedLocality("");
+                saveDetectedCity(e.target.value);
               }}
               className="w-full pl-9 pr-8 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E] appearance-none cursor-pointer"
             >
@@ -105,10 +176,15 @@ export default function ShreeniwasSearchEngine() {
             </select>
             <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+          {detectedLocalityInfo && (
+            <p className="text-[10px] text-emerald-700 font-medium mt-1 truncate flex items-center gap-1">
+              {detectedLocalityInfo}
+            </p>
+          )}
         </div>
 
         {/* Locality Search & Pills */}
-        <div className="md:col-span-5 relative">
+        <div className="md:col-span-4 relative">
           <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Locality / Landmark</label>
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />

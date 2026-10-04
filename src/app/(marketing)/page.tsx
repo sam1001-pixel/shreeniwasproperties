@@ -42,6 +42,7 @@ import ShreeniwasSearchEngine from "@/components/shared/shreeniwas-search-engine
 import PropertyComparison, { PropertyCompareItem } from "@/components/shared/property-comparison";
 import AmenitiesShowcase from "@/components/shared/amenities-showcase";
 import OwnerReelsFeed from "@/components/shared/owner-reels-feed";
+import NewProjectsSection from "@/components/shared/new-projects-section";
 
 // Featured Properties
 const FEATURED_PROPERTIES = [
@@ -817,7 +818,10 @@ export default function MarketingPage() {
       </div>
     </section>
 
-      {/* 5. "Post Property Free" Banner */}
+      {/* 5. 99acres-Style Builder Projects & Townships Section */}
+      <NewProjectsSection />
+
+      {/* 6. "Post Property Free" Banner */}
       <section className="py-10 px-4 bg-[#0A1628] text-white relative overflow-hidden">
         <div className="container mx-auto max-w-5xl relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/5 border border-white/10 p-6 sm:p-8 rounded-2xl backdrop-blur-xl">
           <div className="max-w-lg">

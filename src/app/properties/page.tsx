@@ -6,11 +6,17 @@ import Link from 'next/link';
 import { 
   Search, MapPin, Filter, Grid, List, 
   Heart, CheckCircle2, MessageSquare, X, BedDouble, Bath, Square,
-  ShieldCheck, Zap, Scale, ArrowRight, IndianRupee, Compass, Building2, ChevronDown, Sparkles, RefreshCw
+  ShieldCheck, Zap, Scale, ArrowRight, IndianRupee, Compass, Building2, ChevronDown, Sparkles, RefreshCw, LocateFixed, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PropertyComparison, { PropertyCompareItem } from '@/components/shared/property-comparison';
 import AmenitiesShowcase from '@/components/shared/amenities-showcase';
+import { 
+  detectUserCityViaGPS, 
+  getSavedDetectedCity, 
+  saveDetectedCity, 
+  EVENT_NAME_LOCATION_DETECTED 
+} from '@/lib/location-service';
 
 const CITIES = ["All Cities", "Jaipur", "Udaipur", "Jodhpur", "Kota", "Ajmer", "Bikaner", "Bhilwara", "Alwar"];
 const PROPERTY_TYPES = ["All Types", "Luxury Villa", "Apartment", "Penthouse", "Heritage Haveli", "Commercial Office", "Plot / Land"];
@@ -204,12 +210,21 @@ function PropertiesContent() {
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [compareItems, setCompareItems] = useState<PropertyCompareItem[]>([]);
   const [propertiesList, setPropertiesList] = useState<any[]>(MOCK_PROPERTIES);
+  const [isLocating, setIsLocating] = useState(false);
+  const [detectedNote, setDetectedNote] = useState<string | null>(null);
 
-  // Initialize filters from URL search params
+  // Initialize filters from URL search params or detected GPS
   useEffect(() => {
     const cityParam = searchParams.get('city');
     if (cityParam && CITIES.includes(cityParam)) {
       setSelectedCity(cityParam);
+    } else {
+      // Default from saved GPS detection if no param in URL
+      const saved = getSavedDetectedCity();
+      if (saved && CITIES.includes(saved)) {
+        setSelectedCity(saved);
+        setDetectedNote(`Filtered by your detected city: ${saved}`);
+      }
     }
 
     const localityParam = searchParams.get('locality') || searchParams.get('q');
@@ -233,7 +248,32 @@ function PropertiesContent() {
       else if (bhkParam.includes('3')) setSelectedBhk('3 BHK');
       else if (bhkParam.includes('4')) setSelectedBhk('4+ BHK');
     }
+
+    const handleLocationUpdate = (e: any) => {
+      if (e.detail && CITIES.includes(e.detail)) {
+        setSelectedCity(e.detail);
+        setDetectedNote(`Switched to: ${e.detail}`);
+      }
+    };
+
+    window.addEventListener(EVENT_NAME_LOCATION_DETECTED, handleLocationUpdate);
+    return () => {
+      window.removeEventListener(EVENT_NAME_LOCATION_DETECTED, handleLocationUpdate);
+    };
   }, [searchParams]);
+
+  const handleDetectGPS = async () => {
+    setIsLocating(true);
+    try {
+      const res = await detectUserCityViaGPS();
+      if (res.success && res.cityName && CITIES.includes(res.cityName)) {
+        setSelectedCity(res.cityName);
+        setDetectedNote(`📍 GPS: ${res.cityName} (${res.distanceKm || 0} km away)`);
+      }
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
   const loadLiveProperties = () => {
     try {
@@ -392,12 +432,33 @@ function PropertiesContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-center">
               {/* City Dropdown Selector */}
               <div className="md:col-span-3 relative">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Select City</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select City</label>
+                  <button
+                    type="button"
+                    onClick={handleDetectGPS}
+                    disabled={isLocating}
+                    className="text-[10px] font-bold text-[#C9A96E] hover:text-[#0A1628] flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Detect closest Rajasthan city via GPS"
+                  >
+                    {isLocating ? (
+                      <Loader2 className="w-3 h-3 animate-spin text-[#C9A96E]" />
+                    ) : (
+                      <LocateFixed className="w-3 h-3 text-[#C9A96E]" />
+                    )}
+                    <span>GPS</span>
+                  </button>
+                </div>
                 <div className="relative">
                   <MapPin className="w-4 h-4 text-[#C9A96E] absolute left-3 top-1/2 -translate-y-1/2" />
                   <select
                     value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedCity(e.target.value);
+                      if (e.target.value !== 'All Cities') {
+                        saveDetectedCity(e.target.value);
+                      }
+                    }}
                     className="w-full pl-9 pr-8 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E] appearance-none cursor-pointer"
                   >
                     {CITIES.map(c => (
@@ -406,6 +467,11 @@ function PropertiesContent() {
                   </select>
                   <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
+                {detectedNote && (
+                  <p className="text-[10px] text-emerald-700 font-medium mt-1 truncate">
+                    {detectedNote}
+                  </p>
+                )}
               </div>
 
               {/* Property Type Dropdown */}
