@@ -110,6 +110,9 @@ export default function AdminDashboard() {
   const [gallerySearchQuery, setGallerySearchQuery] = useState('');
   const [galleryTargetCallback, setGalleryTargetCallback] = useState<((url: string, item?: any) => void) | null>(null);
   const [newMediaForm, setNewMediaForm] = useState({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
+  const [showEditMediaModal, setShowEditMediaModal] = useState(false);
+  const [editingMedia, setEditingMedia] = useState<any | null>(null);
+  const [mediaForm, setMediaForm] = useState({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
 
   // Property Modal
   const [showPropertyModal, setShowPropertyModal] = useState(false);
@@ -507,6 +510,30 @@ export default function AdminDashboard() {
     setNewMediaForm({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
   };
 
+  const handleSaveEditMedia = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMedia || !mediaForm.title || !mediaForm.url) return;
+
+    let formattedInstaUrl = mediaForm.instaUrl.trim();
+    if (formattedInstaUrl && !formattedInstaUrl.startsWith('http://') && !formattedInstaUrl.startsWith('https://')) {
+      formattedInstaUrl = `https://${formattedInstaUrl}`;
+    }
+
+    const payload = {
+      ...mediaForm,
+      url: mediaForm.url.trim(),
+      instaUrl: formattedInstaUrl
+    };
+
+    const updated = mediaGallery.map(m => m.id === editingMedia.id ? { ...m, ...payload } : m);
+    setMediaGallery(updated);
+    localStorage.setItem('shreeniwas_media_gallery', JSON.stringify(updated));
+
+    setShowEditMediaModal(false);
+    setEditingMedia(null);
+    setMediaForm({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
+  };
+
   const handleDeleteMedia = (id: string) => {
     const updated = mediaGallery.filter(m => m.id !== id);
     setMediaGallery(updated);
@@ -535,6 +562,7 @@ export default function AdminDashboard() {
     { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
     { id: 'attendance', label: 'My Shift Attendance', icon: Clock },
     { id: 'properties', label: 'View Properties', icon: Building2 },
+    { id: 'gallery', label: 'Media & Video Gallery', icon: Camera },
   ];
 
   if (!isLoaded) {
@@ -1009,15 +1037,15 @@ export default function AdminDashboard() {
           )}
 
           {/* MEDIA & VIDEO GALLERY TAB */}
-          {activeTab === 'gallery' && adminRole === 'super' && (
+          {activeTab === 'gallery' && (
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
                   <div>
                     <h3 className="text-xl font-serif font-bold text-[#0A1628] flex items-center gap-2">
-                      <Camera className="w-5 h-5 text-[#C9A96E]" /> Media & Video Asset Gallery
+                      <Camera className="w-5 h-5 text-[#C9A96E]" /> Media & Video Asset Gallery (All Admins)
                     </h3>
-                    <p className="text-xs text-slate-500">Centralized gallery for property photos, video reel thumbnails, Instagram links, brand logos, and avatars.</p>
+                    <p className="text-xs text-slate-500">Centralized media handling for property photos, video reel thumbnails, Instagram links, brand logos, and avatars.</p>
                   </div>
 
                   <div className="flex items-center gap-2 w-full md:w-auto">
@@ -1142,15 +1170,29 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-[11px]">
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(item.url);
-                              alert("Media URL copied to clipboard!");
-                            }}
-                            className="text-slate-600 font-bold hover:text-[#0A1628] cursor-pointer"
-                          >
-                            Copy Link
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                setEditingMedia(item);
+                                setMediaForm({ title: item.title, category: item.category, type: item.type, url: item.url, instaUrl: item.instaUrl || '' });
+                                setShowEditMediaModal(true);
+                              }}
+                              className="px-2 py-1 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] font-bold rounded-lg transition cursor-pointer flex items-center gap-1"
+                              title="Edit Media Asset"
+                            >
+                              <Edit className="w-3 h-3" /> Edit
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(item.url);
+                                alert("Media URL copied to clipboard!");
+                              }}
+                              className="text-slate-600 font-bold hover:text-[#0A1628] cursor-pointer"
+                            >
+                              Copy
+                            </button>
+                          </div>
 
                           <button
                             onClick={() => handleDeleteMedia(item.id)}
@@ -2194,6 +2236,90 @@ export default function AdminDashboard() {
                     </div>
                   ))}
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Media Asset Modal */}
+      <AnimatePresence>
+        {showEditMediaModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 className="font-serif font-bold text-lg">Edit Media & Video Asset</h4>
+                <button onClick={() => setShowEditMediaModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleSaveEditMedia} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Asset Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={mediaForm.title}
+                    onChange={(e) => setMediaForm({ ...mediaForm, title: e.target.value })}
+                    placeholder="e.g. Royal Villa Pool"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Category</label>
+                    <select
+                      value={mediaForm.category}
+                      onChange={(e) => setMediaForm({ ...mediaForm, category: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="Properties">Properties</option>
+                      <option value="Reels & Videos">Reels & Videos</option>
+                      <option value="Logos & Avatars">Logos & Avatars</option>
+                      <option value="Blogs">Blogs</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Asset Type</label>
+                    <select
+                      value={mediaForm.type}
+                      onChange={(e) => setMediaForm({ ...mediaForm, type: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="image">Image Asset</option>
+                      <option value="video">Reel / Video Clip</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Image / Video Thumbnail URL</label>
+                  <input
+                    type="url"
+                    required
+                    value={mediaForm.url}
+                    onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Instagram Reel Link (URL)</label>
+                  <input
+                    type="url"
+                    value={mediaForm.instaUrl}
+                    onChange={(e) => setMediaForm({ ...mediaForm, instaUrl: e.target.value })}
+                    placeholder="https://www.instagram.com/reel/..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setShowEditMediaModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Update Asset</button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}
