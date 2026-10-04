@@ -621,44 +621,19 @@ export default function MarketingPage() {
                   </button>
                 ))}
               </div>
-
-              {/* Unique Scroll Controls */}
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <button
-                  onClick={() => scrollContainer(featuredScrollRef, 'left')}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-[#0A1628] hover:text-[#C9A96E] text-slate-700 flex items-center justify-center transition-all shadow-sm border border-slate-200"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => scrollContainer(featuredScrollRef, 'right')}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-[#0A1628] hover:text-[#C9A96E] text-slate-700 flex items-center justify-center transition-all shadow-sm border border-slate-200"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
             </div>
           </div>
 
-          {/* Unique Horizontal Scroll Track with Zero Clipping */}
-          <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div 
-              ref={featuredScrollRef}
-              onMouseEnter={() => setIsFeaturedPaused(true)}
-              onMouseLeave={() => setIsFeaturedPaused(false)}
-              onTouchStart={() => setIsFeaturedPaused(true)}
-              onTouchEnd={() => setIsFeaturedPaused(false)}
-              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
-            >
-            {[...FEATURED_PROPERTIES, ...FEATURED_PROPERTIES, ...FEATURED_PROPERTIES].map((prop, idx) => {
-              const isCompared = compareItems.some(i => i.id === prop.id);
-              return (
-                <div 
-                  key={`${prop.id}-${idx}`} 
-                  className="w-72 sm:w-80 flex-shrink-0 snap-start bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
-                >
+          {/* Reels-Style Continuous Marquee Auto-Scroll Track */}
+          <div className="overflow-hidden relative w-full">
+            <div className="flex gap-4 sm:gap-5 animate-marquee-slow pause-on-hover py-2">
+              {[...FEATURED_PROPERTIES, ...FEATURED_PROPERTIES, ...FEATURED_PROPERTIES].map((prop, idx) => {
+                const isCompared = compareItems.some(i => i.id === prop.id);
+                return (
+                  <div 
+                    key={`${prop.id}-${idx}`} 
+                    className="w-72 sm:w-80 flex-shrink-0 bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                  >
                   <div>
                     <div className="p-2">
                       <div className="relative aspect-[16/10] rounded-xl overflow-hidden">
@@ -857,37 +832,13 @@ export default function MarketingPage() {
               <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-white">Your Seamless Home Buying Journey</h2>
             </div>
 
-            {/* Scroll Controls */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => scrollContainer(journeyScrollRef, 'left')}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-[#C9A96E] hover:text-[#0A1628] text-white flex items-center justify-center transition-all border border-white/10"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => scrollContainer(journeyScrollRef, 'right')}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-[#C9A96E] hover:text-[#0A1628] text-white flex items-center justify-center transition-all border border-white/10"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
 
-          {/* Spacious Horizontal Track with Zero Clipping */}
-          <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div 
-              ref={journeyScrollRef}
-              onMouseEnter={() => setIsJourneyPaused(true)}
-              onMouseLeave={() => setIsJourneyPaused(false)}
-              onTouchStart={() => setIsJourneyPaused(true)}
-              onTouchEnd={() => setIsJourneyPaused(false)}
-              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
-            >
-              {[...JOURNEY_STEPS, ...JOURNEY_STEPS, ...JOURNEY_STEPS].map((st, idx) => (
-                <div key={idx} className="w-60 sm:w-72 flex-shrink-0 snap-start bg-slate-900/90 p-4 sm:p-5 rounded-2xl border border-white/10 shadow-lg relative group hover:border-[#C9A96E] hover:shadow-[0_0_20px_rgba(201,169,110,0.25)] transition-all flex flex-col justify-between min-h-[170px]">
+          {/* Reels-Style Continuous Marquee Auto-Scroll Track */}
+          <div className="overflow-hidden relative w-full">
+            <div className="flex gap-4 sm:gap-5 animate-marquee pause-on-hover py-2">
+              {[...JOURNEY_STEPS, ...JOURNEY_STEPS, ...JOURNEY_STEPS, ...JOURNEY_STEPS].map((st, idx) => (
+                <div key={idx} className="w-60 sm:w-72 flex-shrink-0 bg-slate-900/90 p-4 sm:p-5 rounded-2xl border border-white/10 shadow-lg relative group hover:border-[#C9A96E] hover:shadow-[0_0_20px_rgba(201,169,110,0.25)] transition-all flex flex-col justify-between min-h-[170px]">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xl font-serif font-extrabold text-[#C9A96E]">
@@ -918,37 +869,13 @@ export default function MarketingPage() {
               <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-[#0A1628]">What Our Buyers & Landlords Say</h2>
             </div>
 
-            {/* Scroll Controls */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => scrollContainer(testimonialScrollRef, 'left')}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-[#0A1628] hover:text-[#C9A96E] text-slate-700 flex items-center justify-center transition-all border border-slate-200"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => scrollContainer(testimonialScrollRef, 'right')}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-[#0A1628] hover:text-[#C9A96E] text-slate-700 flex items-center justify-center transition-all border border-slate-200"
-                aria-label="Scroll right"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
 
-          {/* Spacious Horizontal Track with Zero Clipping */}
-          <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div 
-              ref={testimonialScrollRef}
-              onMouseEnter={() => setIsTestimonialPaused(true)}
-              onMouseLeave={() => setIsTestimonialPaused(false)}
-              onTouchStart={() => setIsTestimonialPaused(true)}
-              onTouchEnd={() => setIsTestimonialPaused(false)}
-              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
-            >
-              {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((t, idx) => (
-                <div key={idx} className="w-[260px] sm:w-[320px] flex-shrink-0 snap-start bg-[#FDFBF7] p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-md hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group flex flex-col justify-between min-h-[170px]">
+          {/* Reels-Style Continuous Marquee Auto-Scroll Track */}
+          <div className="overflow-hidden relative w-full">
+            <div className="flex gap-4 sm:gap-5 animate-marquee-slow pause-on-hover py-2">
+              {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((t, idx) => (
+                <div key={idx} className="w-[260px] sm:w-[320px] flex-shrink-0 bg-[#FDFBF7] p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-md hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group flex flex-col justify-between min-h-[170px]">
                   <div>
                     <Quote className="w-5 h-5 text-[#C9A96E]/30 group-hover:text-[#C9A96E]/60 transition-colors absolute top-4 right-4" />
                     <div className="flex items-center gap-1 text-amber-500 mb-2">
