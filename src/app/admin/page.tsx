@@ -10,42 +10,15 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-// Business Stats
-const OVERVIEW_STATS = [
-  { title: "Total Properties", value: "1,240", change: "+12% this month", icon: Building2 },
-  { title: "Total Revenue", value: "₹14.8 Lakh", change: "+8% this month", icon: CreditCard },
-  { title: "Paid Site Visits (₹499)", value: "142", change: "+24% this month", icon: MapPin },
-  { title: "Active Staff Admins", value: "8 Active", change: "100% Present Today", icon: Users },
-];
-
-const PROPERTIES = [
-  { id: "PROP-001", title: "Luxury Villa in Mansarovar", location: "Jaipur", price: "₹2.5 Cr", status: "Active", type: "Sale" },
-  { id: "PROP-002", title: "3BHK Apartment C-Scheme", location: "Jaipur", price: "₹45,000/mo", status: "Pending", type: "Rent" },
-  { id: "PROP-003", title: "Commercial Space", location: "Udaipur", price: "₹1.2 Cr", status: "Sold", type: "Sale" },
-  { id: "PROP-004", title: "Heritage Haveli", location: "Jodhpur", price: "₹5.5 Cr", status: "Active", type: "Sale" },
-  { id: "PROP-005", title: "2BHK Flat Vaishali Nagar", location: "Jaipur", price: "₹18,000/mo", status: "Rented", type: "Rent" },
-];
-
-const USERS = [
-  { id: 1, name: "Rahul Sharma", role: "Agent", email: "rahul@shreeniwasproperties.com", status: "Verified" },
-  { id: 2, name: "Priya Singh", role: "Landlord", email: "priya@shreeniwasproperties.com", status: "Pending" },
-  { id: 3, name: "Amit Kumar", role: "Seeker", email: "amit@shreeniwasproperties.com", status: "Verified" },
-  { id: 4, name: "Neha Verma", role: "Agent", email: "neha@shreeniwasproperties.com", status: "Verified" },
-];
-
-// Inquiries & Query Desk Data
-const INITIAL_INQUIRIES = [
-  { id: "INQ-101", user: "Vikram Rathore", phone: "+91 9876543210", email: "vikram@gmail.com", property: "The Royal Heritage Residency", type: "Paid Visit (₹499)", status: "Paid", query: "Need cab pickup at 11 AM from Jaipur Airport.", reply: "Cab assigned with Driver Rajesh (+91 98765 11111)." },
-  { id: "INQ-102", user: "Suresh Saini", phone: "+91 8765432109", email: "suresh@gmail.com", property: "3BHK Apartment C-Scheme", type: "General Inquiry", status: "Pending", query: "What is the monthly maintenance fee?", reply: "" },
-  { id: "INQ-103", user: "Kiran Meena", phone: "+91 7654321098", email: "kiran@gmail.com", property: "Heritage Haveli Jodhpur", type: "Paid Visit (₹499)", status: "Pending", query: "Want to schedule a Sunday afternoon visit.", reply: "" },
-];
-
-// Admin Staff Attendance Data
-const INITIAL_ATTENDANCE = [
-  { id: "ATT-01", staffName: "Rajesh Rathore", role: "Senior Visit Coordinator", date: "Today", clockIn: "09:15 AM", clockOut: "In Shift", status: "Present (On Time)", hours: "6.5 hrs" },
-  { id: "ATT-02", staffName: "Ananya Sharma", role: "Client Query Admin", date: "Today", clockIn: "09:28 AM", clockOut: "In Shift", status: "Present (On Time)", hours: "6.2 hrs" },
-  { id: "ATT-03", staffName: "Vikram Singh", role: "Lead Verification Officer", date: "Today", clockIn: "10:05 AM", clockOut: "In Shift", status: "Late Entry", hours: "5.5 hrs" },
-  { id: "ATT-04", staffName: "Pooja Gupta", role: "Documentation Specialist", date: "Today", clockIn: "--:--", clockOut: "--:--", status: "On Approved Leave", hours: "0 hrs" },
+const SITE_PROPERTIES = [
+  { id: "PROP-001", title: "The Royal Heritage Residency", location: "Vaishali Nagar, Jaipur", price: "₹3.5 Cr", status: "Active", type: "Luxury Villa" },
+  { id: "PROP-002", title: "Lakeview Palace Heights", location: "Fatehpura, Udaipur", price: "₹1.8 Cr", status: "Active", type: "Penthouse" },
+  { id: "PROP-003", title: "Commercial Business Hub", location: "C-Scheme, Jaipur", price: "₹2.2 Cr", status: "Active", type: "Commercial" },
+  { id: "PROP-004", title: "Heritage Haveli Jodhpur", location: "Ratanada, Jodhpur", price: "₹5.5 Cr", status: "Active", type: "Heritage" },
+  { id: "PROP-005", title: "Modern 3BHK Apartment", location: "Vaishali Nagar, Jaipur", price: "₹45,000/mo", status: "Active", type: "Rent" },
+  { id: "PROP-006", title: "Luxury Penthouse", location: "Mansarovar, Jaipur", price: "₹1.25 Cr", status: "Active", type: "Sale" },
+  { id: "PROP-007", title: "Exclusive Villa", location: "Jagatpura, Jaipur", price: "₹2.1 Cr", status: "Active", type: "Sale" },
+  { id: "PROP-008", title: "Studio Apartment", location: "Malviya Nagar, Jaipur", price: "₹18,000/mo", status: "Active", type: "Rent" },
 ];
 
 export default function AdminDashboard() {
@@ -61,15 +34,18 @@ export default function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  // Inquiry Reply States
-  const [inquiriesList, setInquiriesList] = useState(INITIAL_INQUIRIES);
-  const [selectedInquiry, setSelectedInquiry] = useState<typeof INITIAL_INQUIRIES[0] | null>(null);
+  // Inquiry Reply States (Clean default, dynamic load from localStorage)
+  const [inquiriesList, setInquiriesList] = useState<any[]>([]);
+  const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null);
   const [replyText, setReplyText] = useState('');
 
-  // Attendance Clock-in State
-  const [attendanceList, setAttendanceList] = useState(INITIAL_ATTENDANCE);
-  const [isClockedIn, setIsClockedIn] = useState(true);
-  const [clockInTime, setClockInTime] = useState('09:15 AM');
+  // Attendance Clock-in State (Clean default)
+  const [attendanceList, setAttendanceList] = useState<any[]>([]);
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [clockInTime, setClockInTime] = useState('');
+
+  // Registered Users State (Clean default)
+  const [usersList, setUsersList] = useState<any[]>([]);
 
   useEffect(() => {
     const authSession = sessionStorage.getItem('shreeniwas_admin_auth');
@@ -83,6 +59,42 @@ export default function AdminDashboard() {
         setAdminRole('super');
       }
     }
+
+    // Load Visitor Inquiries
+    const savedInquiries = localStorage.getItem('shreeniwas_inquiries');
+    if (savedInquiries) {
+      try {
+        setInquiriesList(JSON.parse(savedInquiries));
+      } catch (e) {
+        setInquiriesList([]);
+      }
+    }
+
+    // Load Registered Users
+    const savedUsers = localStorage.getItem('shreeniwas_registered_users');
+    if (savedUsers) {
+      try {
+        setUsersList(JSON.parse(savedUsers));
+      } catch (e) {
+        setUsersList([]);
+      }
+    }
+
+    // Load Shift Attendance
+    const savedAttendance = localStorage.getItem('shreeniwas_admin_attendance');
+    if (savedAttendance) {
+      try {
+        const parsed = JSON.parse(savedAttendance);
+        setAttendanceList(parsed);
+        if (parsed.length > 0 && parsed[0].clockOut === 'In Shift') {
+          setIsClockedIn(true);
+          setClockInTime(parsed[0].clockIn);
+        }
+      } catch (e) {
+        setAttendanceList([]);
+      }
+    }
+
     setIsLoaded(true);
   }, []);
 
@@ -134,9 +146,13 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!selectedInquiry || !replyText.trim()) return;
 
-    setInquiriesList(prev => prev.map(item => 
-      item.id === selectedInquiry.id ? { ...item, reply: replyText.trim(), status: 'Responded & Sent' } : item
-    ));
+    setInquiriesList(prev => {
+      const updated = prev.map(item => 
+        item.id === selectedInquiry.id ? { ...item, reply: replyText.trim(), status: 'Responded & Sent' } : item
+      );
+      localStorage.setItem('shreeniwas_inquiries', JSON.stringify(updated));
+      return updated;
+    });
 
     setSelectedInquiry(null);
     setReplyText('');
@@ -147,22 +163,30 @@ export default function AdminDashboard() {
     if (!isClockedIn) {
       setIsClockedIn(true);
       setClockInTime(nowTime);
-      setAttendanceList(prev => [
-        {
-          id: `ATT-${Date.now()}`,
-          staffName: adminRole === 'super' ? "Super Admin" : "Ananya Sharma (Staff)",
-          role: adminRole === 'super' ? "Super Administrator" : "Query Coordinator",
-          date: "Today",
-          clockIn: nowTime,
-          clockOut: "In Shift",
-          status: "Present (On Time)",
-          hours: "0.1 hrs"
-        },
-        ...prev
-      ]);
+      setAttendanceList(prev => {
+        const updated = [
+          {
+            id: `ATT-${Date.now()}`,
+            staffName: adminRole === 'super' ? "Super Admin" : "Staff Admin",
+            role: adminRole === 'super' ? "Super Administrator" : "Query Coordinator",
+            date: "Today",
+            clockIn: nowTime,
+            clockOut: "In Shift",
+            status: "Present (On Time)",
+            hours: "0.1 hrs"
+          },
+          ...prev
+        ];
+        localStorage.setItem('shreeniwas_admin_attendance', JSON.stringify(updated));
+        return updated;
+      });
     } else {
       setIsClockedIn(false);
-      setAttendanceList(prev => prev.map((item, idx) => idx === 0 ? { ...item, clockOut: nowTime } : item));
+      setAttendanceList(prev => {
+        const updated = prev.map((item, idx) => idx === 0 ? { ...item, clockOut: nowTime } : item);
+        localStorage.setItem('shreeniwas_admin_attendance', JSON.stringify(updated));
+        return updated;
+      });
     }
   };
 
@@ -356,7 +380,12 @@ export default function AdminDashboard() {
           {activeTab === 'overview' && adminRole === 'super' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {OVERVIEW_STATS.map((stat, i) => (
+                {[
+                  { title: "Total Properties", value: `${SITE_PROPERTIES.length} Active`, change: "Verified Listings", icon: Building2 },
+                  { title: "Total Revenue", value: "₹0.00", change: "Live Financial Tracking", icon: CreditCard },
+                  { title: "Visitor Inquiries", value: `${inquiriesList.length}`, change: `${inquiriesList.filter(i => i.status === 'Pending').length} Pending Response`, icon: MessageSquare },
+                  { title: "Registered Users", value: `${usersList.length}`, change: "Active Platform Accounts", icon: Users },
+                ].map((stat, i) => (
                   <div key={i} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
                       <p className="text-xs text-slate-400 font-bold uppercase">{stat.title}</p>
@@ -383,15 +412,21 @@ export default function AdminDashboard() {
 
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
-                    <p className="text-2xl font-extrabold text-emerald-800">7</p>
+                    <p className="text-2xl font-extrabold text-emerald-800">
+                      {attendanceList.filter(a => a.status?.includes('On Time')).length}
+                    </p>
                     <p className="text-xs font-bold text-emerald-600">Present On Time</p>
                   </div>
                   <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200">
-                    <p className="text-2xl font-extrabold text-amber-800">1</p>
+                    <p className="text-2xl font-extrabold text-amber-800">
+                      {attendanceList.filter(a => a.status?.includes('Late')).length}
+                    </p>
                     <p className="text-xs font-bold text-amber-600">Late Entry</p>
                   </div>
                   <div className="bg-slate-100 p-4 rounded-2xl border border-slate-200">
-                    <p className="text-2xl font-extrabold text-slate-700">1</p>
+                    <p className="text-2xl font-extrabold text-slate-700">
+                      {attendanceList.filter(a => a.status?.includes('Leave')).length}
+                    </p>
                     <p className="text-xs font-bold text-slate-500">On Approved Leave</p>
                   </div>
                 </div>
@@ -419,41 +454,49 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto no-scrollbar">
-                  <table className="w-full text-left border-collapse min-w-[650px]">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
-                        <th className="p-4 pl-6">Staff Admin</th>
-                        <th className="p-4">Designated Role</th>
-                        <th className="p-4">Clock In</th>
-                        <th className="p-4">Clock Out</th>
-                        <th className="p-4">Status</th>
-                        <th className="p-4 text-right pr-6">Hours</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-xs">
-                      {attendanceList.map((att) => (
-                        <tr key={att.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="p-4 pl-6 font-bold text-[#0A1628]">{att.staffName}</td>
-                          <td className="p-4 text-slate-600">{att.role}</td>
-                          <td className="p-4 font-mono text-slate-700">{att.clockIn}</td>
-                          <td className="p-4 font-mono text-slate-700">{att.clockOut}</td>
-                          <td className="p-4">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                              att.status.includes('On Time') ? 'bg-emerald-100 text-emerald-800' :
-                              att.status.includes('Late') ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
-                            }`}>
-                              {att.status}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right pr-6 font-mono font-bold text-slate-800">{att.hours}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {attendanceList.length === 0 ? (
+                <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
+                  <Clock className="w-10 h-10 text-[#C9A96E] mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-[#0A1628]">No Shift Attendance Logs Recorded Today</h4>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Clock in your shift using the button above to record staff attendance logs.</p>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[650px]">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                          <th className="p-4 pl-6">Staff Admin</th>
+                          <th className="p-4">Designated Role</th>
+                          <th className="p-4">Clock In</th>
+                          <th className="p-4">Clock Out</th>
+                          <th className="p-4">Status</th>
+                          <th className="p-4 text-right pr-6">Hours</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-xs">
+                        {attendanceList.map((att) => (
+                          <tr key={att.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="p-4 pl-6 font-bold text-[#0A1628]">{att.staffName}</td>
+                            <td className="p-4 text-slate-600">{att.role}</td>
+                            <td className="p-4 font-mono text-slate-700">{att.clockIn}</td>
+                            <td className="p-4 font-mono text-slate-700">{att.clockOut}</td>
+                            <td className="p-4">
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                att.status.includes('On Time') ? 'bg-emerald-100 text-emerald-800' :
+                                att.status.includes('Late') ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                              }`}>
+                                {att.status}
+                              </span>
+                            </td>
+                            <td className="p-4 text-right pr-6 font-mono font-bold text-slate-800">{att.hours}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -467,54 +510,62 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto no-scrollbar">
-                  <table className="w-full text-left border-collapse min-w-[700px]">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
-                        <th className="p-4 pl-6">Client Details</th>
-                        <th className="p-4">Property</th>
-                        <th className="p-4">Type</th>
-                        <th className="p-4">Query / Request</th>
-                        <th className="p-4">Status</th>
-                        <th className="p-4 text-right pr-6">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-xs">
-                      {inquiriesList.map((inq) => (
-                        <tr key={inq.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="p-4 pl-6">
-                            <p className="font-bold text-[#0A1628]">{inq.user}</p>
-                            <p className="text-[10px] text-slate-400">{inq.phone}</p>
-                          </td>
-                          <td className="p-4 font-medium text-slate-700">{inq.property}</td>
-                          <td className="p-4">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C9A96E]/20 text-[#0A1628]">
-                              {inq.type}
-                            </span>
-                          </td>
-                          <td className="p-4 text-slate-600 max-w-[200px] truncate">{inq.query || "No notes"}</td>
-                          <td className="p-4">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                              inq.status.includes('Paid') || inq.status.includes('Responded') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                            }`}>
-                              {inq.status}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right pr-6">
-                            <button
-                              onClick={() => setSelectedInquiry(inq)}
-                              className="px-3.5 py-1.5 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl text-[11px] shadow hover:bg-[#0A1628]/90 transition-all cursor-pointer"
-                            >
-                              Reply & Update
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {inquiriesList.length === 0 ? (
+                <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
+                  <MessageSquare className="w-10 h-10 text-[#C9A96E] mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-[#0A1628]">No Visitor Queries Yet</h4>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Real visitor inquiries and property visit requests submitted on the site will automatically appear here.</p>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[700px]">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                          <th className="p-4 pl-6">Client Details</th>
+                          <th className="p-4">Property / Topic</th>
+                          <th className="p-4">Type</th>
+                          <th className="p-4">Query / Request</th>
+                          <th className="p-4">Status</th>
+                          <th className="p-4 text-right pr-6">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-xs">
+                        {inquiriesList.map((inq) => (
+                          <tr key={inq.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="p-4 pl-6">
+                              <p className="font-bold text-[#0A1628]">{inq.user}</p>
+                              <p className="text-[10px] text-slate-400">{inq.phone} | {inq.email}</p>
+                            </td>
+                            <td className="p-4 font-medium text-slate-700">{inq.property}</td>
+                            <td className="p-4">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C9A96E]/20 text-[#0A1628]">
+                                {inq.type}
+                              </span>
+                            </td>
+                            <td className="p-4 text-slate-600 max-w-[200px] truncate">{inq.query || "No notes"}</td>
+                            <td className="p-4">
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                inq.status.includes('Paid') || inq.status.includes('Responded') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                              }`}>
+                                {inq.status}
+                              </span>
+                            </td>
+                            <td className="p-4 text-right pr-6">
+                              <button
+                                onClick={() => setSelectedInquiry(inq)}
+                                className="px-3.5 py-1.5 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl text-[11px] shadow hover:bg-[#0A1628]/90 transition-all cursor-pointer"
+                              >
+                                Reply & Update
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -524,7 +575,7 @@ export default function AdminDashboard() {
               <div className="flex justify-between items-center">
                 <h3 className="text-xl font-serif font-bold text-[#0A1628]">Properties Inventory</h3>
                 <Link href="/dashboard/landlord/properties/new">
-                  <button className="px-4 py-2 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow">
+                  <button className="px-4 py-2 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer">
                     <Plus className="w-4 h-4" /> Add Listing
                   </button>
                 </Link>
@@ -544,7 +595,7 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
-                      {PROPERTIES.map((prop) => (
+                      {SITE_PROPERTIES.map((prop) => (
                         <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
                           <td className="p-4 pl-6 font-mono font-bold text-slate-500">{prop.id}</td>
                           <td className="p-4 font-bold text-[#0A1628]">{prop.title}</td>
@@ -562,6 +613,52 @@ export default function AdminDashboard() {
                   </table>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Users Tab */}
+          {activeTab === 'users' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-serif font-bold text-[#0A1628]">Users & Account Verification</h3>
+              </div>
+
+              {usersList.length === 0 ? (
+                <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
+                  <Users className="w-10 h-10 text-[#C9A96E] mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-[#0A1628]">No Registered Users Yet</h4>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">When new property seekers or owners register on the site, their accounts will appear here.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[650px]">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                          <th className="p-4 pl-6">Name</th>
+                          <th className="p-4">Email</th>
+                          <th className="p-4">Role</th>
+                          <th className="p-4 text-right pr-6">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-xs">
+                        {usersList.map((u: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                            <td className="p-4 pl-6 font-bold text-[#0A1628]">{u.name || u.email?.split('@')[0]}</td>
+                            <td className="p-4 text-slate-600">{u.email}</td>
+                            <td className="p-4 font-medium text-slate-700">{u.role || "Registered User"}</td>
+                            <td className="p-4 text-right pr-6">
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                Active User
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </main>

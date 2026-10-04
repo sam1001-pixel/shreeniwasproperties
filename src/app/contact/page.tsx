@@ -17,6 +17,22 @@ export default function ContactPage() {
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
+
+      const existingRaw = localStorage.getItem('shreeniwas_inquiries');
+      const existing = existingRaw ? JSON.parse(existingRaw) : [];
+      const newInq = {
+        id: `INQ-${Date.now().toString().slice(-4)}`,
+        user: formData.name || "Website Visitor",
+        phone: formData.phone || "--",
+        email: formData.email || "--",
+        property: formData.topic || "General Inquiry",
+        type: "Direct Message",
+        status: "Pending",
+        query: formData.message || "Contact form request",
+        reply: ""
+      };
+      localStorage.setItem('shreeniwas_inquiries', JSON.stringify([newInq, ...existing]));
+
       setFormData({ name: "", email: "", phone: "", topic: "Rent Inquiry", message: "" });
       setTimeout(() => setIsSuccess(false), 5000);
     }, 1500);
