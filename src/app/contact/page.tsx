@@ -72,7 +72,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Email</h4>
-                    <p className="text-gray-600 mt-1">inquiries@shreeniwas.com</p>
+                    <p className="text-gray-600 mt-1">contact@shreeniwasproperties.com</p>
                   </div>
                 </div>
 
@@ -110,7 +110,7 @@ export default function ContactPage() {
                         type="text" required
                         value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
                         className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
-                        placeholder="John Doe"
+                        placeholder="Rahul Sharma"
                       />
                     </div>
                     <div className="space-y-2">
@@ -119,7 +119,7 @@ export default function ContactPage() {
                         type="email" required
                         value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
                         className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
-                        placeholder="john@example.com"
+                        placeholder="rahul@domain.com"
                       />
                     </div>
                   </div>
