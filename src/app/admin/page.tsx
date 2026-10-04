@@ -35,9 +35,9 @@ const DEFAULT_ADMIN_ACCOUNTS = [
 ];
 
 const DEFAULT_REELS = [
-  { id: "REEL-01", title: "4 BHK Royal Villa 360° Walkthrough", property: "The Royal Heritage Residency", embedUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800", views: "14.2K", status: "Active" },
-  { id: "REEL-02", title: "Lakeview Penthouse Sunset Tour Udaipur", property: "Lakeview Palace Heights", embedUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800", views: "9.8K", status: "Active" },
-  { id: "REEL-03", title: "Heritage Haveli Jodhpur Royal Courtyard", property: "Heritage Haveli Jodhpur", embedUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800", views: "22.5K", status: "Active" },
+  { id: "REEL-01", title: "4 BHK Royal Villa 360° Walkthrough", property: "The Royal Heritage Residency", instaUrl: "https://www.instagram.com/reel/C8XYZ12345/", embedUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800", views: "14.2K", status: "Active" },
+  { id: "REEL-02", title: "Lakeview Penthouse Sunset Tour Udaipur", property: "Lakeview Palace Heights", instaUrl: "https://www.instagram.com/reel/C9ABC67890/", embedUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800", views: "9.8K", status: "Active" },
+  { id: "REEL-03", title: "Heritage Haveli Jodhpur Royal Courtyard", property: "Heritage Haveli Jodhpur", instaUrl: "https://www.instagram.com/reel/C7DEF11223/", embedUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800", views: "22.5K", status: "Active" },
 ];
 
 const DEFAULT_REVIEWS = [
@@ -90,7 +90,7 @@ export default function AdminDashboard() {
   // Reel Modal
   const [showReelModal, setShowReelModal] = useState(false);
   const [editingReel, setEditingReel] = useState<any | null>(null);
-  const [reelForm, setReelForm] = useState({ title: '', property: '', embedUrl: '', views: '1.2K', status: 'Active' });
+  const [reelForm, setReelForm] = useState({ title: '', property: '', instaUrl: '', embedUrl: '', views: '1.2K', status: 'Active' });
 
   // Review Modal
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -342,12 +342,22 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!reelForm.title) return;
 
+    let formattedInstaUrl = reelForm.instaUrl.trim();
+    if (formattedInstaUrl && !formattedInstaUrl.startsWith('http://') && !formattedInstaUrl.startsWith('https://')) {
+      formattedInstaUrl = `https://${formattedInstaUrl}`;
+    }
+
+    const payload = {
+      ...reelForm,
+      instaUrl: formattedInstaUrl
+    };
+
     if (editingReel) {
-      const updated = reelsList.map(r => r.id === editingReel.id ? { ...r, ...reelForm } : r);
+      const updated = reelsList.map(r => r.id === editingReel.id ? { ...r, ...payload } : r);
       setReelsList(updated);
       localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
     } else {
-      const newReel = { id: `REEL-0${reelsList.length + 1}`, ...reelForm };
+      const newReel = { id: `REEL-0${reelsList.length + 1}`, ...payload };
       const updated = [newReel, ...reelsList];
       setReelsList(updated);
       localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
@@ -355,7 +365,7 @@ export default function AdminDashboard() {
 
     setShowReelModal(false);
     setEditingReel(null);
-    setReelForm({ title: '', property: '', embedUrl: '', views: '1.2K', status: 'Active' });
+    setReelForm({ title: '', property: '', instaUrl: '', embedUrl: '', views: '1.2K', status: 'Active' });
   };
 
   const handleDeleteReel = (id: string) => {
@@ -777,7 +787,7 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => {
                     setEditingReel(null);
-                    setReelForm({ title: '', property: '', embedUrl: '', views: '1.2K', status: 'Active' });
+                    setReelForm({ title: '', property: '', instaUrl: '', embedUrl: '', views: '1.2K', status: 'Active' });
                     setShowReelModal(true);
                   }}
                   className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
@@ -792,6 +802,7 @@ export default function AdminDashboard() {
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
                       <th className="p-4 pl-6">Reel Title</th>
                       <th className="p-4">Property Reference</th>
+                      <th className="p-4">Instagram Reel Link</th>
                       <th className="p-4">Views</th>
                       <th className="p-4">Status</th>
                       <th className="p-4 text-right pr-6">Actions</th>
@@ -804,6 +815,20 @@ export default function AdminDashboard() {
                           <Video className="w-4 h-4 text-[#C9A96E]" /> {reel.title}
                         </td>
                         <td className="p-4 text-slate-600 font-medium">{reel.property}</td>
+                        <td className="p-4">
+                          {reel.instaUrl ? (
+                            <a
+                              href={reel.instaUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold rounded-lg text-[10px] shadow hover:opacity-90 transition-all"
+                            >
+                              <Share2 className="w-3 h-3" /> Insta Reel ↗
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 font-medium italic">No Insta Link</span>
+                          )}
+                        </td>
                         <td className="p-4 font-mono text-emerald-700 font-bold">{reel.views}</td>
                         <td className="p-4">
                           <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
@@ -814,7 +839,7 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => {
                               setEditingReel(reel);
-                              setReelForm({ title: reel.title, property: reel.property, embedUrl: reel.embedUrl, views: reel.views, status: reel.status });
+                              setReelForm({ title: reel.title, property: reel.property, instaUrl: reel.instaUrl || '', embedUrl: reel.embedUrl || '', views: reel.views, status: reel.status });
                               setShowReelModal(true);
                             }}
                             className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
@@ -1508,6 +1533,17 @@ export default function AdminDashboard() {
                     value={reelForm.property}
                     onChange={(e) => setReelForm({ ...reelForm, property: e.target.value })}
                     placeholder="e.g. The Royal Heritage Residency"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Instagram Reel Link (URL)</label>
+                  <input
+                    type="url"
+                    value={reelForm.instaUrl}
+                    onChange={(e) => setReelForm({ ...reelForm, instaUrl: e.target.value })}
+                    placeholder="https://www.instagram.com/reel/..."
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
