@@ -205,7 +205,7 @@ export default function BlogPostPage() {
   return (
     <article className="min-h-screen bg-[#FDFBF7] pb-20">
       {/* Header */}
-      <div className="container mx-auto max-w-4xl px-4 pt-16 pb-8">
+      <div className="container mx-auto max-w-4xl px-4 pt-28 sm:pt-32 pb-8">
         <Link href="/blog" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#C9A96E] mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to all articles

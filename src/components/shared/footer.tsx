@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Phone, Mail, MapPin } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 
 export function Footer() {
+  const pathname = usePathname();
   const cities = siteConfig?.rajasthanCities?.slice(0, 6) || ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Bikaner'];
   const [settings, setSettings] = useState<any>(null);
 
@@ -27,6 +29,10 @@ export function Footer() {
       window.removeEventListener('storage', loadFooterSettings);
     };
   }, []);
+
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/admin')) {
+    return null;
+  }
   
   return (
     <footer className="bg-[#0A1628] text-white pt-16 pb-8">
@@ -68,10 +74,17 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-serif font-semibold mb-4 text-white">Quick Links</h3>
             <ul className="space-y-1">
-              {['Properties', 'Rentals', 'Buy', 'Commercial', 'Blog'].map((item) => (
-                <li key={item}>
-                  <Link href={`/${item.toLowerCase()}`} className="block py-2 text-base text-white/70 hover:text-[#C9A96E] transition-colors">
-                    {item}
+              {[
+                { label: 'All Properties', href: '/properties' },
+                { label: 'Rentals', href: '/properties?purpose=rent' },
+                { label: 'Buy Properties', href: '/properties?purpose=sale' },
+                { label: 'Commercial', href: '/properties?purpose=commercial_lease' },
+                { label: 'All Locations', href: '/locations' },
+                { label: 'Real Estate Blog', href: '/blog' }
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} className="block py-1.5 text-sm text-white/70 hover:text-[#C9A96E] transition-colors">
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -80,15 +93,20 @@ export function Footer() {
 
           {/* Column 3: Rajasthan Cities */}
           <div>
-            <h3 className="text-lg font-serif font-semibold mb-4 text-white">Locations</h3>
+            <h3 className="text-lg font-serif font-semibold mb-4 text-white">Major Cities</h3>
             <ul className="space-y-1">
               {cities.map((city) => (
                 <li key={city}>
-                  <Link href={`/locations/${city.toLowerCase()}`} className="block py-2 text-base text-white/70 hover:text-[#C9A96E] transition-colors">
-                    {city}
+                  <Link href={`/locations/${city.toLowerCase()}`} className="block py-1.5 text-sm text-white/70 hover:text-[#C9A96E] transition-colors">
+                    {city} Properties
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/locations" className="inline-block pt-2 text-xs font-bold text-[#C9A96E] hover:underline">
+                  View All 15+ Rajasthan Cities →
+                </Link>
+              </li>
             </ul>
           </div>
 

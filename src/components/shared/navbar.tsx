@@ -56,17 +56,21 @@ export function Navbar() {
     };
   }, [pathname]);
 
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/admin')) {
+    return null;
+  }
+
   return (
     <>
       <header
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
           scrolled
-            ? 'bg-white/95 shadow-md border-b border-slate-200/80 py-2 sm:py-3'
-            : 'bg-white/90 backdrop-blur-md py-3 sm:py-4 border-b border-slate-100'
+            ? 'bg-white/95 shadow-md border-b border-slate-200/80 py-1 sm:py-1.5'
+            : 'bg-white/90 backdrop-blur-md py-1.5 sm:py-2 border-b border-slate-100'
         )}
       >
-        <div className="h-16 sm:h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div className="h-14 sm:h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group whitespace-nowrap">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors shrink-0 shadow-sm overflow-hidden p-1">

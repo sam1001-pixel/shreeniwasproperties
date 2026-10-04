@@ -150,7 +150,7 @@ export default function UserProfileDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pt-28 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* User Profile Card Header */}

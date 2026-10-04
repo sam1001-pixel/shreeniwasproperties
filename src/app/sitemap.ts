@@ -41,6 +41,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/locations`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
       url: `${baseUrl}/privacy`,
       lastModified: new Date(),
       changeFrequency: 'yearly',
@@ -53,6 +59,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.4,
     },
   ];
+
+  // Essential known city locations for high-converting local real estate SEO
+  const locationSlugs = [
+    'jaipur',
+    'jodhpur',
+    'udaipur',
+    'kota',
+    'ajmer',
+    'bikaner',
+    'bhilwara',
+    'alwar'
+  ];
+
+  const locationRoutes: MetadataRoute.Sitemap = locationSlugs.map((slug) => ({
+    url: `${baseUrl}/locations/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.85,
+  }));
 
   // Essential known property slugs for immediate SEO crawling
   const propertySlugs = [
@@ -87,5 +112,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...propertyRoutes, ...blogRoutes];
+  return [...staticRoutes, ...locationRoutes, ...propertyRoutes, ...blogRoutes];
 }

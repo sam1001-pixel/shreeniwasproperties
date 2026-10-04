@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pt-28 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Back Link */}
         <Link 

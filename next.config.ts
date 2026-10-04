@@ -21,6 +21,25 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/rentals',
+        destination: '/properties?purpose=rent',
+        permanent: true,
+      },
+      {
+        source: '/buy',
+        destination: '/properties?purpose=sale',
+        permanent: true,
+      },
+      {
+        source: '/commercial',
+        destination: '/properties?purpose=commercial_lease',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

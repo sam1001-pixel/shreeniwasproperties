@@ -552,7 +552,7 @@ export default function MarketingPage() {
         }}
       />
       {/* 1. Hero Section with Search Engine */}
-      <section className="relative min-h-[85vh] flex items-center justify-center pt-20 pb-12 px-4 overflow-hidden">
+      <section className="relative min-h-[90vh] flex items-center justify-center pt-28 sm:pt-36 pb-16 px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
             src={heroBg} 

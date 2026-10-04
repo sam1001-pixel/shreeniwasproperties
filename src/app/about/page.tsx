@@ -44,7 +44,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-[#FDFBF7] text-[#0A1628]">
       {/* 1. High-Contrast Hero Banner */}
-      <section className="relative h-[65vh] min-h-[480px] flex items-center justify-center pt-16">
+      <section className="relative h-[65vh] min-h-[480px] flex items-center justify-center pt-28 sm:pt-32">
         <div className="absolute inset-0 z-0">
           <Image 
             src="https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&q=80&w=1600"

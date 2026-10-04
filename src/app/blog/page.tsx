@@ -76,7 +76,7 @@ export default function BlogListingPage() {
     };
   }, []);
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FDFBF7] pt-28 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">

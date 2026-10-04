@@ -278,23 +278,23 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pb-32 lg:pb-24">
-      {/* Mobile Header Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-slate-200">
-        <Link href="/properties" className="p-2 bg-slate-100 rounded-full shadow-sm">
-          <ChevronLeft className="w-5 h-5"/>
+      {/* Mobile Action Bar (Placed cleanly below fixed Navbar) */}
+      <div className="md:hidden bg-white/95 border-b border-slate-200 px-4 py-2.5 pt-20 flex items-center justify-between shadow-sm">
+        <Link href="/properties" className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-[#C9A96E] p-1.5 rounded-lg bg-slate-50">
+          <ChevronLeft className="w-4 h-4"/> Back to Properties
         </Link>
         <div className="flex gap-2 items-center">
-          <button onClick={handleShare} className="p-2 bg-slate-100 rounded-full shadow-sm text-slate-700">
+          <button onClick={handleShare} className="p-2 bg-slate-100 rounded-full shadow-sm text-slate-700" title="Share Property">
             {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4"/>}
           </button>
-          <button onClick={() => setIsSaved(!isSaved)} className="p-2 bg-slate-100 rounded-full shadow-sm">
+          <button onClick={() => setIsSaved(!isSaved)} className="p-2 bg-slate-100 rounded-full shadow-sm" title="Save Favorite">
             <Heart className={`w-4 h-4 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-slate-600'}`}/>
           </button>
         </div>
       </div>
 
       {/* Desktop Breadcrumbs */}
-      <div className="hidden md:block bg-white border-b border-slate-200 pt-24 pb-4">
+      <div className="hidden md:block bg-white border-b border-slate-200 pt-24 sm:pt-28 pb-4">
         <div className="max-w-7xl mx-auto px-6 text-xs font-semibold text-slate-500 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link href="/" className="hover:text-[#C9A96E]">Home</Link> <ChevronRight className="w-3.5 h-3.5" />
@@ -312,7 +312,7 @@ export default function PropertyDetailPage() {
       </div>
 
       {/* Sticky Section Navbar */}
-      <div className="bg-white border-b border-slate-200 sticky top-16 md:top-16 z-30 shadow-sm hidden sm:block">
+      <div className="bg-white border-b border-slate-200 sticky top-14 sm:top-16 z-30 shadow-sm hidden sm:block">
         <div className="max-w-7xl mx-auto px-6 flex items-center gap-6 overflow-x-auto no-scrollbar py-3 text-xs font-bold uppercase tracking-wider">
           {sections.map(s => (
             <button

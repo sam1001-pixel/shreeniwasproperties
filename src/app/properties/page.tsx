@@ -218,10 +218,12 @@ function PropertiesContent() {
     }
 
     const tabParam = searchParams.get('tab');
-    if (tabParam) {
-      if (tabParam === 'buy') setSelectedTab('Buy');
-      if (tabParam === 'rent') setSelectedTab('Rent');
-      if (tabParam === 'commercial') setSelectedTab('Commercial');
+    const purposeParam = searchParams.get('purpose');
+    const targetPurpose = (purposeParam || tabParam || '').toLowerCase();
+    if (targetPurpose) {
+      if (targetPurpose.includes('sale') || targetPurpose === 'buy') setSelectedTab('Buy');
+      else if (targetPurpose.includes('rent')) setSelectedTab('Rent');
+      else if (targetPurpose.includes('commercial')) setSelectedTab('Commercial');
     }
 
     const bhkParam = searchParams.get('bhk');
@@ -354,7 +356,7 @@ function PropertiesContent() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pb-24 md:pb-12">
       {/* Header Banner & Interactive Search Section */}
-      <div className="bg-[#0A1628] text-white pt-24 pb-10 px-4 sm:px-6 relative overflow-hidden">
+      <div className="bg-[#0A1628] text-white pt-28 sm:pt-32 pb-10 px-4 sm:px-6 relative overflow-hidden">
         <div className="absolute right-0 top-0 w-96 h-96 bg-[#C9A96E]/10 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-3xl mb-6">

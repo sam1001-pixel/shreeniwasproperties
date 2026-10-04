@@ -109,7 +109,7 @@ export default function LandlordDashboard() {
   const totalViews = properties.reduce((acc, p) => acc + (p.views || 100), 0);
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FDFBF7] pt-28 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

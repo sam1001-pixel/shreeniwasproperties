@@ -208,7 +208,7 @@ export default function AddPropertyWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FDFBF7] pt-28 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Title */}
         <div className="text-center">
