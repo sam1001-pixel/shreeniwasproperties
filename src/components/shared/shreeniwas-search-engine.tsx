@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Search, MapPin, Building2, Home, Briefcase, LandPlot, Users, 
-  IndianRupee, ChevronDown, Check, Sparkles, Filter, Navigation, LocateFixed, Loader2
+  IndianRupee, ChevronDown, Check, Sparkles, Layers
 } from 'lucide-react';
 import { 
   detectUserCityViaGPS, 
@@ -36,27 +36,40 @@ const BUDGET_OPTIONS = [
 
 export default function ShreeniwasSearchEngine() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'buy' | 'rent' | 'commercial' | 'plots' | 'pg'>('buy');
+  const [activeTab, setActiveTab] = useState<'buy' | 'rent' | 'commercial' | 'plots' | 'pg' | 'projects'>('buy');
   const [selectedCity, setSelectedCity] = useState("Jaipur");
   const [selectedLocality, setSelectedLocality] = useState("");
   const [selectedBhk, setSelectedBhk] = useState<string[]>([]);
   const [selectedBudget, setSelectedBudget] = useState("all");
   const [postedBy, setPostedBy] = useState("all");
-  const [isLocating, setIsLocating] = useState(false);
   const [detectedLocalityInfo, setDetectedLocalityInfo] = useState<string | null>(null);
 
-  // Auto-load previously detected or stored city
+  // Auto-detect user GPS on visit & load previously detected or stored city
   useEffect(() => {
+    // 1. Initial check from saved city
     const saved = getSavedDetectedCity();
     if (saved && CITIES.includes(saved)) {
       setSelectedCity(saved);
-      setDetectedLocalityInfo(`Auto-set from location: ${saved}`);
+      setDetectedLocalityInfo(`Auto-set for ${saved}`);
     }
 
+    // 2. Automatically prompt and detect GPS once per browser session
+    const autoChecked = sessionStorage.getItem('shreeniwas_gps_auto_checked');
+    if (!autoChecked) {
+      sessionStorage.setItem('shreeniwas_gps_auto_checked', 'true');
+      detectUserCityViaGPS().then(res => {
+        if (res.success && res.cityName && CITIES.includes(res.cityName)) {
+          setSelectedCity(res.cityName);
+          setDetectedLocalityInfo(`📍 Auto-detected GPS: ${res.cityName}`);
+        }
+      }).catch(() => {});
+    }
+
+    // 3. Listen to system-wide location detection events
     const handleLocationUpdate = (e: any) => {
       if (e.detail && CITIES.includes(e.detail)) {
         setSelectedCity(e.detail);
-        setDetectedLocalityInfo(`Updated: ${e.detail}`);
+        setDetectedLocalityInfo(`📍 Location: ${e.detail}`);
       }
     };
 
@@ -66,31 +79,13 @@ export default function ShreeniwasSearchEngine() {
     };
   }, []);
 
-  const handleDetectGPS = async () => {
-    setIsLocating(true);
-    setDetectedLocalityInfo('Locating nearest Rajasthan hub...');
-    try {
-      const res = await detectUserCityViaGPS();
-      if (res.success && res.cityName) {
-        setSelectedCity(res.cityName);
-        setSelectedLocality("");
-        setDetectedLocalityInfo(`📍 Detected: ${res.cityName} (${res.distanceKm || 0}km away)`);
-      } else {
-        setDetectedLocalityInfo(res.error || 'Using default: Jaipur');
-      }
-    } catch (err) {
-      setDetectedLocalityInfo('Could not access GPS');
-    } finally {
-      setIsLocating(false);
-    }
-  };
-
   const tabs = [
     { id: 'buy', label: 'Buy', icon: Building2 },
     { id: 'rent', label: 'Rent', icon: Home },
     { id: 'commercial', label: 'Commercial', icon: Briefcase },
     { id: 'plots', label: 'Plots / Land', icon: LandPlot },
     { id: 'pg', label: 'PG / Co-Living', icon: Users },
+    { id: 'projects', label: 'Projects', icon: Layers },
   ];
 
   const bhkOptions = ["1 BHK", "2 BHK", "3 BHK", "4+ BHK", "Villa"];
@@ -102,6 +97,17 @@ export default function ShreeniwasSearchEngine() {
   };
 
   const handleSearch = () => {
+    if (activeTab === 'projects') {
+      // Check if on homepage to smooth scroll or route to /properties
+      const projectsElem = document.getElementById('new-projects');
+      if (projectsElem) {
+        projectsElem.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      router.push(`/properties?city=${selectedCity}&tab=projects`);
+      return;
+    }
+
     const params = new URLSearchParams();
     params.set('city', selectedCity);
     params.set('tab', activeTab);
@@ -115,7 +121,7 @@ export default function ShreeniwasSearchEngine() {
 
   return (
     <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-100 max-w-5xl mx-auto relative z-20">
-      {/* Shreeniwas Tab Bar */}
+      {/* Shreeniwas Tab Bar (Including New Projects Tab) */}
       <div className="flex gap-1.5 sm:gap-2 border-b border-slate-200 pb-3 mb-5 overflow-x-auto no-scrollbar">
         {tabs.map(tab => (
           <button
@@ -135,29 +141,15 @@ export default function ShreeniwasSearchEngine() {
 
       {/* Main Search Controls */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center">
-        {/* City Dropdown with GPS Button */}
+        {/* City Dropdown with Automatic GPS Status */}
         <div className="md:col-span-4 relative">
           <div className="flex justify-between items-center mb-1">
             <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Select City</label>
-            <button
-              type="button"
-              onClick={handleDetectGPS}
-              disabled={isLocating}
-              className="text-[11px] font-bold text-[#C9A96E] hover:text-[#0A1628] flex items-center gap-1 transition-colors cursor-pointer"
-              title="Detect closest Rajasthan city automatically using your GPS"
-            >
-              {isLocating ? (
-                <>
-                  <Loader2 className="w-3 h-3 animate-spin text-[#C9A96E]" />
-                  <span>Locating...</span>
-                </>
-              ) : (
-                <>
-                  <LocateFixed className="w-3 h-3 text-[#C9A96E]" />
-                  <span>📍 GPS Near Me</span>
-                </>
-              )}
-            </button>
+            {detectedLocalityInfo && (
+              <span className="text-[10px] text-emerald-700 font-semibold truncate max-w-[170px]">
+                {detectedLocalityInfo}
+              </span>
+            )}
           </div>
           <div className="relative">
             <MapPin className="w-4 h-4 text-[#C9A96E] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -176,23 +168,20 @@ export default function ShreeniwasSearchEngine() {
             </select>
             <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
-          {detectedLocalityInfo && (
-            <p className="text-[10px] text-emerald-700 font-medium mt-1 truncate flex items-center gap-1">
-              {detectedLocalityInfo}
-            </p>
-          )}
         </div>
 
         {/* Locality Search & Pills */}
         <div className="md:col-span-4 relative">
-          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Locality / Landmark</label>
+          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+            {activeTab === 'projects' ? 'Project / Builder Name' : 'Locality / Landmark'}
+          </label>
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={selectedLocality}
               onChange={(e) => setSelectedLocality(e.target.value)}
-              placeholder={`Search e.g. ${POPULAR_LOCALITIES[selectedCity]?.[0] || 'Mansarovar'}...`}
+              placeholder={activeTab === 'projects' ? 'Search e.g. Mahima, Manglam, Ashiana...' : `Search e.g. ${POPULAR_LOCALITIES[selectedCity]?.[0] || 'Mansarovar'}...`}
               className="w-full pl-9 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E] placeholder-slate-400"
             />
           </div>
@@ -220,7 +209,7 @@ export default function ShreeniwasSearchEngine() {
       {/* BHK Config Pills & Extra Filter Buttons */}
       <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
         {/* BHK Selector Pills */}
-        {(activeTab === 'buy' || activeTab === 'rent') && (
+        {(activeTab === 'buy' || activeTab === 'rent' || activeTab === 'projects') && (
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs font-semibold text-slate-500 mr-1">BHK:</span>
             {bhkOptions.map(bhk => {
@@ -266,8 +255,17 @@ export default function ShreeniwasSearchEngine() {
           onClick={handleSearch}
           className="w-full sm:w-auto ml-auto px-7 py-3 bg-[#0A1628] hover:bg-[#0A1628]/90 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-[#0A1628]/20 flex items-center justify-center gap-2 cursor-pointer border border-[#C9A96E]/30"
         >
-          <Search className="w-4 h-4 text-[#C9A96E]" />
-          Search Properties
+          {activeTab === 'projects' ? (
+            <>
+              <Layers className="w-4 h-4 text-[#C9A96E]" />
+              Explore Builder Projects
+            </>
+          ) : (
+            <>
+              <Search className="w-4 h-4 text-[#C9A96E]" />
+              Search Properties
+            </>
+          )}
         </button>
       </div>
 

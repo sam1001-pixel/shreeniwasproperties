@@ -392,10 +392,32 @@ export default function MarketingPage() {
 
   useEffect(() => {
     loadLiveData();
+    try {
+      const savedFavs = localStorage.getItem('shreeniwas_user_favorites');
+      if (savedFavs) {
+        const parsed = JSON.parse(savedFavs);
+        if (Array.isArray(parsed)) {
+          setFavorites(parsed.map(Number));
+        }
+      }
+    } catch (e) {}
+
+    const handleFavsUpdate = () => {
+      try {
+        const savedFavs = localStorage.getItem('shreeniwas_user_favorites');
+        if (savedFavs) {
+          const parsed = JSON.parse(savedFavs);
+          if (Array.isArray(parsed)) setFavorites(parsed.map(Number));
+        }
+      } catch (e) {}
+    };
+
     window.addEventListener('shreeniwas_data_updated', loadLiveData);
+    window.addEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
     window.addEventListener('storage', loadLiveData);
     return () => {
       window.removeEventListener('shreeniwas_data_updated', loadLiveData);
+      window.removeEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
       window.removeEventListener('storage', loadLiveData);
     };
   }, []);
@@ -469,9 +491,41 @@ export default function MarketingPage() {
   }, [isTestimonialPaused]);
 
   const toggleFavorite = (id: number) => {
-    setFavorites(prev => 
-      prev.includes(id) ? prev.filter(fId => fId !== id) : [...prev, id]
-    );
+    setFavorites(prev => {
+      const next = prev.includes(id) ? prev.filter(fId => fId !== id) : [...prev, id];
+      try {
+        localStorage.setItem('shreeniwas_user_favorites', JSON.stringify(next.map(String)));
+        // Also sync if logged in
+        const session = localStorage.getItem('shreeniwas_user_session');
+        if (session) {
+          const parsed = JSON.parse(session);
+          if (parsed?.email) {
+            const savedProps = JSON.parse(localStorage.getItem(`shreeniwas_saved_favorites_${parsed.email}`) || '[]');
+            const clickedProp = FEATURED_PROPERTIES.find(p => p.id === id);
+            if (clickedProp) {
+              const alreadySaved = savedProps.some((p: any) => String(p.id) === String(id));
+              let updatedUserFavs;
+              if (alreadySaved) {
+                updatedUserFavs = savedProps.filter((p: any) => String(p.id) !== String(id));
+              } else {
+                updatedUserFavs = [{
+                  id: String(clickedProp.id),
+                  title: clickedProp.title,
+                  location: clickedProp.location,
+                  price: clickedProp.price,
+                  bhk: clickedProp.bhk,
+                  image: clickedProp.image,
+                  type: clickedProp.type
+                }, ...savedProps];
+              }
+              localStorage.setItem(`shreeniwas_saved_favorites_${parsed.email}`, JSON.stringify(updatedUserFavs));
+            }
+          }
+        }
+        window.dispatchEvent(new Event('shreeniwas_favorites_updated'));
+      } catch (e) {}
+      return next;
+    });
   };
 
   const toggleCompare = (property: typeof FEATURED_PROPERTIES[0]) => {
@@ -818,7 +872,7 @@ export default function MarketingPage() {
       </div>
     </section>
 
-      {/* 5. 99acres-Style Builder Projects & Townships Section */}
+      {/* 5. Premier Builder Projects & Townships Section */}
       <NewProjectsSection />
 
       {/* 6. "Post Property Free" Banner */}

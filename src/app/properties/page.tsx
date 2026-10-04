@@ -324,8 +324,79 @@ function PropertiesContent() {
     };
   }, []);
 
+  // Load saved favorites on mount and keep synced
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('shreeniwas_user_favorites');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const favMap: Record<string, boolean> = {};
+          parsed.forEach((id: string) => { favMap[id] = true; });
+          setFavorites(favMap);
+        }
+      }
+    } catch (e) {}
+
+    const handleFavsUpdate = () => {
+      try {
+        const stored = localStorage.getItem('shreeniwas_user_favorites');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const favMap: Record<string, boolean> = {};
+            parsed.forEach((id: string) => { favMap[id] = true; });
+            setFavorites(favMap);
+          }
+        }
+      } catch (e) {}
+    };
+
+    window.addEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
+    return () => window.removeEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
+  }, []);
+
   const toggleFavorite = (id: string) => {
-    setFavorites(prev => ({ ...prev, [id]: !prev[id] }));
+    setFavorites(prev => {
+      const willBeSaved = !prev[id];
+      const next = { ...prev, [id]: willBeSaved };
+      try {
+        const activeIds = Object.keys(next).filter(k => next[k]);
+        localStorage.setItem('shreeniwas_user_favorites', JSON.stringify(activeIds));
+
+        // Sync with user's portal saved properties if logged in
+        const session = localStorage.getItem('shreeniwas_user_session');
+        if (session) {
+          const parsed = JSON.parse(session);
+          if (parsed?.email) {
+            const userFavsKey = `shreeniwas_saved_favorites_${parsed.email}`;
+            const existingList = JSON.parse(localStorage.getItem(userFavsKey) || '[]');
+            const currentProp = propertiesList.find(p => String(p.id) === String(id));
+            if (currentProp) {
+              let updatedList;
+              if (willBeSaved) {
+                const item = {
+                  id: String(currentProp.id),
+                  title: currentProp.title,
+                  location: currentProp.location,
+                  price: currentProp.price,
+                  bhk: currentProp.bhk,
+                  image: currentProp.image,
+                  type: currentProp.type
+                };
+                updatedList = [item, ...existingList.filter((x: any) => String(x.id) !== String(id))];
+              } else {
+                updatedList = existingList.filter((x: any) => String(x.id) !== String(id));
+              }
+              localStorage.setItem(userFavsKey, JSON.stringify(updatedList));
+            }
+          }
+        }
+
+        window.dispatchEvent(new Event('shreeniwas_favorites_updated'));
+      } catch (e) {}
+      return next;
+    });
   };
 
   const toggleCompare = (prop: any) => {
@@ -434,20 +505,11 @@ function PropertiesContent() {
               <div className="md:col-span-3 relative">
                 <div className="flex justify-between items-center mb-1">
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select City</label>
-                  <button
-                    type="button"
-                    onClick={handleDetectGPS}
-                    disabled={isLocating}
-                    className="text-[10px] font-bold text-[#C9A96E] hover:text-[#0A1628] flex items-center gap-1 transition-colors cursor-pointer"
-                    title="Detect closest Rajasthan city via GPS"
-                  >
-                    {isLocating ? (
-                      <Loader2 className="w-3 h-3 animate-spin text-[#C9A96E]" />
-                    ) : (
-                      <LocateFixed className="w-3 h-3 text-[#C9A96E]" />
-                    )}
-                    <span>GPS</span>
-                  </button>
+                  {detectedNote && (
+                    <span className="text-[10px] text-emerald-700 font-semibold truncate max-w-[140px]">
+                      {detectedNote}
+                    </span>
+                  )}
                 </div>
                 <div className="relative">
                   <MapPin className="w-4 h-4 text-[#C9A96E] absolute left-3 top-1/2 -translate-y-1/2" />

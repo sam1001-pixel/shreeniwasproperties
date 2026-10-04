@@ -128,7 +128,7 @@ export default function AdminDashboard() {
     googleMapsUrl: '' 
   });
 
-  // 99acres-Style Projects Management States
+  // Builder Projects Management States
   const [newProjectsList, setNewProjectsList] = useState<NewProjectItem[]>(DEFAULT_NEW_PROJECTS);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [editingProject, setEditingProject] = useState<NewProjectItem | null>(null);
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
     const savedGallery = localStorage.getItem('shreeniwas_media_gallery');
     if (savedGallery) { try { setMediaGallery(JSON.parse(savedGallery)); } catch (e) {} }
 
-    // Load 99acres-Style Projects
+    // Load Builder Projects
     const savedProjects = localStorage.getItem('shreeniwas_new_projects');
     if (savedProjects) { try { setNewProjectsList(JSON.parse(savedProjects)); } catch (e) {} }
 
@@ -426,7 +426,7 @@ export default function AdminDashboard() {
     notifyDataUpdated();
   };
 
-  // 99acres-Style Projects Handlers
+  // Builder Projects Handlers
   const handleSaveProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!projectForm.name || !projectForm.builder || !projectForm.priceRange) return;
@@ -706,7 +706,7 @@ export default function AdminDashboard() {
   const navItems = adminRole === 'super' ? [
     { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
-    { id: 'projects', label: '99acres New Projects', icon: Layers },
+    { id: 'projects', label: 'Builder Projects & Townships', icon: Layers },
     { id: 'brokerage', label: 'Brokerage & Financials', icon: IndianRupee },
     { id: 'reels', label: 'Property Video Reels', icon: Video },
     { id: 'reviews', label: 'Buyer & Landlord Reviews', icon: Star },
@@ -1062,13 +1062,13 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* 99ACRES-STYLE NEW PROJECTS TAB */}
+          {/* BUILDER PROJECTS & TOWNSHIPS TAB */}
           {activeTab === 'projects' && adminRole === 'super' && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1628] text-[#C9A96E] text-xs font-bold uppercase tracking-wider mb-1 border border-[#C9A96E]/30">
-                    <Layers className="w-3.5 h-3.5" /> 99acres Style Showcase
+                    <Layers className="w-3.5 h-3.5" /> Builder Townships Showcase
                   </div>
                   <h3 className="text-xl font-serif font-bold text-[#0A1628]">New Projects & Builder Townships</h3>
                   <p className="text-xs text-slate-500">Super Admin Power: Manage builder societies, RERA approvals, pricing brackets, and brochure leads.</p>
@@ -2385,14 +2385,14 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Add/Edit 99acres-Style Builder Project Modal */}
+      {/* Add/Edit Builder Project Modal */}
       <AnimatePresence>
         {showProjectModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl text-[#0A1628] space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h4 className="font-serif font-bold text-lg">
-                  {editingProject ? 'Edit Builder Project' : 'Add 99acres-Style Builder Project'}
+                  {editingProject ? 'Edit Builder Project' : 'Add New Builder Project'}
                 </h4>
                 <button onClick={() => setShowProjectModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer">
                   <XCircle className="w-5 h-5" />

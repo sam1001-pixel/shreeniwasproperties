@@ -228,6 +228,91 @@ export default function PropertyDetailPage() {
     setProperty(BASE_MOCK_PROPERTIES['royal-heritage-residency-jaipur']);
   }, [slug]);
 
+  // Load and sync saved favorite status for this property
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('shreeniwas_user_favorites');
+      if (stored && slug) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const match = parsed.some((item: string) => 
+            item === slug || 
+            item === property?.id || 
+            property?.title?.toLowerCase().includes(item.toLowerCase())
+          );
+          setIsSaved(match);
+        }
+      }
+    } catch (e) {}
+
+    const handleFavsUpdate = () => {
+      try {
+        const stored = localStorage.getItem('shreeniwas_user_favorites');
+        if (stored && slug) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const match = parsed.some((item: string) => 
+              item === slug || 
+              item === property?.id || 
+              property?.title?.toLowerCase().includes(item.toLowerCase())
+            );
+            setIsSaved(match);
+          }
+        }
+      } catch (e) {}
+    };
+
+    window.addEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
+    return () => window.removeEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
+  }, [slug, property]);
+
+  const handleToggleSave = () => {
+    const nextSaved = !isSaved;
+    setIsSaved(nextSaved);
+
+    try {
+      const propIdentifier = property?.id || slug;
+      const stored = localStorage.getItem('shreeniwas_user_favorites');
+      const list: string[] = stored ? JSON.parse(stored) : [];
+      let updatedList: string[];
+
+      if (nextSaved) {
+        updatedList = Array.from(new Set([...list, String(propIdentifier), slug]));
+      } else {
+        updatedList = list.filter(item => item !== String(propIdentifier) && item !== slug);
+      }
+      localStorage.setItem('shreeniwas_user_favorites', JSON.stringify(updatedList));
+
+      // Also sync into user portal favorites if session active
+      const session = localStorage.getItem('shreeniwas_user_session');
+      if (session) {
+        const parsed = JSON.parse(session);
+        if (parsed?.email) {
+          const userFavsKey = `shreeniwas_saved_favorites_${parsed.email}`;
+          const existing = JSON.parse(localStorage.getItem(userFavsKey) || '[]');
+          let nextUserFavs;
+          if (nextSaved) {
+            const item = {
+              id: String(property?.id || slug),
+              title: property?.title || 'Luxury Property',
+              location: property?.location || 'Jaipur',
+              price: property?.price || 'Price on Request',
+              bhk: property?.bhk || '3 BHK',
+              image: property?.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800',
+              type: property?.type || 'Apartment'
+            };
+            nextUserFavs = [item, ...existing.filter((x: any) => x.id !== String(property?.id || slug))];
+          } else {
+            nextUserFavs = existing.filter((x: any) => x.id !== String(property?.id || slug) && x.id !== slug);
+          }
+          localStorage.setItem(userFavsKey, JSON.stringify(nextUserFavs));
+        }
+      }
+
+      window.dispatchEvent(new Event('shreeniwas_favorites_updated'));
+    } catch (e) {}
+  };
+
   const sections = [
     { id: 'overview', label: 'Overview' },
     { id: 'photos', label: 'Photos' },
@@ -288,7 +373,7 @@ export default function PropertyDetailPage() {
           <button onClick={handleShare} className="p-2 bg-slate-100 rounded-full shadow-sm text-slate-700" title="Share Property">
             {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4"/>}
           </button>
-          <button onClick={() => setIsSaved(!isSaved)} className="p-2 bg-slate-100 rounded-full shadow-sm" title="Save Favorite">
+          <button onClick={handleToggleSave} className="p-2 bg-slate-100 rounded-full shadow-sm cursor-pointer" title="Save Favorite">
             <Heart className={`w-4 h-4 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-slate-600'}`}/>
           </button>
         </div>
@@ -302,13 +387,26 @@ export default function PropertyDetailPage() {
             <Link href="/properties" className="hover:text-[#C9A96E]">Properties</Link> <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-[#0A1628]">{property.title}</span>
           </div>
-          <button 
-            onClick={handleShare}
-            className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-[#C9A96E] font-bold"
-          >
-            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-            {copiedLink ? 'Link Copied!' : 'Share Listing'}
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleToggleSave}
+              className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
+                isSaved 
+                  ? 'bg-rose-50 border-rose-200 text-rose-600' 
+                  : 'bg-white border-slate-200 text-slate-600 hover:text-[#0A1628] hover:bg-slate-50'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-slate-500'}`} />
+              <span>{isSaved ? 'Saved to Favorites' : 'Save Property'}</span>
+            </button>
+            <button 
+              onClick={handleShare}
+              className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-[#C9A96E] font-bold cursor-pointer"
+            >
+              {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
+              {copiedLink ? 'Link Copied!' : 'Share Listing'}
+            </button>
+          </div>
         </div>
       </div>
 

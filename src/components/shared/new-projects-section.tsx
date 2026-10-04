@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
   Building2, MapPin, IndianRupee, ShieldCheck, Download, 
   ExternalLink, Calendar, Layers, CheckCircle2, Sparkles, 
-  ArrowRight, Phone, MessageSquare, ChevronRight, Award
+  ArrowRight, Phone, MessageSquare, ChevronRight, Award,
+  ChevronLeft
 } from 'lucide-react';
 
 export interface NewProjectItem {
@@ -101,6 +102,8 @@ export default function NewProjectsSection() {
   const [leadPhone, setLeadPhone] = useState('');
   const [leadName, setLeadName] = useState('');
   const [leadSent, setLeadSent] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     try {
@@ -135,6 +138,26 @@ export default function NewProjectsSection() {
     ? projects 
     : projects.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
 
+  // Infinite left-to-right smooth auto-scroll effect
+  useEffect(() => {
+    let animId: number;
+    const scrollStep = () => {
+      if (scrollContainerRef.current && !isPaused) {
+        const container = scrollContainerRef.current;
+        // When scrolled halfway across duplicated items, loop seamlessly
+        if (container.scrollLeft >= container.scrollWidth / 2) {
+          container.scrollLeft = 0;
+        } else {
+          container.scrollLeft += 0.8;
+        }
+      }
+      animId = requestAnimationFrame(scrollStep);
+    };
+
+    animId = requestAnimationFrame(scrollStep);
+    return () => cancelAnimationFrame(animId);
+  }, [isPaused, filteredProjects]);
+
   const handleBrochureDownload = (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadPhone.trim() || !brochureModalProject) return;
@@ -158,7 +181,7 @@ export default function NewProjectsSection() {
 
     setLeadSent(true);
 
-    // Redirect to WhatsApp consultation or open brochure link
+    // Redirect to WhatsApp consultation
     setTimeout(() => {
       const msg = encodeURIComponent(`Hello Shreeniwas Properties, I am interested in ${brochureModalProject.name} by ${brochureModalProject.builder} (RERA: ${brochureModalProject.reraNumber}). Please send me the official PDF brochure and payment plan.`);
       window.open(`https://wa.me/919876543210?text=${msg}`, '_blank');
@@ -169,169 +192,209 @@ export default function NewProjectsSection() {
     }, 1200);
   };
 
-  return (
-    <section className="py-12 sm:py-16 px-4 bg-[#F8F9FB] border-b border-slate-200/80">
-      <div className="container mx-auto max-w-7xl">
-        {/* Section Header (99acres Style) */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1628] text-[#C9A96E] text-xs font-bold uppercase tracking-wider mb-2 border border-[#C9A96E]/30">
-              <Building2 className="w-3.5 h-3.5" /> 99acres-Style Builder Showcase
-            </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#0A1628]">
-              New Projects & Builder Townships
-            </h2>
-            <p className="text-slate-600 text-sm mt-1 max-w-2xl">
-              Explore premier residential townships & high-rise societies from Rajasthan’s top builders with verified RERA certificates and zero brokerage.
-            </p>
+  const manualScroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const amount = 320;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -amount : amount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Render project card component for the marquee carousel
+  const renderCard = (proj: NewProjectItem, indexKey: string) => (
+    <div
+      key={indexKey}
+      className="w-[280px] sm:w-[310px] shrink-0 bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group select-none"
+    >
+      <div>
+        {/* Compact Cover Image & Status Badge */}
+        <div className="relative h-36 w-full overflow-hidden bg-slate-100">
+          <Image
+            src={proj.coverImage}
+            alt={proj.name}
+            fill
+            sizes="(max-width: 768px) 280px, 310px"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/85 via-transparent to-black/20" />
+
+          {/* Status Badge */}
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1">
+            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+              proj.status === 'Ready to Move' 
+                ? 'bg-emerald-600 text-white' 
+                : proj.status === 'New Launch' 
+                ? 'bg-amber-600 text-white' 
+                : 'bg-[#0A1628] text-[#C9A96E] border border-[#C9A96E]/40'
+            }`}>
+              {proj.status}
+            </span>
           </div>
 
-          {/* City Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full md:w-auto pb-1">
-            {cities.map(c => (
-              <button
-                key={c}
-                onClick={() => setSelectedCity(c)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  selectedCity === c 
-                    ? 'bg-[#0A1628] text-[#C9A96E] shadow border border-[#C9A96E]/40' 
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                {c === 'All' ? 'All Rajasthan' : c}
-              </button>
-            ))}
+          {/* Builder Name Watermark */}
+          <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-white text-[11px]">
+            <span className="font-bold text-[#C9A96E] flex items-center gap-1 truncate max-w-[150px]">
+              <Award className="w-3 h-3 shrink-0" /> {proj.builder}
+            </span>
+            <span className="text-[9px] text-slate-300 bg-black/50 px-1.5 py-0.5 rounded backdrop-blur-xs">
+              {proj.possessionDate}
+            </span>
           </div>
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredProjects.map((proj) => (
-            <div
-              key={proj.id}
-              className="bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
-            >
-              <div>
-                {/* Project Cover Image & Status Badge */}
-                <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                  <Image
-                    src={proj.coverImage}
-                    alt={proj.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/80 via-transparent to-black/20" />
+        {/* Card Body */}
+        <div className="p-3 sm:p-3.5 space-y-2">
+          <div>
+            <h3 className="font-serif font-bold text-sm text-[#0A1628] group-hover:text-[#C9A96E] transition-colors truncate">
+              {proj.name}
+            </h3>
+            <p className="text-slate-500 text-[11px] flex items-center gap-1 mt-0.5 truncate">
+              <MapPin className="w-3 h-3 text-[#C9A96E] shrink-0" />
+              <span className="truncate">{proj.location}</span>
+            </p>
+          </div>
 
-                  {/* Status Badge */}
-                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      proj.status === 'Ready to Move' 
-                        ? 'bg-emerald-600 text-white' 
-                        : proj.status === 'New Launch' 
-                        ? 'bg-amber-600 text-white' 
-                        : 'bg-[#0A1628] text-[#C9A96E] border border-[#C9A96E]/40'
-                    }`}>
-                      {proj.status}
-                    </span>
-                  </div>
+          {/* Price & Configurations */}
+          <div className="bg-[#FDFBF7] p-2 rounded-xl border border-slate-200/60 flex items-center justify-between">
+            <span className="text-xs font-bold text-[#0A1628] font-mono">{proj.priceRange}</span>
+            <span className="text-[10px] font-semibold bg-white px-2 py-0.5 rounded text-slate-700 border border-slate-200 truncate max-w-[120px]">
+              {proj.configurations.slice(0, 2).join(', ')}
+            </span>
+          </div>
 
-                  {/* Builder Name Watermark */}
-                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-xs">
-                    <span className="font-bold text-[#C9A96E] flex items-center gap-1">
-                      <Award className="w-3.5 h-3.5" /> {proj.builder}
-                    </span>
-                    <span className="text-[10px] text-slate-300 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-sm">
-                      Possession: {proj.possessionDate}
-                    </span>
-                  </div>
-                </div>
+          {/* RERA Approval */}
+          <div className="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
+            <span className="flex items-center gap-1 text-emerald-800 font-semibold">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" /> RERA
+            </span>
+            <span className="font-mono text-[9px] text-slate-400 truncate max-w-[120px]">{proj.reraNumber}</span>
+          </div>
 
-                {/* Project Card Content */}
-                <div className="p-4 sm:p-5 space-y-3">
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-[#0A1628] group-hover:text-[#C9A96E] transition-colors line-clamp-1">
-                      {proj.name}
-                    </h3>
-                    <p className="text-slate-500 text-xs flex items-center gap-1 mt-1 truncate">
-                      <MapPin className="w-3.5 h-3.5 text-[#C9A96E] shrink-0" />
-                      <span>{proj.location}</span>
-                    </p>
-                  </div>
+          {/* Compact Highlights */}
+          <div className="flex flex-wrap gap-1 pt-0.5">
+            {proj.highlights.slice(0, 2).map((h, i) => (
+              <span key={i} className="text-[8px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium truncate max-w-[130px]">
+                ✓ {h}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
 
-                  {/* Price & BHK Bracket */}
-                  <div className="bg-[#FDFBF7] p-2.5 rounded-2xl border border-slate-200/60">
-                    <div className="flex items-baseline justify-between mb-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Price Bracket</span>
-                      <span className="text-sm font-bold text-[#0A1628] font-mono">{proj.priceRange}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {proj.configurations.map((c, i) => (
-                        <span key={i} className="text-[10px] font-semibold bg-white px-2 py-0.5 rounded-md text-slate-700 border border-slate-200">
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+      {/* Card Footer Actions */}
+      <div className="p-3 sm:p-3.5 pt-0 space-y-1.5">
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            onClick={() => setBrochureModalProject(proj)}
+            className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-[#0A1628] rounded-lg text-[11px] font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <Download className="w-3 h-3 text-[#C9A96E]" />
+            <span>Brochure</span>
+          </button>
+          <a
+            href={proj.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${proj.name} ${proj.location}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <MapPin className="w-3 h-3 text-emerald-600" />
+            <span>Map</span>
+          </a>
+        </div>
 
-                  {/* RERA Registration */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                    <span className="flex items-center gap-1 text-emerald-800 font-semibold">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> RERA Approved
-                    </span>
-                    <span className="font-mono text-[10px] text-slate-400 truncate max-w-[120px]">{proj.reraNumber}</span>
-                  </div>
+        <a
+          href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hello Shreeniwas Properties, I want to book a VIP Site Visit for project ${proj.name} by ${proj.builder} in ${proj.city}.`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-2 bg-[#0A1628] hover:bg-[#0A1628]/90 text-white rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 shadow-xs border border-[#C9A96E]/30 cursor-pointer"
+        >
+          <Calendar className="w-3 h-3 text-[#C9A96E]" />
+          <span>VIP Site Visit</span>
+        </a>
+      </div>
+    </div>
+  );
 
-                  {/* Highlights Bullet Tags */}
-                  <div className="flex flex-wrap gap-1 pt-1">
-                    {proj.highlights.slice(0, 3).map((h, i) => (
-                      <span key={i} className="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
-                        ✓ {h}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Card Footer Actions */}
-              <div className="p-4 sm:p-5 pt-0 space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setBrochureModalProject(proj)}
-                    className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-[#0A1628] rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5 text-[#C9A96E]" />
-                    <span>Brochure</span>
-                  </button>
-                  <a
-                    href={proj.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${proj.name} ${proj.location}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Map Dir</span>
-                  </a>
-                </div>
-
-                <a
-                  href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hello Shreeniwas Properties, I want to book a VIP Site Visit for project ${proj.name} by ${proj.builder} in ${proj.city}.`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-[#0A1628] hover:bg-[#0A1628]/90 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm border border-[#C9A96E]/30 cursor-pointer"
-                >
-                  <Calendar className="w-3.5 h-3.5 text-[#C9A96E]" />
-                  <span>Book VIP Site Visit</span>
-                </a>
-              </div>
+  return (
+    <section id="new-projects" className="py-8 sm:py-10 px-4 bg-[#F8F9FB] border-b border-slate-200/80">
+      <div className="container mx-auto max-w-7xl">
+        {/* Compact Section Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-5 gap-3">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0A1628] text-[#C9A96E] text-[10px] font-bold uppercase tracking-wider mb-1.5 border border-[#C9A96E]/30">
+              <Building2 className="w-3 h-3" /> Rajasthan Premier Townships & Builder Projects
             </div>
-          ))}
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-[#0A1628]">
+              New Projects & Builder Townships
+            </h2>
+            <p className="text-slate-600 text-xs mt-0.5 max-w-2xl">
+              Verified high-rise societies and township developments from Rajasthan’s leading builders with RERA credentials and 0% brokerage.
+            </p>
+          </div>
+
+          {/* Controls: City Filter Pills + Scroll Navigation */}
+          <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+              {cities.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setSelectedCity(c)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    selectedCity === c 
+                      ? 'bg-[#0A1628] text-[#C9A96E] shadow border border-[#C9A96E]/40' 
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  {c === 'All' ? 'All' : c}
+                </button>
+              ))}
+            </div>
+
+            <div className="hidden sm:flex items-center gap-1 pl-2">
+              <button
+                onClick={() => manualScroll('left')}
+                className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 cursor-pointer"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => manualScroll('right')}
+                className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 cursor-pointer"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Auto-Scrollable Left to Right Compact Carousel Track */}
+        <div 
+          className="relative overflow-hidden"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+        >
+          <div 
+            ref={scrollContainerRef}
+            className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"
+          >
+            {/* First sequence of items */}
+            {filteredProjects.map((proj) => renderCard(proj, `first-${proj.id}`))}
+            {/* Duplicate sequence for seamless loop */}
+            {filteredProjects.map((proj) => renderCard(proj, `second-${proj.id}`))}
+          </div>
         </div>
       </div>
 
       {/* Brochure Instant Request Modal */}
       {brochureModalProject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in-95">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in-95">
             <button
               onClick={() => setBrochureModalProject(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-xl font-bold cursor-pointer"
@@ -340,50 +403,50 @@ export default function NewProjectsSection() {
             </button>
 
             <div className="text-center mb-5">
-              <div className="w-12 h-12 bg-[#0A1628] text-[#C9A96E] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-md">
-                <Download className="w-6 h-6" />
+              <div className="w-11 h-11 bg-[#0A1628] text-[#C9A96E] rounded-2xl flex items-center justify-center mx-auto mb-2.5 shadow-md">
+                <Download className="w-5 h-5" />
               </div>
-              <h3 className="font-serif font-bold text-xl text-[#0A1628]">Download Project Brochure</h3>
-              <p className="text-xs text-slate-500 mt-1">
+              <h3 className="font-serif font-bold text-lg text-[#0A1628]">Download Project Brochure</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
                 Official floor plans, master layout, and pricing breakdown for <strong className="text-[#0A1628]">{brochureModalProject.name}</strong>.
               </p>
             </div>
 
             {leadSent ? (
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                <p className="text-xs font-bold text-emerald-800">Brochure Link Sent Successfully!</p>
+                <CheckCircle2 className="w-7 h-7 text-emerald-600 mx-auto" />
+                <p className="text-xs font-bold text-emerald-800">Brochure Request Sent Successfully!</p>
                 <p className="text-[11px] text-emerald-700">Connecting you directly to Shreeniwas WhatsApp Desk...</p>
               </div>
             ) : (
-              <form onSubmit={handleBrochureDownload} className="space-y-4">
+              <form onSubmit={handleBrochureDownload} className="space-y-3.5">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Your Name</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Your Name</label>
                   <input
                     type="text"
                     required
                     value={leadName}
                     onChange={(e) => setLeadName(e.target.value)}
                     placeholder="e.g. Vikramaditya Rathore"
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">WhatsApp Mobile Number</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">WhatsApp Mobile Number</label>
                   <input
                     type="tel"
                     required
                     value={leadPhone}
                     onChange={(e) => setLeadPhone(e.target.value)}
                     placeholder="e.g. +91 98765 43210"
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-[#0A1628] hover:bg-[#0A1628]/90 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-[#0A1628]/20 flex items-center justify-center gap-2 cursor-pointer border border-[#C9A96E]/30"
+                  className="w-full py-3 bg-[#0A1628] hover:bg-[#0A1628]/90 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer border border-[#C9A96E]/30"
                 >
-                  <Download className="w-4 h-4 text-[#C9A96E]" />
+                  <Download className="w-3.5 h-3.5 text-[#C9A96E]" />
                   <span>Receive PDF Brochure on WhatsApp</span>
                 </button>
               </form>
