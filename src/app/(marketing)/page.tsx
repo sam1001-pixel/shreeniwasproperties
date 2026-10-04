@@ -319,8 +319,18 @@ export default function MarketingPage() {
   const [isJourneyPaused, setIsJourneyPaused] = useState(false);
   const [isTestimonialPaused, setIsTestimonialPaused] = useState(false);
 
+  const [heroBg, setHeroBg] = useState('https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop');
+
   const loadLiveData = () => {
     try {
+      const savedSettings = localStorage.getItem('shreeniwas_platform_settings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        if (parsed.heroBgUrl) {
+          setHeroBg(parsed.heroBgUrl);
+        }
+      }
+
       const savedProps = localStorage.getItem('shreeniwas_admin_properties');
       if (savedProps) {
         const parsed = JSON.parse(savedProps);
@@ -545,7 +555,7 @@ export default function MarketingPage() {
       <section className="relative min-h-[85vh] flex items-center justify-center pt-20 pb-12 px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
-            src="https://images.unsplash.com/photo-1599661559886-41b80c541b00?q=80&w=2069&auto=format&fit=crop" 
+            src={heroBg} 
             alt="Rajasthan Royal Architecture" 
             fill 
             className="object-cover object-center"

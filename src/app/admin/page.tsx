@@ -167,6 +167,7 @@ export default function AdminDashboard() {
     siteTitle: 'Shreeniwas Properties',
     tagline: 'Exclusive Real Estate & Rental Network in Rajasthan',
     logoUrl: '',
+    heroBgUrl: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop',
     contactEmail: 'contact@shreeniwasproperties.com',
     supportPhone: '+91 98765 43210',
     headOffice: '15 Royal Avenue, C-Scheme, Jaipur, Rajasthan 302001',
@@ -1616,6 +1617,40 @@ export default function AdminDashboard() {
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
                     </div>
+                  </div>
+
+                  {/* Hero Background Image */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-bold uppercase text-slate-700 text-xs">Landing Page Hero Background Image</label>
+                      <div className="flex items-center gap-2 text-xs">
+                        <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                          <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleFileUpload(e, (dataUrl) => setSiteSettings(prev => ({ ...prev, heroBgUrl: dataUrl })))}
+                          />
+                        </label>
+                        <span className="text-slate-300">|</span>
+                        <button
+                          type="button"
+                          onClick={() => openGalleryPicker((url) => setSiteSettings(prev => ({ ...prev, heroBgUrl: url })), 'Properties')}
+                          className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Camera className="w-3 h-3" /> Pick Gallery
+                        </button>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={siteSettings.heroBgUrl || ''}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, heroBgUrl: e.target.value })}
+                      placeholder="https://images.unsplash.com/... or upload Rajasthan royal background image"
+                      className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">Rajasthan heritage fort/palace background image displayed on main landing page hero.</p>
                   </div>
 
                   <div>
