@@ -65,6 +65,7 @@ const REELS_DATA: ReelItem[] = [
 export default function OwnerReelsFeed() {
   const [selectedReel, setSelectedReel] = useState<ReelItem | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const handleShare = (reel: ReelItem) => {
     navigator.clipboard.writeText(`https://shreeniwasproperties-pi.vercel.app/reels/${reel.id}`);
@@ -72,105 +73,125 @@ export default function OwnerReelsFeed() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  return (
-    <section className="py-20 px-4 bg-[#0A1628] text-white relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#C9A96E]/10 blur-[180px] rounded-full pointer-events-none"></div>
+  // Duplicate reels array to ensure smooth continuous marquee looping
+  const loopedReels = [...REELS_DATA, ...REELS_DATA, ...REELS_DATA];
 
-      <div className="max-w-7xl mx-auto relative z-10 space-y-12">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+  return (
+    <section className="py-10 sm:py-12 px-4 bg-[#0A1628] text-white relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#C9A96E]/10 blur-[140px] rounded-full pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto relative z-10 space-y-6">
+        {/* Compact Section Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#C9A96E]/20 text-[#C9A96E] border border-[#C9A96E]/40 text-xs font-bold uppercase tracking-wider mb-3">
-              <Camera className="w-4 h-4 text-[#C9A96E]" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A96E]/20 text-[#C9A96E] border border-[#C9A96E]/40 text-[11px] font-bold uppercase tracking-wider mb-2">
+              <Camera className="w-3.5 h-3.5 text-[#C9A96E]" />
               Owner's Corner & Live Reels
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-white">
               Watch Real Site Tours & <span className="text-[#C9A96E]">Owner Insights</span>
             </h2>
-            <p className="text-slate-400 text-sm sm:text-base mt-2 max-w-2xl font-light">
-              Explore 60-second video walkthroughs, site inspection shorts, and market tips straight from our property owners and team.
+            <p className="text-slate-400 text-xs sm:text-sm mt-1 font-light">
+              60-second site inspection shorts & walkthroughs straight from our property owners.
             </p>
           </div>
 
-          {/* Social Media Links Bar */}
+          {/* Compact Social Links */}
           <div className="flex items-center gap-2 flex-wrap">
             <a 
               href="https://instagram.com" 
               target="_blank" 
               rel="noreferrer" 
-              className="px-4 py-2.5 bg-white/10 hover:bg-[#C9A96E] hover:text-[#0A1628] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-white/10"
+              className="px-3 py-1.5 bg-white/10 hover:bg-[#C9A96E] hover:text-[#0A1628] text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/10"
             >
-              <Camera className="w-4 h-4" /> Instagram Reels
+              <Camera className="w-3.5 h-3.5" /> Instagram
             </a>
             <a 
               href="https://youtube.com" 
               target="_blank" 
               rel="noreferrer" 
-              className="px-4 py-2.5 bg-white/10 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-white/10"
+              className="px-3 py-1.5 bg-white/10 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/10"
             >
-              <Video className="w-4 h-4" /> YouTube Shorts
+              <Video className="w-3.5 h-3.5" /> Shorts
             </a>
             <a 
               href="https://wa.me/919876543210" 
               target="_blank" 
               rel="noreferrer" 
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg"
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow"
             >
-              <MessageCircle className="w-4 h-4" /> WhatsApp Channel
+              <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
             </a>
           </div>
         </div>
 
-        {/* Reels Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {REELS_DATA.map((reel) => (
-            <motion.div
-              key={reel.id}
-              whileHover={{ y: -6 }}
-              className="bg-slate-900/90 rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative group cursor-pointer flex flex-col justify-between"
-              onClick={() => setSelectedReel(reel)}
-            >
-              {/* Aspect Ratio 9:16 Vertical Reel Box */}
-              <div className="relative aspect-[9/14] overflow-hidden">
-                <img 
-                  src={reel.thumbnail} 
-                  alt={reel.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628] via-transparent to-black/30"></div>
+        {/* Auto-Scrollable Horizontal Reels Track */}
+        <div 
+          className="relative overflow-hidden py-2"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+        >
+          <motion.div
+            className="flex gap-4 w-max"
+            animate={isPaused ? {} : { x: ["0%", "-33.333%"] }}
+            transition={{
+              x: {
+                repeat: Infinity,
+                repeatType: "loop",
+                duration: 20,
+                ease: "linear",
+              },
+            }}
+          >
+            {loopedReels.map((reel, idx) => (
+              <div
+                key={`${reel.id}-${idx}`}
+                className="w-44 sm:w-52 flex-shrink-0 bg-slate-900/90 rounded-2xl overflow-hidden border border-white/10 shadow-lg relative group cursor-pointer"
+                onClick={() => setSelectedReel(reel)}
+              >
+                {/* Aspect Ratio 9:14 Vertical Compact Card */}
+                <div className="relative aspect-[9/13] overflow-hidden">
+                  <img 
+                    src={reel.thumbnail} 
+                    alt={reel.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628] via-transparent to-black/20"></div>
 
-                {/* Top Badge */}
-                <span className="absolute top-3 left-3 px-2.5 py-1 bg-[#0A1628]/80 backdrop-blur-md text-[#C9A96E] text-[10px] font-bold rounded-lg uppercase tracking-wider border border-[#C9A96E]/30">
-                  {reel.tag}
-                </span>
+                  {/* Top Tag Badge */}
+                  <span className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-[#0A1628]/80 backdrop-blur-md text-[#C9A96E] text-[9px] font-bold rounded uppercase tracking-wider border border-[#C9A96E]/30">
+                    {reel.tag}
+                  </span>
 
-                {/* Duration Badge */}
-                <span className="absolute top-3 right-3 px-2 py-0.5 bg-black/60 backdrop-blur-md text-white text-[10px] font-mono rounded">
-                  {reel.duration}
-                </span>
+                  {/* Duration Badge */}
+                  <span className="absolute top-2.5 right-2.5 px-1.5 py-0.5 bg-black/60 backdrop-blur-md text-white text-[9px] font-mono rounded">
+                    {reel.duration}
+                  </span>
 
-                {/* Center Play Icon */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-[#C9A96E]/90 text-[#0A1628] flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                    <Play className="w-6 h-6 fill-[#0A1628] ml-1" />
+                  {/* Play Icon */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-[#C9A96E]/90 text-[#0A1628] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Play className="w-4 h-4 fill-[#0A1628] ml-0.5" />
+                    </div>
+                  </div>
+
+                  {/* Bottom Text Overlay */}
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <h4 className="font-serif font-bold text-xs leading-snug line-clamp-2 text-white">{reel.title}</h4>
+                    <div className="text-[10px] text-slate-300 mt-1 flex items-center justify-between">
+                      <span className="truncate max-w-[90px]">{reel.location}</span>
+                      <span className="flex items-center gap-1 font-mono text-[9px] text-slate-400">
+                        <Eye className="w-2.5 h-2.5 text-[#C9A96E]" /> {reel.views}
+                      </span>
+                    </div>
                   </div>
                 </div>
-
-                {/* Bottom Overlay Text */}
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <h4 className="font-serif font-bold text-sm leading-snug line-clamp-2 text-white">{reel.title}</h4>
-                  <p className="text-[11px] text-slate-300 mt-1 flex items-center justify-between">
-                    <span>{reel.location}</span>
-                    <span className="flex items-center gap-2 font-mono text-[10px] text-slate-400">
-                      <span className="flex items-center gap-1"><Eye className="w-3 h-3 text-[#C9A96E]" /> {reel.views}</span>
-                      <span className="flex items-center gap-1"><Heart className="w-3 h-3 text-rose-400 fill-rose-400" /> {reel.likes}</span>
-                    </span>
-                  </p>
-                </div>
               </div>
-            </motion.div>
-          ))}
+            ))}
+          </motion.div>
         </div>
       </div>
 

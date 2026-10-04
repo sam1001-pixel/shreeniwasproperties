@@ -382,7 +382,7 @@ export default function MarketingPage() {
         }}
       />
       {/* 1. Hero Section with Search Engine */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden">
+      <section className="relative min-h-[85vh] flex items-center justify-center pt-20 pb-12 px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
             src="https://images.unsplash.com/photo-1599661559886-41b80c541b00?q=80&w=2069&auto=format&fit=crop" 
@@ -395,37 +395,37 @@ export default function MarketingPage() {
         </div>
 
         <div className="relative z-10 container mx-auto max-w-6xl">
-          <div className="max-w-3xl mb-8 sm:mb-12">
+          <div className="max-w-3xl mb-6 sm:mb-8">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#C9A96E]/20 border border-[#C9A96E]/30 text-[#C9A96E] font-semibold text-sm mb-6 backdrop-blur-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A96E]/20 border border-[#C9A96E]/30 text-[#C9A96E] font-semibold text-xs mb-4 backdrop-blur-sm"
             >
-              <Star className="w-4 h-4 fill-current" />
+              <Star className="w-3.5 h-3.5 fill-current" />
               Rajasthan's #1 Premium Real Estate Marketplace
             </motion.div>
             
             <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-3xl sm:text-5xl lg:text-7xl leading-tight font-serif text-white font-bold mb-6"
+              className="text-2xl sm:text-4xl lg:text-6xl leading-tight font-serif text-white font-bold mb-4"
             >
               Find Your Perfect <br/>Property in <span className="text-[#C9A96E]">Rajasthan</span>
             </motion.h1>
             
             <motion.p 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-base sm:text-lg md:text-xl text-slate-300 font-light mb-8 max-w-2xl"
+              className="text-sm sm:text-base md:text-lg text-slate-300 font-light mb-6 max-w-xl"
             >
               Explore verified rentals, luxury villas, commercial spaces & plots in Jaipur, Jodhpur, Udaipur, Kota & more.
             </motion.p>
           </div>
 
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
@@ -434,72 +434,72 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 2. Top Localities & Price Trends Section */}
-      <section className="py-16 px-4 bg-white border-b border-slate-100">
+      {/* 2. Top Localities & Price Trends Section (Compact) */}
+      <section className="py-8 sm:py-10 px-4 bg-white border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+          <div className="flex flex-row justify-between items-center mb-4 gap-2">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-2">
-                <TrendingUp className="w-3.5 h-3.5" /> Shreeniwas Market Insights
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider mb-1">
+                <TrendingUp className="w-3 h-3" /> Market Trends
               </div>
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#0A1628]">Top Localities & Price Trends in Rajasthan</h2>
-              <p className="text-slate-500 text-sm mt-1">Average per sq.ft prices and annual growth rates across major hubs</p>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-[#0A1628]">Top Localities & Price Trends in Rajasthan</h2>
             </div>
             <Link href="/properties">
-              <span className="text-xs font-bold text-[#C9A96E] hover:underline flex items-center gap-1">
-                Explore All Localities <ArrowRight className="w-3.5 h-3.5" />
+              <span className="text-xs font-bold text-[#C9A96E] hover:underline flex items-center gap-1 whitespace-nowrap">
+                All Localities <ArrowRight className="w-3.5 h-3.5" />
               </span>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-3 overflow-x-auto pb-2 no-scrollbar">
             {LOCALITY_PRICE_TRENDS.map((loc, idx) => (
-              <div key={idx} className="bg-[#FDFBF7] p-4 rounded-2xl border border-slate-200/80 hover:border-[#C9A96E] transition-all hover:shadow-md group cursor-pointer">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-[#0A1628] group-hover:text-[#C9A96E] transition-colors">{loc.name}</span>
-                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">{loc.growth}</span>
+              <div key={idx} className="min-w-[150px] sm:min-w-0 bg-[#FDFBF7] p-3 rounded-xl border border-slate-200/80 hover:border-[#C9A96E] transition-all hover:shadow-sm group cursor-pointer flex-shrink-0 sm:flex-shrink">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-[#0A1628] group-hover:text-[#C9A96E] transition-colors truncate">{loc.name}</span>
+                  <span className="text-[9px] font-extrabold px-1 py-0.5 rounded bg-emerald-100 text-emerald-800 ml-1">{loc.growth}</span>
                 </div>
-                <p className="text-xs text-slate-500 mb-2">{loc.city}</p>
-                <div className="border-t border-slate-200/60 pt-2 flex items-baseline justify-between">
-                  <span className="text-sm font-extrabold text-[#0A1628]">{loc.avgPrice}</span>
-                  <span className="text-[10px] text-slate-400">/ sq.ft</span>
+                <p className="text-[10px] text-slate-500 mb-1.5">{loc.city}</p>
+                <div className="border-t border-slate-200/60 pt-1.5 flex items-baseline justify-between text-xs">
+                  <span className="font-extrabold text-[#0A1628]">{loc.avgPrice}</span>
+                  <span className="text-[9px] text-slate-400">/sq.ft</span>
                 </div>
-                <span className="text-[10px] text-slate-500 mt-1 block">{loc.count}</span>
+                <span className="text-[9px] text-slate-400 mt-0.5 block">{loc.count}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 3. Explore Properties by Budget Section */}
-      <section className="py-16 px-4 bg-slate-50">
+      {/* 3. Explore Properties by Budget Section (Compact Grid) */}
+      <section className="py-8 sm:py-10 px-4 bg-slate-50">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#0A1628]">Explore Properties by Budget</h2>
-            <p className="text-slate-500 text-sm mt-1">Quickly filter homes tailored to your exact investment target</p>
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-[#0A1628]">Explore Properties by Budget</h2>
+              <p className="text-slate-500 text-xs mt-0.5">Filter homes tailored to your target price</p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {[
-              { title: "Under ₹30 Lakhs", desc: "Budget flats, 1-2 BHK apartments & plots", icon: Home, bg: "from-blue-900 to-slate-900", query: "under-30l" },
-              { title: "₹30 Lakhs - ₹75 Lakhs", desc: "Family 2 & 3 BHK modern apartments", icon: Building2, bg: "from-amber-900 to-[#0A1628]", query: "30l-75l" },
-              { title: "₹75 Lakhs - ₹1.5 Crore", desc: "Premium 3-4 BHK gated society flats", icon: Building, bg: "from-emerald-900 to-[#0A1628]", query: "75l-1.5cr" },
-              { title: "₹1.5 Crore+ Luxury", desc: "Villas, Havelis, Penthouses & prime land", icon: Award, bg: "from-purple-950 to-[#0A1628]", query: "luxury" },
+              { title: "Under ₹30 Lakhs", desc: "Budget flats & plots", icon: Home, bg: "from-blue-900 to-slate-900", query: "under-30l" },
+              { title: "₹30L - ₹75 Lakhs", desc: "2 & 3 BHK apartments", icon: Building2, bg: "from-amber-900 to-[#0A1628]", query: "30l-75l" },
+              { title: "₹75L - ₹1.5 Cr", desc: "Gated society flats", icon: Building, bg: "from-emerald-900 to-[#0A1628]", query: "75l-1.5cr" },
+              { title: "₹1.5 Crore+ Luxury", desc: "Villas & Havelis", icon: Award, bg: "from-purple-950 to-[#0A1628]", query: "luxury" },
             ].map((budget, i) => (
               <Link href={`/properties?budget=${budget.query}`} key={i}>
-                <div className={`relative rounded-2xl p-6 text-white bg-gradient-to-br ${budget.bg} shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden border border-white/10`}>
-                  <div className="absolute right-3 top-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <budget.icon className="w-24 h-24" />
-                  </div>
-                  <div className="relative z-10">
-                    <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center mb-4 text-[#C9A96E] border border-white/10">
-                      <budget.icon className="w-5 h-5" />
+                <div className={`relative rounded-xl p-4 text-white bg-gradient-to-br ${budget.bg} shadow-md hover:shadow-xl transition-all group overflow-hidden border border-white/10 h-full`}>
+                  <div className="relative z-10 flex flex-col justify-between h-full">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur flex items-center justify-center mb-3 text-[#C9A96E] border border-white/10">
+                      <budget.icon className="w-4 h-4" />
                     </div>
-                    <h3 className="text-xl font-bold font-serif mb-1 group-hover:text-[#C9A96E] transition-colors">{budget.title}</h3>
-                    <p className="text-xs text-slate-300 font-light mb-6">{budget.desc}</p>
-                    <span className="text-xs font-semibold text-[#C9A96E] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      Browse Listings <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold font-serif mb-0.5 group-hover:text-[#C9A96E] transition-colors">{budget.title}</h3>
+                      <p className="text-[11px] text-slate-300 font-light mb-3">{budget.desc}</p>
+                      <span className="text-[11px] font-semibold text-[#C9A96E] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        Browse <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -508,24 +508,23 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 4. Featured Properties Collection */}
-      <section className="py-20 px-4 bg-white">
+      {/* 4. Featured Properties Collection (Compact Cards) */}
+      <section className="py-10 sm:py-14 px-4 bg-white">
         <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/30 text-[#C9A96E] font-bold text-xs uppercase tracking-wider mb-2">
-                <Sparkles className="w-3.5 h-3.5" /> Verified Collection
+              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/30 text-[#C9A96E] font-bold text-[11px] uppercase tracking-wider mb-1.5">
+                <Sparkles className="w-3 h-3" /> Verified Collection
               </div>
-              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#0A1628] mb-2">Featured Rajasthan Properties</h2>
-              <p className="text-slate-500 max-w-2xl text-sm">RERA verified listings with guaranteed ₹499 VIP site visit option</p>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-[#0A1628]">Featured Rajasthan Properties</h2>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar w-full md:w-auto">
+            <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar w-full sm:w-auto">
               {['All', 'Luxury Villas', 'Modern Apartments', 'Commercial', 'Heritage Havelis'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setPropFilter(tab)}
-                  className={`whitespace-nowrap px-5 py-2 rounded-full text-xs font-semibold transition-colors ${
+                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                     propFilter === tab 
                       ? 'bg-[#0A1628] text-[#C9A96E] border border-[#C9A96E]/40' 
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -537,15 +536,15 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          {/* Property Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Compact Property Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {FEATURED_PROPERTIES.map((prop) => {
               const isCompared = compareItems.some(i => i.id === prop.id);
               return (
-                <div key={prop.id} className="group bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                <div key={prop.id} className="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
                   <div>
-                    <div className="p-3">
-                      <div className="relative aspect-[16/10] rounded-2xl overflow-hidden">
+                    <div className="p-2.5">
+                      <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
                         <Image 
                           src={prop.image} 
                           alt={prop.title} 
@@ -554,67 +553,66 @@ export default function MarketingPage() {
                         />
 
                         {/* Property Badges Overlay */}
-                        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                        <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
                           {prop.reraApproved && (
-                            <span className="bg-white/95 backdrop-blur text-[#0A1628] text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1 border border-emerald-500/20">
-                              <ShieldCheck className="w-3 h-3 text-emerald-600" /> RERA Approved
+                            <span className="bg-white/95 backdrop-blur text-[#0A1628] text-[9px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1 border border-emerald-500/20">
+                              <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" /> RERA
                             </span>
                           )}
                           {prop.zeroBrokerage && (
-                            <span className="bg-[#0A1628]/90 backdrop-blur text-[#C9A96E] text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1 border border-[#C9A96E]/30">
-                              <Zap className="w-3 h-3 text-[#C9A96E]" /> 0% Brokerage
+                            <span className="bg-[#0A1628]/90 backdrop-blur text-[#C9A96E] text-[9px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1 border border-[#C9A96E]/30">
+                              <Zap className="w-2.5 h-2.5 text-[#C9A96E]" /> 0% Brokerage
                             </span>
                           )}
                         </div>
 
                         {/* Compare & Heart Buttons */}
-                        <div className="absolute top-3 right-3 flex items-center gap-2">
+                        <div className="absolute top-2 right-2 flex items-center gap-1.5">
                           <button 
                             onClick={() => toggleCompare(prop)}
-                            className={`px-2.5 py-1.5 rounded-full text-[10px] font-bold backdrop-blur transition-all flex items-center gap-1 ${
+                            className={`px-2 py-1 rounded-full text-[9px] font-bold backdrop-blur transition-all flex items-center gap-1 ${
                               isCompared 
                                 ? 'bg-[#C9A96E] text-[#0A1628] shadow' 
                                 : 'bg-white/90 text-slate-700 hover:bg-white'
                             }`}
-                            title="Add to Compare"
                           >
-                            <Scale className="w-3 h-3" />
+                            <Scale className="w-2.5 h-2.5" />
                             {isCompared ? 'Compared' : 'Compare'}
                           </button>
                           <button 
                             onClick={() => toggleFavorite(prop.id)}
-                            className="w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                            className="w-6 h-6 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors"
                           >
-                            <Heart className={`w-4 h-4 transition-colors ${favorites.includes(prop.id) ? 'fill-rose-500 text-rose-500' : 'text-slate-600'}`} />
+                            <Heart className={`w-3 h-3 transition-colors ${favorites.includes(prop.id) ? 'fill-rose-500 text-rose-500' : 'text-slate-600'}`} />
                           </button>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-5 pt-2">
-                      <div className="flex items-center justify-between text-xs text-[#C9A96E] font-bold mb-1">
+                    <div className="p-4 pt-1">
+                      <div className="flex items-center justify-between text-[11px] text-[#C9A96E] font-bold mb-0.5">
                         <span>{prop.type}</span>
                         <span className="text-slate-400 font-normal">{prop.city}</span>
                       </div>
-                      <h3 className="text-lg font-serif font-bold text-[#0A1628] mb-2 line-clamp-1 group-hover:text-[#C9A96E] transition-colors">
+                      <h3 className="text-base font-serif font-bold text-[#0A1628] mb-1 line-clamp-1 group-hover:text-[#C9A96E] transition-colors">
                         {prop.title}
                       </h3>
-                      <p className="text-xs text-slate-500 flex items-center gap-1 mb-4">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" /> {prop.location}
+                      <p className="text-[11px] text-slate-500 flex items-center gap-1 mb-3">
+                        <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" /> {prop.location}
                       </p>
 
                       {/* Key Spec Matrix */}
-                      <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl text-center mb-4 text-xs">
+                      <div className="grid grid-cols-3 gap-1.5 bg-slate-50 p-2 rounded-lg text-center mb-3 text-[11px]">
                         <div>
-                          <span className="text-[10px] text-slate-400 block uppercase">Area</span>
-                          <span className="font-bold text-[#0A1628]">{prop.sqft} sq.ft</span>
+                          <span className="text-[9px] text-slate-400 block uppercase">Area</span>
+                          <span className="font-bold text-[#0A1628]">{prop.sqft} sqft</span>
                         </div>
                         <div className="border-x border-slate-200">
-                          <span className="text-[10px] text-slate-400 block uppercase">BHK</span>
+                          <span className="text-[9px] text-slate-400 block uppercase">BHK</span>
                           <span className="font-bold text-[#0A1628]">{prop.bhk}</span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-400 block uppercase">Rate</span>
+                          <span className="text-[9px] text-slate-400 block uppercase">Rate</span>
                           <span className="font-bold text-emerald-700">{prop.pricePerSqft}</span>
                         </div>
                       </div>
@@ -622,15 +620,15 @@ export default function MarketingPage() {
                   </div>
 
                   {/* Card Bottom Price & Action */}
-                  <div className="p-5 pt-0">
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  <div className="p-4 pt-0">
+                    <div className="flex items-center justify-between pt-2.5 border-t border-slate-100">
                       <div>
-                        <span className="text-[10px] text-slate-400 block">Total Price</span>
-                        <span className="text-xl font-bold text-[#0A1628]">{prop.price}</span>
+                        <span className="text-[9px] text-slate-400 block">Total Price</span>
+                        <span className="text-lg font-bold text-[#0A1628]">{prop.price}</span>
                       </div>
                       <Link href={`/properties/${prop.id}`}>
-                        <button className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#0A1628] hover:bg-[#0A1628]/90 px-4 py-2.5 rounded-xl transition-all shadow-md shadow-[#0A1628]/10 cursor-pointer">
-                          View Details <ArrowRight className="w-3.5 h-3.5 text-[#C9A96E]" />
+                        <button className="flex items-center gap-1 text-xs font-bold text-white bg-[#0A1628] hover:bg-[#0A1628]/90 px-3.5 py-2 rounded-lg transition-all shadow-sm cursor-pointer">
+                          Details <ArrowRight className="w-3 h-3 text-[#C9A96E]" />
                         </button>
                       </Link>
                     </div>
@@ -640,77 +638,72 @@ export default function MarketingPage() {
             })}
           </div>
 
-          <div className="mt-12 text-center">
+          <div className="mt-8 text-center">
             <Link href="/properties">
-              <button className="px-8 py-4 rounded-2xl border-2 border-[#0A1628] text-[#0A1628] font-bold text-sm hover:bg-[#0A1628] hover:text-[#C9A96E] transition-all w-full sm:w-auto shadow-md">
-                Browse All 1,240+ Rajasthan Listings
+              <button className="px-6 py-3 rounded-xl border-2 border-[#0A1628] text-[#0A1628] font-bold text-xs hover:bg-[#0A1628] hover:text-[#C9A96E] transition-all w-full sm:w-auto shadow-sm">
+                Browse All 1,240+ Listings
               </button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* 5. Interactive Home Buying Journey Steps */}
-      <section className="py-20 px-4 bg-slate-50 border-y border-slate-200/80">
+      {/* 5. Interactive Home Buying Journey Steps (Compact 2x2 Grid) */}
+      <section className="py-8 sm:py-12 px-4 bg-slate-50 border-y border-slate-200/80">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-14">
-            <span className="text-xs font-bold text-[#C9A96E] uppercase tracking-wider block mb-2">Hassle-Free Process</span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#0A1628]">Your Seamless Home Buying Journey</h2>
-            <p className="text-slate-500 text-sm mt-2 max-w-2xl mx-auto">From online search to physical cab walkthrough and key handover in 4 simple steps.</p>
+          <div className="text-center mb-8">
+            <span className="text-[10px] font-bold text-[#C9A96E] uppercase tracking-wider block mb-1">Hassle-Free Process</span>
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#0A1628]">Your Seamless Home Buying Journey</h2>
+            <p className="text-slate-500 text-xs mt-1 max-w-xl mx-auto">From online search to physical cab walkthrough and key handover in 4 simple steps.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {[
-              { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage options.", icon: Search },
-              { step: "02", title: "Schedule VIP Visit (₹499)", desc: "Book guaranteed cab pickup with senior advisor for on-site physical tour.", icon: Calendar },
-              { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of registry, land titles & encumbrance certificates.", icon: FileCheck },
-              { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive your luxury home keys.", icon: KeyRound },
+              { step: "01", title: "Filter Properties", desc: "Browse 1,240+ RERA verified villas & plots.", icon: Search },
+              { step: "02", title: "VIP Cab Visit (₹499)", desc: "Guaranteed cab pickup with senior advisor.", icon: Calendar },
+              { step: "03", title: "Legal & RERA Audit", desc: "100% paper title verification.", icon: FileCheck },
+              { step: "04", title: "Keys Handover", desc: "Finalize payment & receive luxury keys.", icon: KeyRound },
             ].map((st, idx) => (
-              <div key={idx} className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm relative group hover:border-[#C9A96E] transition-all">
-                <span className="text-3xl font-serif font-extrabold text-[#C9A96E]/40 group-hover:text-[#C9A96E] transition-colors block mb-4">
+              <div key={idx} className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm relative group hover:border-[#C9A96E] transition-all">
+                <span className="text-xl sm:text-2xl font-serif font-extrabold text-[#C9A96E]/40 group-hover:text-[#C9A96E] transition-colors block mb-2">
                   {st.step}
                 </span>
-                <div className="w-12 h-12 rounded-2xl bg-[#0A1628] flex items-center justify-center text-[#C9A96E] mb-4 shadow-md">
-                  <st.icon className="w-6 h-6" />
+                <div className="w-9 h-9 rounded-xl bg-[#0A1628] flex items-center justify-center text-[#C9A96E] mb-3 shadow">
+                  <st.icon className="w-4 h-4" />
                 </div>
-                <h3 className="text-lg font-serif font-bold text-[#0A1628] mb-2">{st.title}</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">{st.desc}</p>
+                <h3 className="text-sm font-serif font-bold text-[#0A1628] mb-1">{st.title}</h3>
+                <p className="text-[11px] text-slate-500 leading-normal">{st.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 6. Interactive Amenities Showcase */}
-      <section className="px-4">
-        <AmenitiesShowcase />
-      </section>
-
-      {/* 7. Verified Buyer Testimonials */}
-      <section className="py-20 px-4 bg-white border-b border-slate-100">
+      {/* 6. Verified Buyer Testimonials (Compact) */}
+      <section className="py-10 sm:py-12 px-4 bg-white border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-14">
-            <span className="text-xs font-bold text-[#C9A96E] uppercase tracking-wider block mb-2">Verified Reviews</span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#0A1628]">What Our Buyers & Landlords Say</h2>
+          <div className="text-center mb-8">
+            <span className="text-[10px] font-bold text-[#C9A96E] uppercase tracking-wider block mb-1">Verified Reviews</span>
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#0A1628]">What Our Buyers & Landlords Say</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {TESTIMONIALS.map((t, idx) => (
-              <div key={idx} className="bg-[#FDFBF7] p-8 rounded-3xl border border-slate-200/80 shadow-sm relative">
-                <Quote className="w-10 h-10 text-[#C9A96E]/20 absolute top-6 right-6" />
-                <div className="flex items-center gap-1 text-amber-500 mb-4">
+              <div key={idx} className="bg-[#FDFBF7] p-5 rounded-2xl border border-slate-200/80 shadow-sm relative">
+                <Quote className="w-7 h-7 text-[#C9A96E]/20 absolute top-4 right-4" />
+                <div className="flex items-center gap-1 text-amber-500 mb-2">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
+                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
                   ))}
                 </div>
-                <p className="text-sm text-slate-700 leading-relaxed font-normal mb-6">"{t.quote}"</p>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full overflow-hidden relative border-2 border-[#C9A96E]">
+                <p className="text-xs text-slate-700 leading-relaxed font-normal mb-4">"{t.quote}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full overflow-hidden relative border-2 border-[#C9A96E]">
                     <Image src={t.image} alt={t.name} fill className="object-cover" />
                   </div>
                   <div>
-                    <h4 className="font-serif font-bold text-[#0A1628] text-base">{t.name}</h4>
-                    <p className="text-xs text-slate-500">{t.role}</p>
+                    <h4 className="font-serif font-bold text-[#0A1628] text-xs">{t.name}</h4>
+                    <p className="text-[10px] text-slate-500">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -719,83 +712,85 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 8. "Post Property Free" Banner */}
-      <section className="py-16 px-4 bg-[#0A1628] text-white relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-[#C9A96E]/10 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="container mx-auto max-w-6xl relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 bg-white/5 border border-white/10 p-8 sm:p-12 rounded-3xl backdrop-blur-xl">
-          <div className="max-w-xl">
-            <span className="bg-[#C9A96E]/20 text-[#C9A96E] border border-[#C9A96E]/30 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">
-              For Property Owners & Landlords
+      {/* 7. "Post Property Free" Banner (Compact) */}
+      <section className="py-10 px-4 bg-[#0A1628] text-white relative overflow-hidden">
+        <div className="container mx-auto max-w-5xl relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/5 border border-white/10 p-6 sm:p-8 rounded-2xl backdrop-blur-xl">
+          <div className="max-w-lg">
+            <span className="bg-[#C9A96E]/20 text-[#C9A96E] border border-[#C9A96E]/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 inline-block">
+              For Property Owners
             </span>
-            <h2 className="text-2xl sm:text-4xl font-serif font-bold text-white mb-3">
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-white mb-2">
               Are you an Owner? Post Your Property <span className="text-[#C9A96E]">FREE</span>
             </h2>
-            <p className="text-slate-300 text-sm font-light mb-6">
-              Connect directly with verified buyers and tenants in Jaipur, Udaipur & across Rajasthan with 0% brokerage options.
+            <p className="text-slate-300 text-xs font-light mb-4">
+              Connect directly with verified buyers and tenants across Rajasthan with 0% brokerage.
             </p>
-            <div className="flex flex-wrap gap-4 text-xs font-medium text-slate-300">
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Free Unlimited Listing</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Direct WhatsApp Enquiries</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Verified Buyer Shield</span>
+            <div className="flex flex-wrap gap-3 text-[11px] font-medium text-slate-300">
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Free Listing</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> WhatsApp Enquiries</span>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            <Link href="/dashboard/landlord/properties/new" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto px-8 py-4 bg-[#C9A96E] hover:bg-[#b59760] text-[#0A1628] font-extrabold text-sm rounded-xl transition-all shadow-xl shadow-[#C9A96E]/20 flex items-center justify-center gap-2 cursor-pointer">
-                <Plus className="w-5 h-5" /> Post Property Free
-              </button>
-            </Link>
-          </div>
+          <Link href="/dashboard/landlord/properties/new" className="w-full md:w-auto">
+            <button className="w-full md:w-auto px-6 py-3 bg-[#C9A96E] hover:bg-[#b59760] text-[#0A1628] font-extrabold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap">
+              <Plus className="w-4 h-4" /> Post Property Free
+            </button>
+          </Link>
         </div>
       </section>
 
-      {/* 9. Latest News & Market Insights Blog Section (Positioned at bottom before EMI/Footer) */}
-      <section className="py-20 px-4 bg-white border-b border-slate-100">
+      {/* 8. Owner's Corner & Live Auto-Scrolling Reels Feed */}
+      <OwnerReelsFeed />
+
+      {/* 9. Rajasthan Market Insights & Guides (Small & Horizontally Scrollable at End of Site) */}
+      <section className="py-10 px-4 bg-white border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+          <div className="flex flex-row justify-between items-center mb-6 gap-2">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A96E]/10 text-[#0A1628] border border-[#C9A96E]/30 text-xs font-bold uppercase tracking-wider mb-2">
-                <BookOpen className="w-3.5 h-3.5 text-[#C9A96E]" /> Real Estate News & Guides
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#C9A96E]/10 text-[#0A1628] border border-[#C9A96E]/30 text-[10px] font-bold uppercase tracking-wider mb-1">
+                <BookOpen className="w-3 h-3 text-[#C9A96E]" /> Real Estate News & Guides
               </div>
-              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#0A1628]">Rajasthan Market Insights & Guides</h2>
-              <p className="text-slate-500 text-sm mt-1">Expert analysis on property investment, RERA laws & architectural trends</p>
+              <h2 className="text-lg sm:text-xl font-serif font-bold text-[#0A1628]">Rajasthan Market Insights & Guides</h2>
             </div>
             <Link href="/blog">
-              <span className="text-xs font-bold text-[#C9A96E] hover:underline flex items-center gap-1">
-                View All Articles <ArrowRight className="w-3.5 h-3.5" />
+              <span className="text-xs font-bold text-[#C9A96E] hover:underline flex items-center gap-1 whitespace-nowrap">
+                View All <ArrowRight className="w-3.5 h-3.5" />
               </span>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Horizontally Scrollable Track */}
+          <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory">
             {BLOG_POSTS.map((post) => (
-              <article key={post.id} className="bg-[#FDFBF7] rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all group flex flex-col justify-between">
+              <article 
+                key={post.id} 
+                className="w-72 sm:w-80 flex-shrink-0 snap-start bg-[#FDFBF7] rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
+              >
                 <div>
-                  <div className="relative aspect-[16/10] overflow-hidden p-2">
-                    <div className="relative h-full w-full rounded-2xl overflow-hidden">
+                  <div className="relative aspect-[16/10] overflow-hidden p-1.5">
+                    <div className="relative h-full w-full rounded-xl overflow-hidden">
                       <Image src={post.image} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <span className="absolute top-3 left-3 bg-white/95 backdrop-blur text-[#0A1628] text-[10px] font-bold px-2.5 py-1 rounded-full shadow">
+                      <span className="absolute top-2 left-2 bg-white/95 backdrop-blur text-[#0A1628] text-[9px] font-bold px-2 py-0.5 rounded-full shadow">
                         {post.category}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-6 pt-2">
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mb-2">
+                  <div className="p-4 pt-1">
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-1">
                       <span>{post.date}</span> • <span>{post.readTime}</span>
                     </div>
-                    <h3 className="text-lg font-serif font-bold text-[#0A1628] mb-2 line-clamp-2 group-hover:text-[#C9A96E] transition-colors leading-snug">
+                    <h3 className="text-sm font-serif font-bold text-[#0A1628] mb-1 line-clamp-2 group-hover:text-[#C9A96E] transition-colors leading-snug">
                       {post.title}
                     </h3>
-                    <p className="text-xs text-slate-600 line-clamp-2 font-normal leading-relaxed">{post.excerpt}</p>
+                    <p className="text-[11px] text-slate-600 line-clamp-2 font-normal leading-relaxed">{post.excerpt}</p>
                   </div>
                 </div>
 
-                <div className="p-6 pt-0">
+                <div className="p-4 pt-0">
                   <Link href={`/blog/${post.slug}`}>
-                    <span className="text-xs font-bold text-[#0A1628] hover:text-[#C9A96E] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      Read Full Article <ArrowRight className="w-3.5 h-3.5 text-[#C9A96E]" />
+                    <span className="text-[11px] font-bold text-[#0A1628] hover:text-[#C9A96E] inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      Read Article <ArrowRight className="w-3 h-3 text-[#C9A96E]" />
                     </span>
                   </Link>
                 </div>
@@ -805,11 +800,8 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 10. Owner's Corner & Live Reels Feed */}
-      <OwnerReelsFeed />
-
-      {/* 11. Interactive EMI / Mortgage Calculator */}
-      <section className="py-16 sm:py-24 px-4 bg-slate-50">
+      {/* 10. Interactive EMI / Mortgage Calculator */}
+      <section className="py-12 sm:py-16 px-4 bg-slate-50">
         <div className="container mx-auto">
           <EMICalculator />
         </div>

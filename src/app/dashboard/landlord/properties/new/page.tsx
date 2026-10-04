@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { UploadCloud, CheckCircle2, ArrowRight, ArrowLeft, Building, MapPin, Sparkles } from "lucide-react";
+import AmenitiesShowcase from '@/components/shared/amenities-showcase';
 
 const steps = [
   { id: 'basic', title: 'Basic Info' },
@@ -356,6 +357,11 @@ export default function AddPropertyWizard() {
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
+        </div>
+
+        {/* Luxury Property Amenities Standards Showcase */}
+        <div className="pt-6">
+          <AmenitiesShowcase />
         </div>
       </div>
     </div>
