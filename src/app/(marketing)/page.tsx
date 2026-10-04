@@ -331,6 +331,56 @@ export default function MarketingPage() {
 
   return (
     <main className="min-h-screen bg-[#FDFBF7] text-[#0A1628]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "RealEstateAgent",
+                "@id": "https://shreeniwasproperties-pi.vercel.app/#organization",
+                "name": "Shreeniwas Properties",
+                "url": "https://shreeniwasproperties-pi.vercel.app",
+                "logo": "https://shreeniwasproperties-pi.vercel.app/logo.png",
+                "image": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800",
+                "description": "Rajasthan's premier real estate marketplace for luxury villas, modern apartments, commercial properties, and land.",
+                "telephone": "+91-98290-00000",
+                "email": "contact@shreeniwasproperties.com",
+                "priceRange": "₹₹₹",
+                "address": {
+                  "@type": "PostalAddress",
+                  "streetAddress": "C-Scheme, Ashok Nagar",
+                  "addressLocality": "Jaipur",
+                  "addressRegion": "Rajasthan",
+                  "postalCode": "302001",
+                  "addressCountry": "IN"
+                },
+                "geo": {
+                  "@type": "GeoCoordinates",
+                  "latitude": 26.9124,
+                  "longitude": 75.7873
+                },
+                "areaServed": ["Jaipur", "Udaipur", "Jodhpur", "Kota", "Ajmer", "Rajasthan"]
+              },
+              {
+                "@type": "WebSite",
+                "@id": "https://shreeniwasproperties-pi.vercel.app/#website",
+                "url": "https://shreeniwasproperties-pi.vercel.app",
+                "name": "Shreeniwas Properties",
+                "publisher": {
+                  "@id": "https://shreeniwasproperties-pi.vercel.app/#organization"
+                },
+                "potentialAction": {
+                  "@type": "SearchAction",
+                  "target": "https://shreeniwasproperties-pi.vercel.app/properties?q={search_term_string}",
+                  "query-input": "required name=search_term_string"
+                }
+              }
+            ]
+          })
+        }}
+      />
       {/* 1. Hero Section with Search Engine */}
       <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
