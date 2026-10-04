@@ -203,7 +203,7 @@ const TESTIMONIALS = [
   }
 ];
 
-// EMI Calculator Component
+// EMI Calculator Component (Sleek Mobile-First Compact UI)
 const EMICalculator = () => {
   const [price, setPrice] = useState(10000000);
   const [downPayment, setDownPayment] = useState(20);
@@ -226,66 +226,66 @@ const EMICalculator = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border border-slate-100 max-w-4xl mx-auto my-12">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/30 text-[#C9A96E] font-bold text-xs uppercase tracking-wider mb-3">
-          <TrendingUp className="w-3.5 h-3.5" /> Shreeniwas Financial Tool
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-slate-200/80 max-w-3xl mx-auto my-4 sm:my-6">
+      <div className="text-center mb-5">
+        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/30 text-[#C9A96E] font-bold text-[10px] uppercase tracking-wider mb-2">
+          <TrendingUp className="w-3 h-3" /> Shreeniwas Financial Tool
         </div>
-        <h3 className="text-2xl sm:text-3xl font-serif text-[#0A1628] font-bold mb-2">Home Loan & Mortgage EMI Calculator</h3>
-        <p className="text-slate-500 text-sm">Instant bank interest rate estimate & monthly payout breakdown</p>
+        <h3 className="text-lg sm:text-xl font-serif text-[#0A1628] font-bold mb-1">Home Loan & Mortgage EMI Calculator</h3>
+        <p className="text-slate-500 text-xs">Instant bank interest rate estimate & monthly payout breakdown</p>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-12">
-        <div className="space-y-6 w-full md:w-1/2">
+      <div className="flex flex-col md:flex-row gap-5 md:gap-8 items-center">
+        <div className="space-y-3.5 w-full md:w-1/2">
           {[
             { label: 'Property Price', val: price, set: setPrice, min: 1000000, max: 50000000, step: 100000, display: formatCurrency(price) },
             { label: 'Down Payment (%)', val: downPayment, set: setDownPayment, min: 10, max: 50, step: 1, display: `${downPayment}% (${formatCurrency((price * downPayment) / 100)})` },
             { label: 'Interest Rate', val: interestRate, set: setInterestRate, min: 7, max: 12, step: 0.1, display: `${interestRate}%` },
-            { label: 'Loan Tenure', val: tenure, set: setTenure, min: 5, max: 30, step: 1, display: `${tenure} Years` }
+            { label: 'Loan Tenure', val: tenure, set: setTenure, min: 5, max: 30, step: 1, display: `${tenure} Yrs` }
           ].map((item, idx) => (
             <div key={idx}>
-              <div className="flex justify-between mb-2 text-sm">
+              <div className="flex justify-between mb-1 text-xs">
                 <label className="font-semibold text-slate-700">{item.label}</label>
                 <span className="font-bold text-[#0A1628]">{item.display}</span>
               </div>
               <input 
                 type="range" min={item.min} max={item.max} step={item.step} 
                 value={item.val} onChange={(e) => item.set(Number(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#C9A96E] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-[#C9A96E] [&::-webkit-slider-thumb]:rounded-full"
+                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#C9A96E] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#C9A96E] [&::-webkit-slider-thumb]:rounded-full"
               />
             </div>
           ))}
         </div>
 
-        <div className="bg-[#FDFBF7] p-6 sm:p-8 rounded-2xl border border-[#C9A96E]/30 flex flex-col justify-center w-full md:w-1/2">
-          <div className="text-center mb-6">
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Your Monthly Loan EMI</p>
-            <p className="text-3xl sm:text-4xl font-serif text-[#0A1628] font-bold">{formatCurrency(emi)}</p>
+        <div className="bg-[#FDFBF7] p-4 sm:p-5 rounded-xl border border-[#C9A96E]/30 flex flex-col justify-center w-full md:w-1/2 shadow-inner">
+          <div className="text-center mb-4">
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Your Monthly Loan EMI</p>
+            <p className="text-2xl sm:text-3xl font-serif text-[#0A1628] font-extrabold">{formatCurrency(emi)}</p>
           </div>
           
-          <div className="space-y-3.5 text-sm">
-            <div className="flex justify-between items-center py-2.5 border-b border-slate-200">
-              <span className="text-slate-600">Principal Loan Amount</span>
+          <div className="space-y-2 text-xs">
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-200/80">
+              <span className="text-slate-600">Principal Amount</span>
               <span className="font-bold text-slate-800">{formatCurrency(principal)}</span>
             </div>
-            <div className="flex justify-between items-center py-2.5 border-b border-slate-200">
-              <span className="text-slate-600">Total Payable Interest</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-200/80">
+              <span className="text-slate-600">Total Interest</span>
               <span className="font-bold text-amber-600">{formatCurrency(totalInterest)}</span>
             </div>
-            <div className="flex justify-between items-center py-2.5">
-              <span className="text-slate-700 font-semibold">Total Amount Payable</span>
+            <div className="flex justify-between items-center py-1.5">
+              <span className="text-slate-700 font-semibold">Total Payable</span>
               <span className="font-bold text-[#0A1628]">{formatCurrency(totalAmount)}</span>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col gap-2">
-            <div className="w-full h-3 flex rounded-full overflow-hidden">
+          <div className="mt-4 flex flex-col gap-1.5">
+            <div className="w-full h-2 flex rounded-full overflow-hidden">
               <div className="bg-[#0A1628]" style={{ width: `${(principal/totalAmount)*100}%` }}></div>
               <div className="bg-[#C9A96E]" style={{ width: `${(totalInterest/totalAmount)*100}%` }}></div>
             </div>
-            <div className="flex justify-between text-xs font-semibold mt-1">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#0A1628]"></span> Principal ({Math.round((principal/totalAmount)*100)}%)</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#C9A96E]"></span> Interest ({Math.round((totalInterest/totalAmount)*100)}%)</span>
+            <div className="flex justify-between text-[10px] font-semibold mt-0.5">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0A1628]"></span> Principal ({Math.round((principal/totalAmount)*100)}%)</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#C9A96E]"></span> Interest ({Math.round((totalInterest/totalAmount)*100)}%)</span>
             </div>
           </div>
         </div>
@@ -930,28 +930,31 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          <div className="relative">
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
+          {/* Spacious Horizontal Track with Generous Scroll Margins */}
+          <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 sm:w-12 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 sm:w-12 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
             <div 
               ref={testimonialScrollRef}
               onMouseEnter={() => setIsTestimonialPaused(true)}
               onMouseLeave={() => setIsTestimonialPaused(false)}
               onTouchStart={() => setIsTestimonialPaused(true)}
               onTouchEnd={() => setIsTestimonialPaused(false)}
-              className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth px-1"
+              className="flex gap-5 overflow-x-auto py-3 pb-8 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
             >
               {TESTIMONIALS.map((t, idx) => (
-                <div key={idx} className="w-80 sm:w-[380px] flex-shrink-0 snap-start bg-[#FDFBF7] p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group">
-                  <Quote className="w-6 h-6 text-[#C9A96E]/30 group-hover:text-[#C9A96E]/60 transition-colors absolute top-4 right-4" />
-                  <div className="flex items-center gap-1 text-amber-500 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                    ))}
+                <div key={idx} className="w-[280px] sm:w-[350px] flex-shrink-0 snap-start bg-[#FDFBF7] p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group flex flex-col justify-between">
+                  <div>
+                    <Quote className="w-6 h-6 text-[#C9A96E]/30 group-hover:text-[#C9A96E]/60 transition-colors absolute top-4 right-4" />
+                    <div className="flex items-center gap-1 text-amber-500 mb-2.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-700 leading-relaxed font-normal mb-5 italic">"{t.quote}"</p>
                   </div>
-                  <p className="text-xs text-slate-700 leading-relaxed font-normal mb-4 italic">"{t.quote}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full overflow-hidden relative border-2 border-[#C9A96E] shadow-sm">
+                  <div className="flex items-center gap-3 pt-3 border-t border-slate-200/60">
+                    <div className="w-9 h-9 rounded-full overflow-hidden relative border-2 border-[#C9A96E] shadow-sm flex-shrink-0">
                       <Image src={t.image} alt={t.name} fill className="object-cover" />
                     </div>
                     <div>
