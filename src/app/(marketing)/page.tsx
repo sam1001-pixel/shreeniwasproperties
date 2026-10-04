@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -303,6 +303,10 @@ export default function MarketingPage() {
   const journeyScrollRef = useRef<HTMLDivElement>(null);
   const testimonialScrollRef = useRef<HTMLDivElement>(null);
 
+  const [isFeaturedPaused, setIsFeaturedPaused] = useState(false);
+  const [isJourneyPaused, setIsJourneyPaused] = useState(false);
+  const [isTestimonialPaused, setIsTestimonialPaused] = useState(false);
+
   const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
     if (ref.current) {
       const { scrollLeft, clientWidth } = ref.current;
@@ -313,6 +317,54 @@ export default function MarketingPage() {
       });
     }
   };
+
+  // Auto-scroll Featured Properties
+  useEffect(() => {
+    if (isFeaturedPaused) return;
+    const interval = setInterval(() => {
+      if (featuredScrollRef.current) {
+        const { scrollLeft, clientWidth, scrollWidth } = featuredScrollRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 20) {
+          featuredScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          featuredScrollRef.current.scrollTo({ left: scrollLeft + 320, behavior: 'smooth' });
+        }
+      }
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [isFeaturedPaused]);
+
+  // Auto-scroll Home Buying Journey
+  useEffect(() => {
+    if (isJourneyPaused) return;
+    const interval = setInterval(() => {
+      if (journeyScrollRef.current) {
+        const { scrollLeft, clientWidth, scrollWidth } = journeyScrollRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 20) {
+          journeyScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          journeyScrollRef.current.scrollTo({ left: scrollLeft + 280, behavior: 'smooth' });
+        }
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isJourneyPaused]);
+
+  // Auto-scroll Buyer Testimonials
+  useEffect(() => {
+    if (isTestimonialPaused) return;
+    const interval = setInterval(() => {
+      if (testimonialScrollRef.current) {
+        const { scrollLeft, clientWidth, scrollWidth } = testimonialScrollRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 20) {
+          testimonialScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          testimonialScrollRef.current.scrollTo({ left: scrollLeft + 360, behavior: 'smooth' });
+        }
+      }
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [isTestimonialPaused]);
 
   const toggleFavorite = (id: number) => {
     setFavorites(prev => 
@@ -576,6 +628,10 @@ export default function MarketingPage() {
           {/* Unique Horizontal Scroll Track with Snap */}
           <div 
             ref={featuredScrollRef}
+            onMouseEnter={() => setIsFeaturedPaused(true)}
+            onMouseLeave={() => setIsFeaturedPaused(false)}
+            onTouchStart={() => setIsFeaturedPaused(true)}
+            onTouchEnd={() => setIsFeaturedPaused(false)}
             className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
           >
             {FEATURED_PROPERTIES.map((prop) => {
@@ -803,6 +859,10 @@ export default function MarketingPage() {
 
           <div 
             ref={journeyScrollRef}
+            onMouseEnter={() => setIsJourneyPaused(true)}
+            onMouseLeave={() => setIsJourneyPaused(false)}
+            onTouchStart={() => setIsJourneyPaused(true)}
+            onTouchEnd={() => setIsJourneyPaused(false)}
             className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
           >
             {[
@@ -858,6 +918,10 @@ export default function MarketingPage() {
 
           <div 
             ref={testimonialScrollRef}
+            onMouseEnter={() => setIsTestimonialPaused(true)}
+            onMouseLeave={() => setIsTestimonialPaused(false)}
+            onTouchStart={() => setIsTestimonialPaused(true)}
+            onTouchEnd={() => setIsTestimonialPaused(false)}
             className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
           >
             {TESTIMONIALS.map((t, idx) => (
