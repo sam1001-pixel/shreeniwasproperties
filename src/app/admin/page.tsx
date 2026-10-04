@@ -6,7 +6,8 @@ import {
   LayoutDashboard, Building2, FileText, Users, CreditCard, Settings, 
   Search, MoreVertical, Plus, CheckCircle2, XCircle, Edit, Trash2, 
   MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound,
-  Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck, UserPlus
+  Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck, UserPlus,
+  Video, Star, Share2, Camera, ThumbsUp
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -33,6 +34,18 @@ const DEFAULT_ADMIN_ACCOUNTS = [
   { id: "ADM-02", name: "Ananya Sharma", email: "admin@shreeniwasproperties.com", role: "Client Query Admin", level: "staff", status: "Active" },
 ];
 
+const DEFAULT_REELS = [
+  { id: "REEL-01", title: "4 BHK Royal Villa 360° Walkthrough", property: "The Royal Heritage Residency", embedUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800", views: "14.2K", status: "Active" },
+  { id: "REEL-02", title: "Lakeview Penthouse Sunset Tour Udaipur", property: "Lakeview Palace Heights", embedUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800", views: "9.8K", status: "Active" },
+  { id: "REEL-03", title: "Heritage Haveli Jodhpur Royal Courtyard", property: "Heritage Haveli Jodhpur", embedUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800", views: "22.5K", status: "Active" },
+];
+
+const DEFAULT_REVIEWS = [
+  { id: "REV-01", name: "Dr. Alok & Sunita Mehta", role: "Villa Buyers in Jaipur", rating: 5, quote: "Shreeniwas Properties made buying our 4 BHK villa in Vaishali Nagar effortless. The VIP site visit with guaranteed cab pickup gave us 100% peace of mind.", status: "Featured" },
+  { id: "REV-02", name: "Vikramaditya Singh", role: "Heritage Property Investor", rating: 5, quote: "Their team has unmatched local authority across Udaipur & Jodhpur. I found a prime lakeview commercial plot direct from owner with zero hassle.", status: "Featured" },
+  { id: "REV-03", name: "Radhika Khandelwal", role: "Apartment Landlord", rating: 5, quote: "Listed my C-Scheme apartment on Shreeniwas Properties and got verified corporate tenants within 48 hours. Excellent service!", status: "Featured" }
+];
+
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -53,12 +66,14 @@ export default function AdminDashboard() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [blogsList, setBlogsList] = useState<any[]>(DEFAULT_BLOGS);
   const [adminAccountsList, setAdminAccountsList] = useState<any[]>(DEFAULT_ADMIN_ACCOUNTS);
+  const [reelsList, setReelsList] = useState<any[]>(DEFAULT_REELS);
+  const [reviewsList, setReviewsList] = useState<any[]>(DEFAULT_REVIEWS);
 
   // Shift & Clock-In States
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockInTime, setClockInTime] = useState('');
 
-  // Modal Control States
+  // Inquiry Modal State
   const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null);
   const [replyText, setReplyText] = useState('');
 
@@ -72,15 +87,34 @@ export default function AdminDashboard() {
   const [editingBlog, setEditingBlog] = useState<any | null>(null);
   const [blogForm, setBlogForm] = useState({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read' });
 
+  // Reel Modal
+  const [showReelModal, setShowReelModal] = useState(false);
+  const [editingReel, setEditingReel] = useState<any | null>(null);
+  const [reelForm, setReelForm] = useState({ title: '', property: '', embedUrl: '', views: '1.2K', status: 'Active' });
+
+  // Review Modal
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [editingReview, setEditingReview] = useState<any | null>(null);
+  const [reviewForm, setReviewForm] = useState({ name: '', role: '', rating: 5, quote: '', status: 'Featured' });
+
   // Make Admin Modal
   const [showMakeAdminModal, setShowMakeAdminModal] = useState(false);
   const [adminForm, setAdminForm] = useState({ name: '', email: '', role: 'Query Coordinator', password: '', level: 'staff' });
 
-  // Settings State
+  // Expanded Platform & Social Settings State
   const [siteSettings, setSiteSettings] = useState({
     siteTitle: 'Shreeniwas Properties',
+    tagline: 'Exclusive Real Estate & Rental Network in Rajasthan',
+    logoUrl: '',
     contactEmail: 'contact@shreeniwasproperties.com',
     supportPhone: '+91 98765 43210',
+    headOffice: '15 Royal Avenue, C-Scheme, Jaipur, Rajasthan 302001',
+    whatsappLink: 'https://wa.me/919876543210',
+    instagramLink: 'https://instagram.com/shreeniwasproperties',
+    facebookLink: 'https://facebook.com/shreeniwasproperties',
+    youtubeLink: 'https://youtube.com/@shreeniwasproperties',
+    linkedinLink: 'https://linkedin.com/company/shreeniwasproperties',
+    twitterLink: 'https://x.com/shreeniwasprop',
     maintenanceMode: false
   });
 
@@ -99,21 +133,15 @@ export default function AdminDashboard() {
 
     // Load Properties
     const savedProps = localStorage.getItem('shreeniwas_admin_properties');
-    if (savedProps) {
-      try { setPropertiesList(JSON.parse(savedProps)); } catch (e) {}
-    }
+    if (savedProps) { try { setPropertiesList(JSON.parse(savedProps)); } catch (e) {} }
 
     // Load Visitor Inquiries
     const savedInquiries = localStorage.getItem('shreeniwas_inquiries');
-    if (savedInquiries) {
-      try { setInquiriesList(JSON.parse(savedInquiries)); } catch (e) {}
-    }
+    if (savedInquiries) { try { setInquiriesList(JSON.parse(savedInquiries)); } catch (e) {} }
 
     // Load Registered Users
     const savedUsers = localStorage.getItem('shreeniwas_registered_users');
-    if (savedUsers) {
-      try { setUsersList(JSON.parse(savedUsers)); } catch (e) {}
-    }
+    if (savedUsers) { try { setUsersList(JSON.parse(savedUsers)); } catch (e) {} }
 
     // Load Shift Attendance
     const savedAttendance = localStorage.getItem('shreeniwas_admin_attendance');
@@ -130,15 +158,23 @@ export default function AdminDashboard() {
 
     // Load Blogs
     const savedBlogs = localStorage.getItem('shreeniwas_blog_posts');
-    if (savedBlogs) {
-      try { setBlogsList(JSON.parse(savedBlogs)); } catch (e) {}
-    }
+    if (savedBlogs) { try { setBlogsList(JSON.parse(savedBlogs)); } catch (e) {} }
 
     // Load Admin Accounts
     const savedAdmins = localStorage.getItem('shreeniwas_admin_accounts');
-    if (savedAdmins) {
-      try { setAdminAccountsList(JSON.parse(savedAdmins)); } catch (e) {}
-    }
+    if (savedAdmins) { try { setAdminAccountsList(JSON.parse(savedAdmins)); } catch (e) {} }
+
+    // Load Reels
+    const savedReels = localStorage.getItem('shreeniwas_admin_reels');
+    if (savedReels) { try { setReelsList(JSON.parse(savedReels)); } catch (e) {} }
+
+    // Load Reviews
+    const savedReviews = localStorage.getItem('shreeniwas_testimonials_management');
+    if (savedReviews) { try { setReviewsList(JSON.parse(savedReviews)); } catch (e) {} }
+
+    // Load Platform Settings
+    const savedSettings = localStorage.getItem('shreeniwas_platform_settings');
+    if (savedSettings) { try { setSiteSettings(JSON.parse(savedSettings)); } catch (e) {} }
 
     setIsLoaded(true);
   }, []);
@@ -150,7 +186,7 @@ export default function AdminDashboard() {
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedPass = password.trim();
 
-    // 1. Check built-in primary credentials
+    // Primary built-in super / staff login
     if (selectedRoleType === 'super') {
       if (
         (trimmedEmail === 'superadmin@shreeniwasproperties.com' || trimmedEmail === 'admin' || trimmedEmail === 'admin@shreeniwas.com') &&
@@ -177,7 +213,7 @@ export default function AdminDashboard() {
       }
     }
 
-    // 2. Check dynamically created admin accounts
+    // Dynamically created admin account login check
     const matchAccount = adminAccountsList.find(a => a.email.toLowerCase() === trimmedEmail);
     if (matchAccount) {
       sessionStorage.setItem('shreeniwas_admin_auth', 'true');
@@ -247,7 +283,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Property Handlers (Super Admin Power)
+  // Property Handlers
   const handleSaveProperty = (e: React.FormEvent) => {
     e.preventDefault();
     if (!propForm.title || !propForm.location || !propForm.price) return;
@@ -257,10 +293,7 @@ export default function AdminDashboard() {
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
     } else {
-      const newProp = {
-        id: `PROP-00${propertiesList.length + 1}`,
-        ...propForm
-      };
+      const newProp = { id: `PROP-00${propertiesList.length + 1}`, ...propForm };
       const updated = [newProp, ...propertiesList];
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
@@ -277,7 +310,7 @@ export default function AdminDashboard() {
     localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
   };
 
-  // Blog Handlers (Super Admin Power)
+  // Blog Handlers
   const handleSaveBlog = (e: React.FormEvent) => {
     e.preventDefault();
     if (!blogForm.title) return;
@@ -287,12 +320,7 @@ export default function AdminDashboard() {
       setBlogsList(updated);
       localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
     } else {
-      const newBlog = {
-        id: `BLOG-${Date.now().toString().slice(-4)}`,
-        ...blogForm,
-        date: "Today",
-        status: "Published"
-      };
+      const newBlog = { id: `BLOG-${Date.now().toString().slice(-4)}`, ...blogForm, date: "Today", status: "Published" };
       const updated = [newBlog, ...blogsList];
       setBlogsList(updated);
       localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
@@ -309,7 +337,61 @@ export default function AdminDashboard() {
     localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
   };
 
-  // Make Admin Handler (Super Admin Power)
+  // Reel Handlers (Reels Management Power)
+  const handleSaveReel = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reelForm.title) return;
+
+    if (editingReel) {
+      const updated = reelsList.map(r => r.id === editingReel.id ? { ...r, ...reelForm } : r);
+      setReelsList(updated);
+      localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
+    } else {
+      const newReel = { id: `REEL-0${reelsList.length + 1}`, ...reelForm };
+      const updated = [newReel, ...reelsList];
+      setReelsList(updated);
+      localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
+    }
+
+    setShowReelModal(false);
+    setEditingReel(null);
+    setReelForm({ title: '', property: '', embedUrl: '', views: '1.2K', status: 'Active' });
+  };
+
+  const handleDeleteReel = (id: string) => {
+    const updated = reelsList.filter(r => r.id !== id);
+    setReelsList(updated);
+    localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
+  };
+
+  // Review Handlers (Reviews Management Power)
+  const handleSaveReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewForm.name || !reviewForm.quote) return;
+
+    if (editingReview) {
+      const updated = reviewsList.map(r => r.id === editingReview.id ? { ...r, ...reviewForm } : r);
+      setReviewsList(updated);
+      localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(updated));
+    } else {
+      const newReview = { id: `REV-0${reviewsList.length + 1}`, ...reviewForm };
+      const updated = [newReview, ...reviewsList];
+      setReviewsList(updated);
+      localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(updated));
+    }
+
+    setShowReviewModal(false);
+    setEditingReview(null);
+    setReviewForm({ name: '', role: '', rating: 5, quote: '', status: 'Featured' });
+  };
+
+  const handleDeleteReview = (id: string) => {
+    const updated = reviewsList.filter(r => r.id !== id);
+    setReviewsList(updated);
+    localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(updated));
+  };
+
+  // Make Admin Handler
   const handleCreateAdmin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminForm.name || !adminForm.email) return;
@@ -346,14 +428,23 @@ export default function AdminDashboard() {
     alert(`${user.email} has been promoted to Staff Admin!`);
   };
 
+  // Save Platform & Social Settings
+  const handleSaveSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(siteSettings));
+    alert("Platform Logo, Social Media Handles & Settings Saved Live!");
+  };
+
   const navItems = adminRole === 'super' ? [
     { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
+    { id: 'reels', label: 'Property Video Reels', icon: Video },
+    { id: 'reviews', label: 'Buyer & Landlord Reviews', icon: Star },
     { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
     { id: 'attendance', label: 'Staff Attendance System', icon: Clock },
     { id: 'users', label: 'Users & Admin Management', icon: Users },
     { id: 'blogs', label: 'Blog & Content', icon: FileText },
-    { id: 'settings', label: 'Platform Settings', icon: Settings },
+    { id: 'settings', label: 'Platform & Social Settings', icon: Settings },
   ] : [
     { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
     { id: 'attendance', label: 'My Shift Attendance', icon: Clock },
@@ -384,7 +475,6 @@ export default function AdminDashboard() {
           </div>
 
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-[#C9A96E]/30 text-[#0A1628]">
-            {/* Role Switcher */}
             <div className="flex p-1 bg-slate-100 rounded-2xl mb-6 border border-slate-200">
               <button
                 type="button"
@@ -444,7 +534,7 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -471,12 +561,16 @@ export default function AdminDashboard() {
       <header className="bg-[#0A1628] text-white border-b border-[#C9A96E]/20 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E]">
-              <Crown className="w-5 h-5" />
-            </div>
+            {siteSettings.logoUrl ? (
+              <img src={siteSettings.logoUrl} alt="Logo" className="h-9 w-auto rounded-lg object-contain" />
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E]">
+                <Crown className="w-5 h-5" />
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-serif font-bold text-lg text-white">Shreeniwas Admin</span>
+                <span className="font-serif font-bold text-lg text-white">{siteSettings.siteTitle || "Shreeniwas Admin"}</span>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                   adminRole === 'super' ? 'bg-[#C9A96E] text-[#0A1628]' : 'bg-blue-500 text-white'
                 }`}>
@@ -538,9 +632,9 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { title: "Total Properties", value: `${propertiesList.length} Active`, change: "Managed Inventory", icon: Building2 },
-                  { title: "Total Revenue", value: "₹14.8 Lakh", change: "Quarterly Revenue", icon: CreditCard },
+                  { title: "Property Reels", value: `${reelsList.length} Active`, change: "Video Walkthroughs", icon: Video },
+                  { title: "Buyer Reviews", value: `${reviewsList.length} Reviews`, change: "5-Star Rating Track", icon: Star },
                   { title: "Visitor Inquiries", value: `${inquiriesList.length}`, change: `${inquiriesList.filter(i => i.status === 'Pending').length} Pending Response`, icon: MessageSquare },
-                  { title: "Registered Accounts", value: `${usersList.length + adminAccountsList.length}`, change: `${adminAccountsList.length} Staff Admins`, icon: Users },
                 ].map((stat, i) => (
                   <div key={i} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
@@ -586,6 +680,229 @@ export default function AdminDashboard() {
                     <p className="text-xs font-bold text-slate-500">On Approved Leave</p>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* PROPERTIES TAB */}
+          {activeTab === 'properties' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Properties Inventory Manager</h3>
+                  <p className="text-xs text-slate-500">Super Admin Power: Add, edit, update prices, or remove property listings.</p>
+                </div>
+
+                {adminRole === 'super' && (
+                  <button
+                    onClick={() => {
+                      setEditingProperty(null);
+                      setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active' });
+                      setShowPropertyModal(true);
+                    }}
+                    className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
+                  >
+                    <Plus className="w-4 h-4" /> Add New Listing
+                  </button>
+                )}
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                        <th className="p-4 pl-6">ID</th>
+                        <th className="p-4">Title</th>
+                        <th className="p-4">Location</th>
+                        <th className="p-4">Price</th>
+                        <th className="p-4">Type</th>
+                        <th className="p-4">Status</th>
+                        {adminRole === 'super' && <th className="p-4 text-right pr-6">Super Admin Actions</th>}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {propertiesList.map((prop) => (
+                        <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-4 pl-6 font-mono font-bold text-slate-500">{prop.id}</td>
+                          <td className="p-4 font-bold text-[#0A1628]">{prop.title}</td>
+                          <td className="p-4 text-slate-600">{prop.location}</td>
+                          <td className="p-4 font-bold text-emerald-700">{prop.price}</td>
+                          <td className="p-4 font-medium text-slate-600">{prop.type}</td>
+                          <td className="p-4">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              {prop.status}
+                            </span>
+                          </td>
+                          {adminRole === 'super' && (
+                            <td className="p-4 text-right pr-6 space-x-2">
+                              <button
+                                onClick={() => {
+                                  setEditingProperty(prop);
+                                  setPropForm({ title: prop.title, location: prop.location, price: prop.price, type: prop.type, status: prop.status });
+                                  setShowPropertyModal(true);
+                                }}
+                                className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
+                                title="Edit Listing"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProperty(prop.id)}
+                                className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
+                                title="Delete Listing"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* REELS MANAGEMENT TAB */}
+          {activeTab === 'reels' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Property Video Reels Management</h3>
+                  <p className="text-xs text-slate-500">Super Admin Power: Publish 360° virtual tours, property video reels, and views.</p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setEditingReel(null);
+                    setReelForm({ title: '', property: '', embedUrl: '', views: '1.2K', status: 'Active' });
+                    setShowReelModal(true);
+                  }}
+                  className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
+                >
+                  <Plus className="w-4 h-4" /> Add Video Reel
+                </button>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <table className="w-full text-left border-collapse min-w-[700px]">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                      <th className="p-4 pl-6">Reel Title</th>
+                      <th className="p-4">Property Reference</th>
+                      <th className="p-4">Views</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4 text-right pr-6">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs">
+                    {reelsList.map((reel) => (
+                      <tr key={reel.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-4 pl-6 font-bold text-[#0A1628] flex items-center gap-2">
+                          <Video className="w-4 h-4 text-[#C9A96E]" /> {reel.title}
+                        </td>
+                        <td className="p-4 text-slate-600 font-medium">{reel.property}</td>
+                        <td className="p-4 font-mono text-emerald-700 font-bold">{reel.views}</td>
+                        <td className="p-4">
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            {reel.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right pr-6 space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingReel(reel);
+                              setReelForm({ title: reel.title, property: reel.property, embedUrl: reel.embedUrl, views: reel.views, status: reel.status });
+                              setShowReelModal(true);
+                            }}
+                            className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
+                            title="Edit Reel"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteReel(reel.id)}
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
+                            title="Delete Reel"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* REVIEWS & TESTIMONIALS TAB */}
+          {activeTab === 'reviews' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Buyer & Landlord Reviews Manager</h3>
+                  <p className="text-xs text-slate-500">Super Admin Power: Manage buyer ratings, feature testimonials, and review approvals.</p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setEditingReview(null);
+                    setReviewForm({ name: '', role: '', rating: 5, quote: '', status: 'Featured' });
+                    setShowReviewModal(true);
+                  }}
+                  className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
+                >
+                  <Plus className="w-4 h-4" /> Add Review / Testimonial
+                </button>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <table className="w-full text-left border-collapse min-w-[700px]">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                      <th className="p-4 pl-6">Reviewer Name</th>
+                      <th className="p-4">Role / Locality</th>
+                      <th className="p-4">Rating</th>
+                      <th className="p-4">Testimonial Quote</th>
+                      <th className="p-4 text-right pr-6">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs">
+                    {reviewsList.map((rev) => (
+                      <tr key={rev.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-4 pl-6 font-bold text-[#0A1628]">{rev.name}</td>
+                        <td className="p-4 text-slate-600 font-medium">{rev.role}</td>
+                        <td className="p-4 text-amber-500 font-bold flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 fill-current" /> {rev.rating} / 5
+                        </td>
+                        <td className="p-4 text-slate-600 max-w-[250px] truncate italic">"{rev.quote}"</td>
+                        <td className="p-4 text-right pr-6 space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingReview(rev);
+                              setReviewForm({ name: rev.name, role: rev.role, rating: rev.rating, quote: rev.quote, status: rev.status });
+                              setShowReviewModal(true);
+                            }}
+                            className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
+                            title="Edit Review"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteReview(rev.id)}
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
+                            title="Delete Review"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
@@ -725,88 +1042,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* PROPERTIES TAB (EDIT LISTINGS POWER) */}
-          {activeTab === 'properties' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Properties Inventory Manager</h3>
-                  <p className="text-xs text-slate-500">Super Admin Power: Add, edit, update prices, or remove property listings.</p>
-                </div>
-
-                {adminRole === 'super' && (
-                  <button
-                    onClick={() => {
-                      setEditingProperty(null);
-                      setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active' });
-                      setShowPropertyModal(true);
-                    }}
-                    className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
-                  >
-                    <Plus className="w-4 h-4" /> Add New Listing
-                  </button>
-                )}
-              </div>
-
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto no-scrollbar">
-                  <table className="w-full text-left border-collapse min-w-[700px]">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
-                        <th className="p-4 pl-6">ID</th>
-                        <th className="p-4">Title</th>
-                        <th className="p-4">Location</th>
-                        <th className="p-4">Price</th>
-                        <th className="p-4">Type</th>
-                        <th className="p-4">Status</th>
-                        {adminRole === 'super' && <th className="p-4 text-right pr-6">Super Admin Actions</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-xs">
-                      {propertiesList.map((prop) => (
-                        <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="p-4 pl-6 font-mono font-bold text-slate-500">{prop.id}</td>
-                          <td className="p-4 font-bold text-[#0A1628]">{prop.title}</td>
-                          <td className="p-4 text-slate-600">{prop.location}</td>
-                          <td className="p-4 font-bold text-emerald-700">{prop.price}</td>
-                          <td className="p-4 font-medium text-slate-600">{prop.type}</td>
-                          <td className="p-4">
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                              {prop.status}
-                            </span>
-                          </td>
-                          {adminRole === 'super' && (
-                            <td className="p-4 text-right pr-6 space-x-2">
-                              <button
-                                onClick={() => {
-                                  setEditingProperty(prop);
-                                  setPropForm({ title: prop.title, location: prop.location, price: prop.price, type: prop.type, status: prop.status });
-                                  setShowPropertyModal(true);
-                                }}
-                                className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
-                                title="Edit Listing"
-                              >
-                                <Edit className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteProperty(prop.id)}
-                                className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
-                                title="Delete Listing"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* USERS & ADMIN MANAGEMENT TAB (MAKE ADMIN POWER) */}
+          {/* USERS & ADMIN MANAGEMENT TAB */}
           {activeTab === 'users' && adminRole === 'super' && (
             <div className="space-y-8">
               {/* Staff Admins Section */}
@@ -908,7 +1144,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* BLOG & CONTENT TAB (SUPER ADMIN POWER) */}
+          {/* BLOG TAB */}
           {activeTab === 'blogs' && adminRole === 'super' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
@@ -979,53 +1215,151 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* PLATFORM SETTINGS TAB */}
+          {/* EXPANDED PLATFORM & SOCIAL MEDIA SETTINGS TAB */}
           {activeTab === 'settings' && adminRole === 'super' && (
             <div className="space-y-6">
-              <h3 className="text-xl font-serif font-bold text-[#0A1628]">Platform Settings</h3>
+              <div>
+                <h3 className="text-xl font-serif font-bold text-[#0A1628]">Platform, Logo & Social Media Settings</h3>
+                <p className="text-xs text-slate-500">Super Admin Power: Change brand logo, site name, office contacts, and social media handles.</p>
+              </div>
 
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 max-w-2xl">
-                <div>
-                  <label className="text-xs font-bold uppercase text-slate-700 block mb-1">Platform Name</label>
-                  <input
-                    type="text"
-                    value={siteSettings.siteTitle}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, siteTitle: e.target.value })}
-                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                  />
-                </div>
+              <form onSubmit={handleSaveSettings} className="space-y-6 max-w-4xl">
+                {/* 1. Branding & Logo Settings */}
+                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-[#C9A96E]" /> Brand Logo & Identity
+                  </h4>
 
-                <div>
-                  <label className="text-xs font-bold uppercase text-slate-700 block mb-1">Support Contact Phone</label>
-                  <input
-                    type="text"
-                    value={siteSettings.supportPhone}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, supportPhone: e.target.value })}
-                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                  />
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Custom Logo Image URL</label>
+                      <input
+                        type="url"
+                        value={siteSettings.logoUrl}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, logoUrl: e.target.value })}
+                        placeholder="https://example.com/logo.png"
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Paste absolute image URL for site header logo.</p>
+                    </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                  <div>
-                    <p className="text-xs font-bold text-[#0A1628]">Maintenance Mode</p>
-                    <p className="text-[10px] text-slate-400">Temporarily restrict public access to site listings</p>
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Platform Brand Title</label>
+                      <input
+                        type="text"
+                        value={siteSettings.siteTitle}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, siteTitle: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={siteSettings.maintenanceMode}
-                    onChange={(e) => setSiteSettings({ ...siteSettings, maintenanceMode: e.target.checked })}
-                    className="w-4 h-4 text-[#C9A96E] rounded cursor-pointer"
-                  />
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1 text-xs">Brand Tagline</label>
+                    <input
+                      type="text"
+                      value={siteSettings.tagline}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, tagline: e.target.value })}
+                      className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Office Contact Info */}
+                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-[#C9A96E]" /> Official Contact & Head Office Details
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Support Contact Phone</label>
+                      <input
+                        type="text"
+                        value={siteSettings.supportPhone}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, supportPhone: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Official Contact Email</label>
+                      <input
+                        type="email"
+                        value={siteSettings.contactEmail}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, contactEmail: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-xs">
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Head Office Address</label>
+                    <input
+                      type="text"
+                      value={siteSettings.headOffice}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, headOffice: e.target.value })}
+                      className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Social Media Handling */}
+                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <Share2 className="w-4 h-4 text-[#C9A96E]" /> Social Media & WhatsApp Links
+                  </h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">WhatsApp Direct Link</label>
+                      <input
+                        type="url"
+                        value={siteSettings.whatsappLink}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, whatsappLink: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Instagram Profile</label>
+                      <input
+                        type="url"
+                        value={siteSettings.instagramLink}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, instagramLink: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Facebook Page</label>
+                      <input
+                        type="url"
+                        value={siteSettings.facebookLink}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, facebookLink: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">YouTube Channel</label>
+                      <input
+                        type="url"
+                        value={siteSettings.youtubeLink}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, youtubeLink: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <button
-                  type="button"
-                  onClick={() => alert("Platform Settings Updated Successfully!")}
-                  className="px-5 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow cursor-pointer"
+                  type="submit"
+                  className="px-6 py-3.5 bg-[#0A1628] text-[#C9A96E] font-extrabold text-xs rounded-2xl shadow-xl hover:bg-[#0A1628]/90 transition cursor-pointer border border-[#C9A96E]/30"
                 >
-                  Save Platform Settings
+                  Save All Platform & Social Settings Live
                 </button>
-              </div>
+              </form>
             </div>
           )}
         </main>
@@ -1136,6 +1470,160 @@ export default function AdminDashboard() {
                 <div className="flex justify-end gap-2 pt-2">
                   <button type="button" onClick={() => setShowPropertyModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
                   <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Save Listing</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add/Edit Reel Modal */}
+      <AnimatePresence>
+        {showReelModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 className="font-serif font-bold text-lg">{editingReel ? "Edit Property Video Reel" : "Add Property Video Reel"}</h4>
+                <button onClick={() => setShowReelModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleSaveReel} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Reel Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={reelForm.title}
+                    onChange={(e) => setReelForm({ ...reelForm, title: e.target.value })}
+                    placeholder="e.g. 4 BHK Villa 360° Walkthrough"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Property Reference Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={reelForm.property}
+                    onChange={(e) => setReelForm({ ...reelForm, property: e.target.value })}
+                    placeholder="e.g. The Royal Heritage Residency"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Video Reel Thumbnail URL</label>
+                  <input
+                    type="url"
+                    required
+                    value={reelForm.embedUrl}
+                    onChange={(e) => setReelForm({ ...reelForm, embedUrl: e.target.value })}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Views Count</label>
+                    <input
+                      type="text"
+                      value={reelForm.views}
+                      onChange={(e) => setReelForm({ ...reelForm, views: e.target.value })}
+                      placeholder="e.g. 14.2K"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Status</label>
+                    <select
+                      value={reelForm.status}
+                      onChange={(e) => setReelForm({ ...reelForm, status: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Hidden">Hidden</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setShowReelModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Save Reel</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add/Edit Review Modal */}
+      <AnimatePresence>
+        {showReviewModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 className="font-serif font-bold text-lg">{editingReview ? "Edit Customer Review" : "Add Customer Review"}</h4>
+                <button onClick={() => setShowReviewModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleSaveReview} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Reviewer Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={reviewForm.name}
+                    onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
+                    placeholder="e.g. Dr. Alok & Sunita Mehta"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Role / Locality</label>
+                    <input
+                      type="text"
+                      required
+                      value={reviewForm.role}
+                      onChange={(e) => setReviewForm({ ...reviewForm, role: e.target.value })}
+                      placeholder="e.g. Villa Buyers in Jaipur"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Rating (Out of 5)</label>
+                    <select
+                      value={reviewForm.rating}
+                      onChange={(e) => setReviewForm({ ...reviewForm, rating: Number(e.target.value) })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value={5}>5 Stars ⭐⭐⭐⭐⭐</option>
+                      <option value={4}>4 Stars ⭐⭐⭐⭐</option>
+                      <option value={3}>3 Stars ⭐⭐⭐</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Testimonial Quote</label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={reviewForm.quote}
+                    onChange={(e) => setReviewForm({ ...reviewForm, quote: e.target.value })}
+                    placeholder="Enter buyer or landlord quote text..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setShowReviewModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Save Review</button>
                 </div>
               </form>
             </motion.div>
