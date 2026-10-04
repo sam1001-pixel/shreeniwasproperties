@@ -5,16 +5,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Building2, FileText, Users, CreditCard, Settings, 
   Search, Bell, MoreVertical, Plus, CheckCircle2, XCircle, Edit, Trash2, 
-  MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound
+  MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound,
+  Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck
 } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock Data
+// Business Stats
 const OVERVIEW_STATS = [
   { title: "Total Properties", value: "1,240", change: "+12% this month", icon: Building2 },
   { title: "Total Revenue", value: "₹14.8 Lakh", change: "+8% this month", icon: CreditCard },
-  { title: "Paid Site Visits", value: "142", change: "+24% this month", icon: MapPin },
-  { title: "Active Subscribers", value: "3,450", change: "+18% this month", icon: Users },
+  { title: "Paid Site Visits (₹499)", value: "142", change: "+24% this month", icon: MapPin },
+  { title: "Active Staff Admins", value: "8 Active", change: "100% Present Today", icon: Users },
 ];
 
 const PROPERTIES = [
@@ -32,32 +33,55 @@ const USERS = [
   { id: 4, name: "Neha Verma", role: "Agent", email: "neha@shreeniwasproperties.com", status: "Verified" },
 ];
 
-const INQUIRIES = [
-  { id: "INQ-101", user: "Vikram Rathore", phone: "+91 9876543210", property: "PROP-001", type: "Paid Visit (₹499)", status: "Paid" },
-  { id: "INQ-102", user: "Suresh Saini", phone: "+91 8765432109", property: "PROP-002", type: "General Inquiry", status: "Contacted" },
-  { id: "INQ-103", user: "Kiran Meena", phone: "+91 7654321098", property: "PROP-004", type: "Paid Visit (₹499)", status: "Pending" },
+// Inquiries & Query Desk Data
+const INITIAL_INQUIRIES = [
+  { id: "INQ-101", user: "Vikram Rathore", phone: "+91 9876543210", email: "vikram@gmail.com", property: "The Royal Heritage Residency", type: "Paid Visit (₹499)", status: "Paid", query: "Need cab pickup at 11 AM from Jaipur Airport.", reply: "Cab assigned with Driver Rajesh (+91 98765 11111)." },
+  { id: "INQ-102", user: "Suresh Saini", phone: "+91 8765432109", email: "suresh@gmail.com", property: "3BHK Apartment C-Scheme", type: "General Inquiry", status: "Pending", query: "What is the monthly maintenance fee?", reply: "" },
+  { id: "INQ-103", user: "Kiran Meena", phone: "+91 7654321098", email: "kiran@gmail.com", property: "Heritage Haveli Jodhpur", type: "Paid Visit (₹499)", status: "Pending", query: "Want to schedule a Sunday afternoon visit.", reply: "" },
 ];
 
-const BLOGS = [
-  { id: 1, title: "Top 10 Investment Locations in Jaipur 2024", category: "Investment", status: "Published", date: "Oct 12, 2023" },
-  { id: 2, title: "Understanding RERA Guidelines", category: "Legal", status: "Draft", date: "Oct 15, 2023" },
+// Admin Staff Attendance Data
+const INITIAL_ATTENDANCE = [
+  { id: "ATT-01", staffName: "Rajesh Rathore", role: "Senior Visit Coordinator", date: "Today", clockIn: "09:15 AM", clockOut: "In Shift", status: "Present (On Time)", hours: "6.5 hrs" },
+  { id: "ATT-02", staffName: "Ananya Sharma", role: "Client Query Admin", date: "Today", clockIn: "09:28 AM", clockOut: "In Shift", status: "Present (On Time)", hours: "6.2 hrs" },
+  { id: "ATT-03", staffName: "Vikram Singh", role: "Lead Verification Officer", date: "Today", clockIn: "10:05 AM", clockOut: "In Shift", status: "Late Entry", hours: "5.5 hrs" },
+  { id: "ATT-04", staffName: "Pooja Gupta", role: "Documentation Specialist", date: "Today", clockIn: "--:--", clockOut: "--:--", status: "On Approved Leave", hours: "0 hrs" },
 ];
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [adminRole, setAdminRole] = useState<'super' | 'staff'>('super');
 
   // Login Form States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedRoleType, setSelectedRoleType] = useState<'super' | 'staff'>('super');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  // Inquiry Reply States
+  const [inquiriesList, setInquiriesList] = useState(INITIAL_INQUIRIES);
+  const [selectedInquiry, setSelectedInquiry] = useState<typeof INITIAL_INQUIRIES[0] | null>(null);
+  const [replyText, setReplyText] = useState('');
+
+  // Attendance Clock-in State
+  const [attendanceList, setAttendanceList] = useState(INITIAL_ATTENDANCE);
+  const [isClockedIn, setIsClockedIn] = useState(true);
+  const [clockInTime, setClockInTime] = useState('09:15 AM');
+
   useEffect(() => {
     const authSession = sessionStorage.getItem('shreeniwas_admin_auth');
+    const storedRole = sessionStorage.getItem('shreeniwas_admin_role');
     if (authSession === 'true') {
       setIsAuthenticated(true);
+      if (storedRole === 'staff') {
+        setAdminRole('staff');
+        setActiveTab('inquiries');
+      } else {
+        setAdminRole('super');
+      }
     }
     setIsLoaded(true);
   }, []);
@@ -69,633 +93,517 @@ export default function AdminDashboard() {
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedPass = password.trim();
 
-    // Accept default admin credentials
-    if (
-      (trimmedEmail === 'admin@shreeniwasproperties.com' || trimmedEmail === 'admin' || trimmedEmail === 'admin@shreeniwas.com') &&
-      (trimmedPass === 'admin123' || trimmedPass === 'Shreeniwas@2024' || trimmedPass === 'admin')
-    ) {
-      sessionStorage.setItem('shreeniwas_admin_auth', 'true');
-      setIsAuthenticated(true);
+    if (selectedRoleType === 'super') {
+      if (
+        (trimmedEmail === 'superadmin@shreeniwasproperties.com' || trimmedEmail === 'admin' || trimmedEmail === 'admin@shreeniwas.com') &&
+        (trimmedPass === 'admin123' || trimmedPass === 'SuperAdmin@123' || trimmedPass === 'admin')
+      ) {
+        sessionStorage.setItem('shreeniwas_admin_auth', 'true');
+        sessionStorage.setItem('shreeniwas_admin_role', 'super');
+        setAdminRole('super');
+        setIsAuthenticated(true);
+        setActiveTab('overview');
+        return;
+      }
     } else {
-      setLoginError('Invalid Admin ID or Password. Please try admin@shreeniwasproperties.com / admin123');
+      if (
+        (trimmedEmail === 'admin@shreeniwasproperties.com' || trimmedEmail === 'staff' || trimmedEmail === 'admin@shreeniwas.com') &&
+        (trimmedPass === 'admin123' || trimmedPass === 'AdminPass@123' || trimmedPass === 'admin')
+      ) {
+        sessionStorage.setItem('shreeniwas_admin_auth', 'true');
+        sessionStorage.setItem('shreeniwas_admin_role', 'staff');
+        setAdminRole('staff');
+        setIsAuthenticated(true);
+        setActiveTab('inquiries');
+        return;
+      }
     }
+
+    setLoginError('Invalid credentials. Use admin@shreeniwasproperties.com / admin123');
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem('shreeniwas_admin_auth');
+    sessionStorage.removeItem('shreeniwas_admin_role');
     setIsAuthenticated(false);
     setEmail('');
     setPassword('');
   };
 
-  const navItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'properties', label: 'Manage Properties', icon: Building2 },
-    { id: 'blogs', label: 'Blog & Content', icon: FileText },
+  const handleSendReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedInquiry || !replyText.trim()) return;
+
+    setInquiriesList(prev => prev.map(item => 
+      item.id === selectedInquiry.id ? { ...item, reply: replyText.trim(), status: 'Responded & Sent' } : item
+    ));
+
+    setSelectedInquiry(null);
+    setReplyText('');
+  };
+
+  const toggleClockIn = () => {
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (!isClockedIn) {
+      setIsClockedIn(true);
+      setClockInTime(nowTime);
+      setAttendanceList(prev => [
+        {
+          id: `ATT-${Date.now()}`,
+          staffName: adminRole === 'super' ? "Super Admin" : "Ananya Sharma (Staff)",
+          role: adminRole === 'super' ? "Super Administrator" : "Query Coordinator",
+          date: "Today",
+          clockIn: nowTime,
+          clockOut: "In Shift",
+          status: "Present (On Time)",
+          hours: "0.1 hrs"
+        },
+        ...prev
+      ]);
+    } else {
+      setIsClockedIn(false);
+      setAttendanceList(prev => prev.map((item, idx) => idx === 0 ? { ...item, clockOut: nowTime } : item));
+    }
+  };
+
+  const navItems = adminRole === 'super' ? [
+    { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
+    { id: 'properties', label: 'Properties Inventory', icon: Building2 },
+    { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
+    { id: 'attendance', label: 'Staff Attendance System', icon: Clock },
     { id: 'users', label: 'Users & Verification', icon: Users },
-    { id: 'inquiries', label: 'Leads & Visits', icon: CreditCard },
-    { id: 'settings', label: 'Site Settings', icon: Settings },
+    { id: 'blogs', label: 'Blog & Content', icon: FileText },
+    { id: 'settings', label: 'Platform Settings', icon: Settings },
+  ] : [
+    { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
+    { id: 'attendance', label: 'My Shift Attendance', icon: Clock },
+    { id: 'properties', label: 'View Properties', icon: Building2 },
   ];
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-[#0A1628] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#C9A96E]/20 border-t-[#C9A96E] rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-[#0A1628] flex items-center justify-center p-4">
+        <div className="w-10 h-10 border-4 border-[#C9A96E]/30 border-t-[#C9A96E] rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  // Render Login Gate Screen if not authenticated
+  // Admin Login Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A1628] flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Decorative background glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C9A96E]/10 blur-[120px] rounded-full pointer-events-none"></div>
+      <main className="min-h-screen bg-[#0A1628] flex items-center justify-center p-4 relative overflow-hidden py-16">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#C9A96E]/15 blur-[150px] rounded-full pointer-events-none"></div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative z-10"
-        >
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center gap-3 group mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors shadow-lg">
-                <Building2 className="w-6 h-6 text-[#C9A96E]" />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-2xl font-serif font-bold text-[#C9A96E] leading-tight">Shreeniwas</span>
-                <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Master Admin</span>
-              </div>
-            </Link>
-            <h2 className="text-2xl font-serif font-bold text-white mt-2">Admin Portal Login</h2>
-            <p className="text-sm text-slate-400 mt-1">Authorized real estate management access</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto relative z-10">
+          <div className="text-center mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-[#0A1628] flex items-center justify-center border-2 border-[#C9A96E] shadow-xl mx-auto mb-3">
+              <Crown className="w-8 h-8 text-[#C9A96E]" />
+            </div>
+            <h1 className="text-3xl font-serif font-bold text-white mb-1">Shreeniwas Admin</h1>
+            <p className="text-slate-300 text-xs">Real Estate Business Management System</p>
           </div>
 
-          {loginError && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium flex items-start gap-2.5">
-              <XCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
-              <span>{loginError}</span>
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-[#C9A96E]/30 text-[#0A1628]">
+            {/* Role Switcher */}
+            <div className="flex p-1 bg-slate-100 rounded-2xl mb-6 border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setSelectedRoleType('super')}
+                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  selectedRoleType === 'super' ? 'bg-[#0A1628] text-[#C9A96E] shadow' : 'text-slate-600'
+                }`}
+              >
+                Super Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedRoleType('staff')}
+                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  selectedRoleType === 'staff' ? 'bg-[#0A1628] text-[#C9A96E] shadow' : 'text-slate-600'
+                }`}
+              >
+                Admin Staff
+              </button>
             </div>
-          )}
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Admin User ID / Email</label>
-              <div className="relative">
-                <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input 
-                  type="text"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@shreeniwasproperties.com"
-                  className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/15 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A96E] transition-all"
-                />
+            {loginError && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl flex items-center gap-2">
+                <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{loginError}</span>
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Password</label>
-              <div className="relative">
-                <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input 
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-11 py-3 bg-white/10 border border-white/15 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A96E] transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1">Admin Email ID</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={selectedRoleType === 'super' ? "superadmin@shreeniwasproperties.com" : "admin@shreeniwasproperties.com"}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] font-semibold text-sm outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="bg-[#C9A96E]/10 border border-[#C9A96E]/20 rounded-xl p-3.5 text-xs text-[#C9A96E]">
-              <div className="font-semibold mb-1 flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5" />
-                Default Credentials:
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1">Password</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] font-semibold text-sm outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-              <p><span className="text-slate-300">ID:</span> <code className="font-mono">admin@shreeniwasproperties.com</code></p>
-              <p><span className="text-slate-300">Password:</span> <code className="font-mono">admin123</code></p>
-            </div>
 
-            <button
-              type="submit"
-              className="w-full py-3.5 bg-[#C9A96E] hover:bg-[#b59760] text-[#0A1628] font-bold text-sm rounded-xl transition-all shadow-lg shadow-[#C9A96E]/20 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Shield className="w-4 h-4" />
-              Sign In to Admin Panel
-            </button>
-          </form>
-
-          <div className="mt-8 text-center border-t border-white/10 pt-4">
-            <Link href="/" className="text-xs text-slate-400 hover:text-[#C9A96E] transition-colors">
-              ← Return to Main Website
-            </Link>
+              <button
+                type="submit"
+                className="w-full py-4 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] font-extrabold text-sm rounded-xl transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer border border-[#C9A96E]/30"
+              >
+                <KeyRound className="w-4 h-4 text-[#C9A96E]" />
+                Access Management Portal
+              </button>
+            </form>
           </div>
         </motion.div>
-      </div>
+      </main>
     );
   }
 
-  // Render Full Admin Dashboard when Authenticated
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar */}
-      <div className="w-full md:w-64 bg-[#0A1628] text-white flex-shrink-0 relative md:fixed h-auto md:h-full z-10">
-        <div className="p-6">
-          <Link href="/" className="flex items-center gap-3 group mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors">
-              <Building2 className="w-5 h-5 text-[#C9A96E]" />
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      {/* Admin Header */}
+      <header className="bg-[#0A1628] text-white border-b border-[#C9A96E]/20 sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E]">
+              <Crown className="w-5 h-5" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-serif font-bold text-[#C9A96E] leading-tight">Shreeniwas</span>
-              <span className="text-sm font-bold text-white uppercase tracking-wider">Master Admin</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-serif font-bold text-lg text-white">Shreeniwas Admin</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                  adminRole === 'super' ? 'bg-[#C9A96E] text-[#0A1628]' : 'bg-blue-500 text-white'
+                }`}>
+                  {adminRole === 'super' ? 'SUPER ADMIN' : 'STAFF ADMIN'}
+                </span>
+              </div>
             </div>
-          </Link>
+          </div>
 
-          <nav className="flex overflow-x-auto no-scrollbar gap-2 border-b border-white/10 pb-2 md:space-y-2 md:flex-col md:overflow-visible md:border-none md:pb-0">
+          <div className="flex items-center gap-3">
+            {/* Clock-In Quick Bar */}
+            <button
+              onClick={toggleClockIn}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                isClockedIn ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              {isClockedIn ? `Shift Active (${clockInTime})` : 'Clock In Now'}
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Admin Content Layout */}
+      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col md:flex-row gap-6">
+        {/* Sidebar Nav */}
+        <aside className="w-full md:w-64 bg-white rounded-3xl p-4 border border-slate-200 shadow-sm shrink-0 self-start">
+          <nav className="space-y-1">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`whitespace-nowrap flex-shrink-0 md:w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  activeTab === item.id 
-                    ? 'bg-[#C9A96E]/10 text-[#C9A96E] font-medium border border-[#C9A96E]/20' 
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === item.id
+                    ? 'bg-[#0A1628] text-[#C9A96E] shadow-md border border-[#C9A96E]/30'
+                    : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
-                <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-[#C9A96E]' : ''}`} />
+                <item.icon className={`w-4 h-4 ${activeTab === item.id ? 'text-[#C9A96E]' : 'text-slate-400'}`} />
                 {item.label}
               </button>
             ))}
           </nav>
-        </div>
-      </div>
+        </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 md:ml-64">
-        {/* Header */}
-        <header className="bg-white border-b border-slate-200 h-auto py-4 px-4 sm:px-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between sticky top-0 z-10 shadow-sm">
-          <div>
-            <h1 className="text-2xl font-serif font-bold text-[#0A1628]">
-              {navItems.find(i => i.id === activeTab)?.label}
-            </h1>
-            <p className="text-sm text-slate-500">Master Admin Panel - Shreeniwas Properties</p>
-          </div>
-          
-          <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
-            <div className="relative">
-              <Search className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input 
-                type="text" 
-                placeholder="Search anything..." 
-                className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-base sm:text-sm w-full sm:w-64 focus:ring-2 focus:ring-[#C9A96E] outline-none"
-              />
-            </div>
-            <button className="relative p-2 text-slate-400 hover:text-[#0A1628] transition-colors rounded-full hover:bg-slate-100">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-            </button>
-            
-            <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
-              <div className="w-10 h-10 rounded-full bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]">
-                <Crown className="w-5 h-5 text-[#C9A96E]" />
-              </div>
-              <div className="hidden md:block">
-                <p className="text-sm font-semibold text-[#0A1628]">Super Admin</p>
-                <p className="text-xs text-slate-500">admin@shreeniwasproperties.com</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200 ml-2"
-                title="Sign Out of Admin"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Tab Content */}
-        <main className="p-4 sm:p-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {activeTab === 'overview' && <OverviewTab />}
-              {activeTab === 'properties' && <PropertiesTab />}
-              {activeTab === 'blogs' && <BlogsTab />}
-              {activeTab === 'users' && <UsersTab />}
-              {activeTab === 'inquiries' && <InquiriesTab />}
-              {activeTab === 'settings' && <SettingsTab />}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-// Sub-components for Tabs
-
-function OverviewTab() {
-  return (
-    <div className="space-y-8">
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {OVERVIEW_STATS.map((stat, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#0A1628]/5 flex items-center justify-center text-[#0A1628]">
-              <stat.icon className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-              <h3 className="text-2xl font-bold text-[#0A1628] mt-1">{stat.value}</h3>
-              <p className="text-xs font-medium text-emerald-600 mt-1">{stat.change}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Activity Feed Placeholder */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <h3 className="text-lg font-bold text-[#0A1628] mb-6">Recent Platform Activity</h3>
-        <div className="space-y-6 relative before:absolute before:inset-y-0 before:left-[19px] before:w-px before:bg-slate-200">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex gap-4 relative">
-              <div className="w-10 h-10 rounded-full bg-slate-100 border-4 border-white flex flex-shrink-0 items-center justify-center z-10">
-                <Bell className="w-4 h-4 text-slate-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-[#0A1628]">New property listed in Jaipur</p>
-                <p className="text-xs text-slate-500 mt-1">2 hours ago</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PropertiesTab() {
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center flex-wrap gap-4">
-        <div className="flex gap-4 flex-wrap">
-          <input type="text" placeholder="Search properties..." className="px-4 py-2 border border-slate-200 rounded-lg text-base sm:text-sm w-full sm:w-64 focus:ring-2 focus:ring-[#C9A96E] outline-none" />
-          <select className="px-4 py-2 border border-slate-200 rounded-lg text-base sm:text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Pending</option>
-            <option>Sold/Rented</option>
-          </select>
-        </div>
-        <button className="flex items-center gap-2 bg-[#0A1628] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#0A1628]/90 transition-colors shadow-md shadow-[#0A1628]/20">
-          <Plus className="w-4 h-4" />
-          Create New Property
-        </button>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto no-scrollbar">
-        <table className="w-full text-left border-collapse min-w-[600px]">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
-              <th className="px-6 py-4 font-medium">Property</th>
-              <th className="px-6 py-4 font-medium">Location</th>
-              <th className="px-6 py-4 font-medium">Price</th>
-              <th className="px-6 py-4 font-medium">Type</th>
-              <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {PROPERTIES.map((prop) => (
-              <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-slate-200 flex-shrink-0"></div>
+        {/* Dynamic Tab Body */}
+        <main className="flex-1 space-y-6">
+          {activeTab === 'overview' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {OVERVIEW_STATS.map((stat, i) => (
+                  <div key={i} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                      <p className="font-semibold text-[#0A1628]">{prop.title}</p>
-                      <p className="text-xs text-slate-500">{prop.id}</p>
+                      <p className="text-xs text-slate-400 font-bold uppercase">{stat.title}</p>
+                      <h3 className="text-2xl font-serif font-bold text-[#0A1628] mt-1">{stat.value}</h3>
+                      <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">{stat.change}</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-2xl bg-[#0A1628] text-[#C9A96E] flex items-center justify-center border border-[#C9A96E]/30">
+                      <stat.icon className="w-6 h-6" />
                     </div>
                   </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-600">{prop.location}</td>
-                <td className="px-6 py-4 text-sm font-medium text-[#0A1628]">{prop.price}</td>
-                <td className="px-6 py-4 text-sm">
-                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                    {prop.type}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                    prop.status === 'Active' ? 'bg-emerald-100 text-emerald-700' :
-                    prop.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
-                    'bg-slate-100 text-slate-700'
-                  }`}>
-                    {prop.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button className="p-1.5 text-slate-400 hover:text-emerald-600 rounded bg-slate-50 hover:bg-emerald-50 transition-colors" title="Approve/Feature">
-                      <CheckCircle2 className="w-4 h-4" />
-                    </button>
-                    <button className="p-1.5 text-slate-400 hover:text-[#0A1628] rounded bg-slate-50 hover:bg-slate-100 transition-colors" title="Edit">
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button className="p-1.5 text-slate-400 hover:text-rose-600 rounded bg-slate-50 hover:bg-rose-50 transition-colors" title="Delete">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                ))}
+              </div>
+
+              {/* Attendance Summary */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-serif font-bold text-[#0A1628] flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-[#C9A96E]" /> Today's Staff Attendance Summary
+                  </h3>
+                  <button onClick={() => setActiveTab('attendance')} className="text-xs font-bold text-[#C9A96E] hover:underline">
+                    View Full Attendance Logs →
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                    <p className="text-2xl font-extrabold text-emerald-800">7</p>
+                    <p className="text-xs font-bold text-emerald-600">Present On Time</p>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function BlogsTab() {
-  return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-      <div className="xl:col-span-2 space-y-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-bold text-[#0A1628] mb-6">Create New Post</h3>
-          <form className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Post Title</label>
-              <input type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E]" placeholder="Enter title..." />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
-                <select className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E] bg-white">
-                  <option>Investment</option>
-                  <option>Legal</option>
-                  <option>Architecture</option>
-                  <option>Market Trends</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Cover Image URL</label>
-                <input type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E]" placeholder="https://..." />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Excerpt</label>
-              <textarea className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E] resize-none h-20" placeholder="Short description..."></textarea>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
-              <textarea className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E] resize-none h-64 font-mono text-sm" placeholder="Write markdown content here..."></textarea>
-            </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-              <button type="button" className="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Save as Draft</button>
-              <button type="button" className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#C9A96E] hover:bg-[#b59760] transition-colors shadow-md shadow-[#C9A96E]/20">Publish Post</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <h3 className="text-lg font-bold text-[#0A1628]">Recent Posts</h3>
-        <div className="space-y-4">
-          {BLOGS.map((blog) => (
-            <div key={blog.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-3">
-              <div>
-                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-2 ${
-                  blog.status === 'Published' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                }`}>
-                  {blog.status}
-                </span>
-                <h4 className="font-semibold text-[#0A1628] leading-snug">{blog.title}</h4>
-                <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-                  <span>{blog.date}</span> • <span>{blog.category}</span>
+                  <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                    <p className="text-2xl font-extrabold text-amber-800">1</p>
+                    <p className="text-xs font-bold text-amber-600">Late Entry</p>
+                  </div>
+                  <div className="bg-slate-100 p-4 rounded-2xl border border-slate-200">
+                    <p className="text-2xl font-extrabold text-slate-700">1</p>
+                    <p className="text-xs font-bold text-slate-500">On Approved Leave</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
-                <button className="flex-1 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 rounded transition-colors">Edit</button>
-                <button className="flex-1 py-1.5 text-xs font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded transition-colors">Delete</button>
+            </div>
+          )}
+
+          {/* Tab: Attendance Management */}
+          {activeTab === 'attendance' && (
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Admin Attendance Management</h3>
+                  <p className="text-xs text-slate-500">Track daily shift clock-in times, staff hours, and leave approvals.</p>
+                </div>
+
+                <button
+                  onClick={toggleClockIn}
+                  className={`px-5 py-3 rounded-2xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-md ${
+                    isClockedIn ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
+                  }`}
+                >
+                  <Clock className="w-4 h-4" />
+                  {isClockedIn ? 'Clock Out My Shift' : 'Clock In My Shift Now'}
+                </button>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[650px]">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                        <th className="p-4 pl-6">Staff Admin</th>
+                        <th className="p-4">Designated Role</th>
+                        <th className="p-4">Clock In</th>
+                        <th className="p-4">Clock Out</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4 text-right pr-6">Hours</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {attendanceList.map((att) => (
+                        <tr key={att.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-4 pl-6 font-bold text-[#0A1628]">{att.staffName}</td>
+                          <td className="p-4 text-slate-600">{att.role}</td>
+                          <td className="p-4 font-mono text-slate-700">{att.clockIn}</td>
+                          <td className="p-4 font-mono text-slate-700">{att.clockOut}</td>
+                          <td className="p-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                              att.status.includes('On Time') ? 'bg-emerald-100 text-emerald-800' :
+                              att.status.includes('Late') ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {att.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right pr-6 font-mono font-bold text-slate-800">{att.hours}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+          )}
 
-function UsersTab() {
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center flex-wrap gap-4">
-        <div className="flex gap-4 flex-wrap">
-          <input type="text" placeholder="Search users by name, email..." className="px-4 py-2 border border-slate-200 rounded-lg text-sm w-72 focus:ring-2 focus:ring-[#C9A96E] outline-none" />
-          <select className="px-4 py-2 border border-slate-200 rounded-lg text-base sm:text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
-            <option>All Roles</option>
-            <option>Seeker</option>
-            <option>Landlord</option>
-            <option>Agent</option>
-            <option>Admin</option>
-          </select>
-        </div>
-      </div>
+          {/* Tab: Inquiries & Query Desk */}
+          {activeTab === 'inquiries' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Query & Lead Desk</h3>
+                  <p className="text-xs text-slate-500">Respond directly to visitor property inquiries and VIP visit bookings.</p>
+                </div>
+              </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto no-scrollbar">
-        <table className="w-full text-left border-collapse min-w-[600px]">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
-              <th className="px-6 py-4 font-medium">User</th>
-              <th className="px-6 py-4 font-medium">Role</th>
-              <th className="px-6 py-4 font-medium">Verification</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {USERS.map((user) => (
-              <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[#0A1628]">{user.name}</p>
-                      <p className="text-xs text-slate-500">{user.email}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <select className="text-sm bg-transparent border border-slate-200 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-[#C9A96E]" defaultValue={user.role}>
-                    <option>Seeker</option>
-                    <option>Landlord</option>
-                    <option>Agent</option>
-                    <option>Admin</option>
-                  </select>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
-                      user.status === 'Verified' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'
-                    }`}>
-                      {user.status === 'Verified' && <Shield className="w-3 h-3" />}
-                      {user.status}
-                    </span>
-                    {user.status !== 'Verified' && (
-                      <button className="text-[10px] uppercase font-bold text-[#C9A96E] hover:underline">Verify Now</button>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-sm text-slate-500 hover:text-[#0A1628] font-medium px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors">
-                    View Details
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                        <th className="p-4 pl-6">Client Details</th>
+                        <th className="p-4">Property</th>
+                        <th className="p-4">Type</th>
+                        <th className="p-4">Query / Request</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4 text-right pr-6">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {inquiriesList.map((inq) => (
+                        <tr key={inq.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-4 pl-6">
+                            <p className="font-bold text-[#0A1628]">{inq.user}</p>
+                            <p className="text-[10px] text-slate-400">{inq.phone}</p>
+                          </td>
+                          <td className="p-4 font-medium text-slate-700">{inq.property}</td>
+                          <td className="p-4">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C9A96E]/20 text-[#0A1628]">
+                              {inq.type}
+                            </span>
+                          </td>
+                          <td className="p-4 text-slate-600 max-w-[200px] truncate">{inq.query || "No notes"}</td>
+                          <td className="p-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                              inq.status.includes('Paid') || inq.status.includes('Responded') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              {inq.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right pr-6">
+                            <button
+                              onClick={() => setSelectedInquiry(inq)}
+                              className="px-3.5 py-1.5 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl text-[11px] shadow hover:bg-[#0A1628]/90 transition-all cursor-pointer"
+                            >
+                              Reply & Update
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Properties Tab */}
+          {activeTab === 'properties' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-serif font-bold text-[#0A1628]">Properties Inventory</h3>
+                <Link href="/dashboard/landlord/properties/new">
+                  <button className="px-4 py-2 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow">
+                    <Plus className="w-4 h-4" /> Add Listing
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+                </Link>
+              </div>
 
-function InquiriesTab() {
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center flex-wrap gap-4">
-        <h3 className="text-lg font-bold text-[#0A1628]">All Inquiries & Visits</h3>
-        <select className="px-4 py-2 border border-slate-200 rounded-lg text-base sm:text-sm bg-white outline-none focus:ring-2 focus:ring-[#C9A96E]">
-          <option>All Types</option>
-          <option>Paid Visits</option>
-          <option>General</option>
-        </select>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto no-scrollbar">
-        <table className="w-full text-left border-collapse min-w-[600px]">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
-              <th className="px-6 py-4 font-medium">Inquiry ID</th>
-              <th className="px-6 py-4 font-medium">User Details</th>
-              <th className="px-6 py-4 font-medium">Property</th>
-              <th className="px-6 py-4 font-medium">Type</th>
-              <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {INQUIRIES.map((inq) => (
-              <tr key={inq.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 text-sm font-mono text-slate-500">{inq.id}</td>
-                <td className="px-6 py-4">
-                  <p className="font-semibold text-[#0A1628] text-sm">{inq.user}</p>
-                  <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3"/>{inq.phone}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-sm text-[#C9A96E] font-medium hover:underline cursor-pointer flex items-center gap-1">
-                    {inq.property} <Eye className="w-3 h-3"/>
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`text-xs font-medium px-2 py-1 rounded ${
-                    inq.type.includes('Paid') ? 'bg-[#C9A96E]/10 text-[#C9A96E] border border-[#C9A96E]/20' : 'bg-slate-100 text-slate-600'
-                  }`}>
-                    {inq.type}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                    inq.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' :
-                    inq.status === 'Contacted' ? 'bg-blue-100 text-blue-700' :
-                    'bg-amber-100 text-amber-700'
-                  }`}>
-                    {inq.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-sm font-medium text-[#0A1628] bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded transition-colors">
-                    Mark Done
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function SettingsTab() {
-  return (
-    <div className="max-w-4xl bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
-      <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
-        <Settings className="w-6 h-6 text-[#C9A96E]" />
-        <h2 className="text-xl font-bold text-[#0A1628]">Platform Settings</h2>
-      </div>
-
-      <form className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <h4 className="font-semibold text-slate-800 text-sm uppercase tracking-wider">General Information</h4>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Brand Name</label>
-              <input type="text" defaultValue="Shreeniwas Properties" className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E]" />
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[650px]">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                        <th className="p-4 pl-6">ID</th>
+                        <th className="p-4">Title</th>
+                        <th className="p-4">Location</th>
+                        <th className="p-4">Price</th>
+                        <th className="p-4">Type</th>
+                        <th className="p-4 text-right pr-6">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {PROPERTIES.map((prop) => (
+                        <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-4 pl-6 font-mono font-bold text-slate-500">{prop.id}</td>
+                          <td className="p-4 font-bold text-[#0A1628]">{prop.title}</td>
+                          <td className="p-4 text-slate-600">{prop.location}</td>
+                          <td className="p-4 font-bold text-emerald-700">{prop.price}</td>
+                          <td className="p-4 font-medium text-slate-600">{prop.type}</td>
+                          <td className="p-4 text-right pr-6">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              {prop.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">RERA Registration Number</label>
-              <input type="text" defaultValue="RAJ/P/2024/XXXX" className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E]" />
-            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Reply Modal */}
+      <AnimatePresence>
+        {selectedInquiry && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 className="font-serif font-bold text-lg">Reply to Query ({selectedInquiry.user})</h4>
+                <button onClick={() => setSelectedInquiry(null)} className="p-1 text-slate-400 hover:text-slate-700"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                <p><strong>Property:</strong> {selectedInquiry.property}</p>
+                <p><strong>Customer Query:</strong> {selectedInquiry.query || "Callback requested"}</p>
+              </div>
+
+              <form onSubmit={handleSendReply} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Your Response Message</label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Type official response or driver assignment details..."
+                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button type="button" onClick={() => setSelectedInquiry(null)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow">Send Response</button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-
-          <div className="space-y-4">
-            <h4 className="font-semibold text-slate-800 text-sm uppercase tracking-wider">Contact Details</h4>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Support Email</label>
-              <input type="email" defaultValue="support@shreeniwas.com" className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E]" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Primary Phone</label>
-              <input type="text" defaultValue="+91 99999 99999" className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E]" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">WhatsApp Number</label>
-              <input type="text" defaultValue="+91 99999 99999" className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E]" />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4 pt-6 border-t border-slate-100">
-          <h4 className="font-semibold text-slate-800 text-sm uppercase tracking-wider">Monetization</h4>
-          <div className="w-full sm:w-1/2">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Paid Visit Fee (₹)</label>
-            <input type="number" defaultValue="499" className="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#C9A96E]" />
-            <p className="text-xs text-slate-500 mt-1">Amount charged to users for scheduling a priority site visit.</p>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-4 pt-6 border-t border-slate-100">
-          <button type="button" className="px-6 py-2.5 rounded-lg text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Discard Changes</button>
-          <button type="button" className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#0A1628] hover:bg-[#0A1628]/90 transition-colors shadow-lg shadow-[#0A1628]/20">Save Settings</button>
-        </div>
-      </form>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

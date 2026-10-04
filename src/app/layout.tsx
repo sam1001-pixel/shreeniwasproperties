@@ -6,6 +6,8 @@ import { Footer } from '@/components/shared/footer';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import { PropertyAlertModal } from '@/components/shared/property-alert-modal';
+import AiConciergeChatbot from '@/components/shared/ai-concierge-chatbot';
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
@@ -45,6 +47,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <PropertyAlertModal />
+        <AiConciergeChatbot />
       </body>
     </html>
   );

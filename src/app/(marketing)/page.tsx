@@ -39,6 +39,7 @@ import Image from "next/image";
 import ShreeniwasSearchEngine from "@/components/shared/shreeniwas-search-engine";
 import PropertyComparison, { PropertyCompareItem } from "@/components/shared/property-comparison";
 import AmenitiesShowcase from "@/components/shared/amenities-showcase";
+import OwnerReelsFeed from "@/components/shared/owner-reels-feed";
 
 // Featured Properties
 const FEATURED_PROPERTIES = [
@@ -754,7 +755,10 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 10. Interactive EMI / Mortgage Calculator */}
+      {/* 10. Owner's Corner & Live Reels Feed */}
+      <OwnerReelsFeed />
+
+      {/* 11. Interactive EMI / Mortgage Calculator */}
       <section className="py-16 sm:py-24 px-4 bg-slate-50">
         <div className="container mx-auto">
           <EMICalculator />
