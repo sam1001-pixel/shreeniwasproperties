@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Building2, FileText, Users, CreditCard, Settings, 
-  Search, Bell, MoreVertical, Plus, CheckCircle2, XCircle, Edit, Trash2, 
+  Search, MoreVertical, Plus, CheckCircle2, XCircle, Edit, Trash2, 
   MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound,
   Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck
 } from 'lucide-react';
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
       }
     }
 
-    setLoginError('Invalid credentials. Use admin@shreeniwasproperties.com / admin123');
+    setLoginError('Invalid email or password. Please verify your admin credentials.');
   };
 
   const handleLogout = () => {
@@ -243,7 +243,7 @@ export default function AdminDashboard() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={selectedRoleType === 'super' ? "superadmin@shreeniwasproperties.com" : "admin@shreeniwasproperties.com"}
+                    placeholder="admin@shreeniwasproperties.com"
                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] font-semibold text-sm outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
