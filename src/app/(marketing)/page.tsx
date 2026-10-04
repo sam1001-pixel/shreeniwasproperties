@@ -187,6 +187,14 @@ const BLOG_POSTS = [
   }
 ];
 
+// Home Buying Journey Steps Data
+const JOURNEY_STEPS = [
+  { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage.", icon: Search },
+  { step: "02", title: "Schedule VIP Cab Visit (₹499)", desc: "Book guaranteed cab pickup with senior advisor for physical tour.", icon: Calendar },
+  { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of land titles & encumbrance certificates.", icon: FileCheck },
+  { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive luxury keys.", icon: KeyRound }
+];
+
 // Testimonials Data
 const TESTIMONIALS = [
   {
@@ -318,16 +326,17 @@ export default function MarketingPage() {
     }
   };
 
-  // Auto-scroll Featured Properties (Smooth continuous glide left-to-right)
+  // Auto-scroll Featured Properties (Reels-style infinite continuous loop)
   useEffect(() => {
     let animId: number;
     const scroll = () => {
       if (featuredScrollRef.current && !isFeaturedPaused) {
-        const { scrollLeft, clientWidth, scrollWidth } = featuredScrollRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 4) {
+        const { scrollLeft, scrollWidth } = featuredScrollRef.current;
+        const resetPoint = scrollWidth / 3;
+        if (scrollLeft >= resetPoint) {
           featuredScrollRef.current.scrollLeft = 0;
         } else {
-          featuredScrollRef.current.scrollLeft += 0.85;
+          featuredScrollRef.current.scrollLeft += 1.0;
         }
       }
       animId = requestAnimationFrame(scroll);
@@ -336,16 +345,17 @@ export default function MarketingPage() {
     return () => cancelAnimationFrame(animId);
   }, [isFeaturedPaused]);
 
-  // Auto-scroll Home Buying Journey (Smooth continuous glide left-to-right)
+  // Auto-scroll Home Buying Journey (Reels-style infinite continuous loop)
   useEffect(() => {
     let animId: number;
     const scroll = () => {
       if (journeyScrollRef.current && !isJourneyPaused) {
-        const { scrollLeft, clientWidth, scrollWidth } = journeyScrollRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 4) {
+        const { scrollLeft, scrollWidth } = journeyScrollRef.current;
+        const resetPoint = scrollWidth / 3;
+        if (scrollLeft >= resetPoint) {
           journeyScrollRef.current.scrollLeft = 0;
         } else {
-          journeyScrollRef.current.scrollLeft += 0.75;
+          journeyScrollRef.current.scrollLeft += 0.95;
         }
       }
       animId = requestAnimationFrame(scroll);
@@ -354,16 +364,17 @@ export default function MarketingPage() {
     return () => cancelAnimationFrame(animId);
   }, [isJourneyPaused]);
 
-  // Auto-scroll Buyer Testimonials (Smooth continuous glide left-to-right)
+  // Auto-scroll Buyer Testimonials (Reels-style infinite continuous loop)
   useEffect(() => {
     let animId: number;
     const scroll = () => {
       if (testimonialScrollRef.current && !isTestimonialPaused) {
-        const { scrollLeft, clientWidth, scrollWidth } = testimonialScrollRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 4) {
+        const { scrollLeft, scrollWidth } = testimonialScrollRef.current;
+        const resetPoint = scrollWidth / 3;
+        if (scrollLeft >= resetPoint) {
           testimonialScrollRef.current.scrollLeft = 0;
         } else {
-          testimonialScrollRef.current.scrollLeft += 0.8;
+          testimonialScrollRef.current.scrollLeft += 1.0;
         }
       }
       animId = requestAnimationFrame(scroll);
@@ -641,11 +652,11 @@ export default function MarketingPage() {
               onTouchEnd={() => setIsFeaturedPaused(false)}
               className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
             >
-            {FEATURED_PROPERTIES.map((prop) => {
+            {[...FEATURED_PROPERTIES, ...FEATURED_PROPERTIES, ...FEATURED_PROPERTIES].map((prop, idx) => {
               const isCompared = compareItems.some(i => i.id === prop.id);
               return (
                 <div 
-                  key={prop.id} 
+                  key={`${prop.id}-${idx}`} 
                   className="w-72 sm:w-80 flex-shrink-0 snap-start bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
                 >
                   <div>
@@ -875,12 +886,7 @@ export default function MarketingPage() {
               onTouchEnd={() => setIsJourneyPaused(false)}
               className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
             >
-              {[
-                { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage.", icon: Search },
-                { step: "02", title: "Schedule VIP Cab Visit (₹499)", desc: "Book guaranteed cab pickup with senior advisor for physical tour.", icon: Calendar },
-                { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of land titles & encumbrance certificates.", icon: FileCheck },
-                { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive luxury keys.", icon: KeyRound },
-              ].map((st, idx) => (
+              {[...JOURNEY_STEPS, ...JOURNEY_STEPS, ...JOURNEY_STEPS].map((st, idx) => (
                 <div key={idx} className="w-60 sm:w-72 flex-shrink-0 snap-start bg-slate-900/90 p-4 sm:p-5 rounded-2xl border border-white/10 shadow-lg relative group hover:border-[#C9A96E] hover:shadow-[0_0_20px_rgba(201,169,110,0.25)] transition-all flex flex-col justify-between min-h-[170px]">
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -941,7 +947,7 @@ export default function MarketingPage() {
               onTouchEnd={() => setIsTestimonialPaused(false)}
               className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
             >
-              {TESTIMONIALS.map((t, idx) => (
+              {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((t, idx) => (
                 <div key={idx} className="w-[260px] sm:w-[320px] flex-shrink-0 snap-start bg-[#FDFBF7] p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-md hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group flex flex-col justify-between min-h-[170px]">
                   <div>
                     <Quote className="w-5 h-5 text-[#C9A96E]/30 group-hover:text-[#C9A96E]/60 transition-colors absolute top-4 right-4" />
