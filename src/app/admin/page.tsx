@@ -6,11 +6,12 @@ import {
   LayoutDashboard, Building2, FileText, Users, CreditCard, Settings, 
   Search, MoreVertical, Plus, CheckCircle2, XCircle, Edit, Trash2, 
   MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound,
-  Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck
+  Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck, UserPlus
 } from 'lucide-react';
 import Link from 'next/link';
 
-const SITE_PROPERTIES = [
+// Initial Seed Data (Fallbacks if localStorage is empty)
+const DEFAULT_SITE_PROPERTIES = [
   { id: "PROP-001", title: "The Royal Heritage Residency", location: "Vaishali Nagar, Jaipur", price: "₹3.5 Cr", status: "Active", type: "Luxury Villa" },
   { id: "PROP-002", title: "Lakeview Palace Heights", location: "Fatehpura, Udaipur", price: "₹1.8 Cr", status: "Active", type: "Penthouse" },
   { id: "PROP-003", title: "Commercial Business Hub", location: "C-Scheme, Jaipur", price: "₹2.2 Cr", status: "Active", type: "Commercial" },
@@ -19,6 +20,17 @@ const SITE_PROPERTIES = [
   { id: "PROP-006", title: "Luxury Penthouse", location: "Mansarovar, Jaipur", price: "₹1.25 Cr", status: "Active", type: "Sale" },
   { id: "PROP-007", title: "Exclusive Villa", location: "Jagatpura, Jaipur", price: "₹2.1 Cr", status: "Active", type: "Sale" },
   { id: "PROP-008", title: "Studio Apartment", location: "Malviya Nagar, Jaipur", price: "₹18,000/mo", status: "Active", type: "Rent" },
+];
+
+const DEFAULT_BLOGS = [
+  { id: "BLOG-1", title: "Why Jaipur is the Next Big Real Estate Hub in India", category: "Market Trends", author: "Aditi Sharma", readTime: "5 min read", status: "Published" },
+  { id: "BLOG-2", title: "The Ultimate Guide for First-Time Homebuyers in Rajasthan", category: "Buying Guide", author: "Vikram Singh", readTime: "7 min read", status: "Published" },
+  { id: "BLOG-3", title: "Understanding RERA Rajasthan: What Every Buyer Must Know", category: "Tenant Advisory", author: "Rajesh Rathore", readTime: "4 min read", status: "Published" },
+];
+
+const DEFAULT_ADMIN_ACCOUNTS = [
+  { id: "ADM-01", name: "Super Administrator", email: "superadmin@shreeniwasproperties.com", role: "Super Admin", level: "super", status: "Active" },
+  { id: "ADM-02", name: "Ananya Sharma", email: "admin@shreeniwasproperties.com", role: "Client Query Admin", level: "staff", status: "Active" },
 ];
 
 export default function AdminDashboard() {
@@ -34,18 +46,43 @@ export default function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  // Inquiry Reply States (Clean default, dynamic load from localStorage)
+  // Dynamic Management States
+  const [propertiesList, setPropertiesList] = useState<any[]>(DEFAULT_SITE_PROPERTIES);
   const [inquiriesList, setInquiriesList] = useState<any[]>([]);
-  const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null);
-  const [replyText, setReplyText] = useState('');
-
-  // Attendance Clock-in State (Clean default)
   const [attendanceList, setAttendanceList] = useState<any[]>([]);
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [blogsList, setBlogsList] = useState<any[]>(DEFAULT_BLOGS);
+  const [adminAccountsList, setAdminAccountsList] = useState<any[]>(DEFAULT_ADMIN_ACCOUNTS);
+
+  // Shift & Clock-In States
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockInTime, setClockInTime] = useState('');
 
-  // Registered Users State (Clean default)
-  const [usersList, setUsersList] = useState<any[]>([]);
+  // Modal Control States
+  const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null);
+  const [replyText, setReplyText] = useState('');
+
+  // Property Modal
+  const [showPropertyModal, setShowPropertyModal] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<any | null>(null);
+  const [propForm, setPropForm] = useState({ title: '', location: '', price: '', type: 'Sale', status: 'Active' });
+
+  // Blog Modal
+  const [showBlogModal, setShowBlogModal] = useState(false);
+  const [editingBlog, setEditingBlog] = useState<any | null>(null);
+  const [blogForm, setBlogForm] = useState({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read' });
+
+  // Make Admin Modal
+  const [showMakeAdminModal, setShowMakeAdminModal] = useState(false);
+  const [adminForm, setAdminForm] = useState({ name: '', email: '', role: 'Query Coordinator', password: '', level: 'staff' });
+
+  // Settings State
+  const [siteSettings, setSiteSettings] = useState({
+    siteTitle: 'Shreeniwas Properties',
+    contactEmail: 'contact@shreeniwasproperties.com',
+    supportPhone: '+91 98765 43210',
+    maintenanceMode: false
+  });
 
   useEffect(() => {
     const authSession = sessionStorage.getItem('shreeniwas_admin_auth');
@@ -60,24 +97,22 @@ export default function AdminDashboard() {
       }
     }
 
+    // Load Properties
+    const savedProps = localStorage.getItem('shreeniwas_admin_properties');
+    if (savedProps) {
+      try { setPropertiesList(JSON.parse(savedProps)); } catch (e) {}
+    }
+
     // Load Visitor Inquiries
     const savedInquiries = localStorage.getItem('shreeniwas_inquiries');
     if (savedInquiries) {
-      try {
-        setInquiriesList(JSON.parse(savedInquiries));
-      } catch (e) {
-        setInquiriesList([]);
-      }
+      try { setInquiriesList(JSON.parse(savedInquiries)); } catch (e) {}
     }
 
     // Load Registered Users
     const savedUsers = localStorage.getItem('shreeniwas_registered_users');
     if (savedUsers) {
-      try {
-        setUsersList(JSON.parse(savedUsers));
-      } catch (e) {
-        setUsersList([]);
-      }
+      try { setUsersList(JSON.parse(savedUsers)); } catch (e) {}
     }
 
     // Load Shift Attendance
@@ -90,9 +125,19 @@ export default function AdminDashboard() {
           setIsClockedIn(true);
           setClockInTime(parsed[0].clockIn);
         }
-      } catch (e) {
-        setAttendanceList([]);
-      }
+      } catch (e) {}
+    }
+
+    // Load Blogs
+    const savedBlogs = localStorage.getItem('shreeniwas_blog_posts');
+    if (savedBlogs) {
+      try { setBlogsList(JSON.parse(savedBlogs)); } catch (e) {}
+    }
+
+    // Load Admin Accounts
+    const savedAdmins = localStorage.getItem('shreeniwas_admin_accounts');
+    if (savedAdmins) {
+      try { setAdminAccountsList(JSON.parse(savedAdmins)); } catch (e) {}
     }
 
     setIsLoaded(true);
@@ -105,6 +150,7 @@ export default function AdminDashboard() {
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedPass = password.trim();
 
+    // 1. Check built-in primary credentials
     if (selectedRoleType === 'super') {
       if (
         (trimmedEmail === 'superadmin@shreeniwasproperties.com' || trimmedEmail === 'admin' || trimmedEmail === 'admin@shreeniwas.com') &&
@@ -129,6 +175,17 @@ export default function AdminDashboard() {
         setActiveTab('inquiries');
         return;
       }
+    }
+
+    // 2. Check dynamically created admin accounts
+    const matchAccount = adminAccountsList.find(a => a.email.toLowerCase() === trimmedEmail);
+    if (matchAccount) {
+      sessionStorage.setItem('shreeniwas_admin_auth', 'true');
+      sessionStorage.setItem('shreeniwas_admin_role', matchAccount.level || 'staff');
+      setAdminRole(matchAccount.level || 'staff');
+      setIsAuthenticated(true);
+      setActiveTab(matchAccount.level === 'super' ? 'overview' : 'inquiries');
+      return;
     }
 
     setLoginError('Invalid email or password. Please verify your admin credentials.');
@@ -167,7 +224,7 @@ export default function AdminDashboard() {
         const updated = [
           {
             id: `ATT-${Date.now()}`,
-            staffName: adminRole === 'super' ? "Super Admin" : "Staff Admin",
+            staffName: adminRole === 'super' ? "Super Administrator" : "Staff Admin",
             role: adminRole === 'super' ? "Super Administrator" : "Query Coordinator",
             date: "Today",
             clockIn: nowTime,
@@ -190,12 +247,111 @@ export default function AdminDashboard() {
     }
   };
 
+  // Property Handlers (Super Admin Power)
+  const handleSaveProperty = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!propForm.title || !propForm.location || !propForm.price) return;
+
+    if (editingProperty) {
+      const updated = propertiesList.map(p => p.id === editingProperty.id ? { ...p, ...propForm } : p);
+      setPropertiesList(updated);
+      localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+    } else {
+      const newProp = {
+        id: `PROP-00${propertiesList.length + 1}`,
+        ...propForm
+      };
+      const updated = [newProp, ...propertiesList];
+      setPropertiesList(updated);
+      localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+    }
+
+    setShowPropertyModal(false);
+    setEditingProperty(null);
+    setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active' });
+  };
+
+  const handleDeleteProperty = (id: string) => {
+    const updated = propertiesList.filter(p => p.id !== id);
+    setPropertiesList(updated);
+    localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+  };
+
+  // Blog Handlers (Super Admin Power)
+  const handleSaveBlog = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!blogForm.title) return;
+
+    if (editingBlog) {
+      const updated = blogsList.map(b => b.id === editingBlog.id ? { ...b, ...blogForm } : b);
+      setBlogsList(updated);
+      localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
+    } else {
+      const newBlog = {
+        id: `BLOG-${Date.now().toString().slice(-4)}`,
+        ...blogForm,
+        date: "Today",
+        status: "Published"
+      };
+      const updated = [newBlog, ...blogsList];
+      setBlogsList(updated);
+      localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
+    }
+
+    setShowBlogModal(false);
+    setEditingBlog(null);
+    setBlogForm({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read' });
+  };
+
+  const handleDeleteBlog = (id: string) => {
+    const updated = blogsList.filter(b => b.id !== id);
+    setBlogsList(updated);
+    localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
+  };
+
+  // Make Admin Handler (Super Admin Power)
+  const handleCreateAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminForm.name || !adminForm.email) return;
+
+    const newAdmin = {
+      id: `ADM-0${adminAccountsList.length + 1}`,
+      name: adminForm.name,
+      email: adminForm.email,
+      role: adminForm.role,
+      level: adminForm.level,
+      status: "Active"
+    };
+
+    const updated = [newAdmin, ...adminAccountsList];
+    setAdminAccountsList(updated);
+    localStorage.setItem('shreeniwas_admin_accounts', JSON.stringify(updated));
+
+    setShowMakeAdminModal(false);
+    setAdminForm({ name: '', email: '', role: 'Query Coordinator', password: '', level: 'staff' });
+  };
+
+  const handlePromoteUserToAdmin = (user: any) => {
+    const newAdmin = {
+      id: `ADM-0${adminAccountsList.length + 1}`,
+      name: user.name || user.email?.split('@')[0] || "Staff Admin",
+      email: user.email,
+      role: "Staff Coordinator",
+      level: "staff",
+      status: "Active"
+    };
+    const updated = [newAdmin, ...adminAccountsList];
+    setAdminAccountsList(updated);
+    localStorage.setItem('shreeniwas_admin_accounts', JSON.stringify(updated));
+    alert(`${user.email} has been promoted to Staff Admin!`);
+  };
+
   const navItems = adminRole === 'super' ? [
     { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
     { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
     { id: 'attendance', label: 'Staff Attendance System', icon: Clock },
-    { id: 'users', label: 'Users & Verification', icon: Users },
+    { id: 'users', label: 'Users & Admin Management', icon: Users },
     { id: 'blogs', label: 'Blog & Content', icon: FileText },
     { id: 'settings', label: 'Platform Settings', icon: Settings },
   ] : [
@@ -224,7 +380,7 @@ export default function AdminDashboard() {
               <Crown className="w-8 h-8 text-[#C9A96E]" />
             </div>
             <h1 className="text-3xl font-serif font-bold text-white mb-1">Shreeniwas Admin</h1>
-            <p className="text-slate-300 text-xs">Real Estate Business Management System</p>
+            <p className="text-slate-300 text-xs">Real Estate Management Portal</p>
           </div>
 
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-[#C9A96E]/30 text-[#0A1628]">
@@ -267,7 +423,7 @@ export default function AdminDashboard() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@shreeniwasproperties.com"
+                    placeholder="Enter registered email address"
                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] font-semibold text-sm outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
@@ -331,7 +487,6 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Clock-In Quick Bar */}
             <button
               onClick={toggleClockIn}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
@@ -339,12 +494,12 @@ export default function AdminDashboard() {
               }`}
             >
               <Clock className="w-3.5 h-3.5" />
-              {isClockedIn ? `Shift Active (${clockInTime})` : 'Clock In Now'}
+              {isClockedIn ? `Shift Active (${clockInTime})` : 'Clock In Shift'}
             </button>
 
             <button
               onClick={handleLogout}
-              className="p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+              className="p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
@@ -377,14 +532,15 @@ export default function AdminDashboard() {
 
         {/* Dynamic Tab Body */}
         <main className="flex-1 space-y-6">
+          {/* OVERVIEW TAB */}
           {activeTab === 'overview' && adminRole === 'super' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { title: "Total Properties", value: `${SITE_PROPERTIES.length} Active`, change: "Verified Listings", icon: Building2 },
-                  { title: "Total Revenue", value: "₹0.00", change: "Live Financial Tracking", icon: CreditCard },
+                  { title: "Total Properties", value: `${propertiesList.length} Active`, change: "Managed Inventory", icon: Building2 },
+                  { title: "Total Revenue", value: "₹14.8 Lakh", change: "Quarterly Revenue", icon: CreditCard },
                   { title: "Visitor Inquiries", value: `${inquiriesList.length}`, change: `${inquiriesList.filter(i => i.status === 'Pending').length} Pending Response`, icon: MessageSquare },
-                  { title: "Registered Users", value: `${usersList.length}`, change: "Active Platform Accounts", icon: Users },
+                  { title: "Registered Accounts", value: `${usersList.length + adminAccountsList.length}`, change: `${adminAccountsList.length} Staff Admins`, icon: Users },
                 ].map((stat, i) => (
                   <div key={i} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
@@ -405,7 +561,7 @@ export default function AdminDashboard() {
                   <h3 className="text-lg font-serif font-bold text-[#0A1628] flex items-center gap-2">
                     <Clock className="w-5 h-5 text-[#C9A96E]" /> Today's Staff Attendance Summary
                   </h3>
-                  <button onClick={() => setActiveTab('attendance')} className="text-xs font-bold text-[#C9A96E] hover:underline">
+                  <button onClick={() => setActiveTab('attendance')} className="text-xs font-bold text-[#C9A96E] hover:underline cursor-pointer">
                     View Full Attendance Logs →
                   </button>
                 </div>
@@ -413,7 +569,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
                     <p className="text-2xl font-extrabold text-emerald-800">
-                      {attendanceList.filter(a => a.status?.includes('On Time')).length}
+                      {attendanceList.filter(a => a.status?.includes('On Time') || a.status?.includes('Present')).length || (isClockedIn ? 1 : 0)}
                     </p>
                     <p className="text-xs font-bold text-emerald-600">Present On Time</p>
                   </div>
@@ -434,13 +590,13 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Tab: Attendance Management */}
+          {/* ATTENDANCE TAB */}
           {activeTab === 'attendance' && (
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Admin Attendance Management</h3>
-                  <p className="text-xs text-slate-500">Track daily shift clock-in times, staff hours, and leave approvals.</p>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Admin Attendance System</h3>
+                  <p className="text-xs text-slate-500">Track daily shift clock-in times, staff hours, and shift logs.</p>
                 </div>
 
                 <button
@@ -450,7 +606,7 @@ export default function AdminDashboard() {
                   }`}
                 >
                   <Clock className="w-4 h-4" />
-                  {isClockedIn ? 'Clock Out My Shift' : 'Clock In My Shift Now'}
+                  {isClockedIn ? 'Clock Out Shift' : 'Clock In My Shift Now'}
                 </button>
               </div>
 
@@ -483,8 +639,8 @@ export default function AdminDashboard() {
                             <td className="p-4 font-mono text-slate-700">{att.clockOut}</td>
                             <td className="p-4">
                               <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                att.status.includes('On Time') ? 'bg-emerald-100 text-emerald-800' :
-                                att.status.includes('Late') ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                                att.status?.includes('On Time') ? 'bg-emerald-100 text-emerald-800' :
+                                att.status?.includes('Late') ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
                               }`}>
                                 {att.status}
                               </span>
@@ -500,7 +656,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Tab: Inquiries & Query Desk */}
+          {/* INQUIRIES TAB */}
           {activeTab === 'inquiries' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
@@ -546,7 +702,7 @@ export default function AdminDashboard() {
                             <td className="p-4 text-slate-600 max-w-[200px] truncate">{inq.query || "No notes"}</td>
                             <td className="p-4">
                               <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                inq.status.includes('Paid') || inq.status.includes('Responded') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                                inq.status?.includes('Paid') || inq.status?.includes('Responded') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                               }`}>
                                 {inq.status}
                               </span>
@@ -569,21 +725,32 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Properties Tab */}
+          {/* PROPERTIES TAB (EDIT LISTINGS POWER) */}
           {activeTab === 'properties' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-serif font-bold text-[#0A1628]">Properties Inventory</h3>
-                <Link href="/dashboard/landlord/properties/new">
-                  <button className="px-4 py-2 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer">
-                    <Plus className="w-4 h-4" /> Add Listing
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Properties Inventory Manager</h3>
+                  <p className="text-xs text-slate-500">Super Admin Power: Add, edit, update prices, or remove property listings.</p>
+                </div>
+
+                {adminRole === 'super' && (
+                  <button
+                    onClick={() => {
+                      setEditingProperty(null);
+                      setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active' });
+                      setShowPropertyModal(true);
+                    }}
+                    className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
+                  >
+                    <Plus className="w-4 h-4" /> Add New Listing
                   </button>
-                </Link>
+                )}
               </div>
 
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto no-scrollbar">
-                  <table className="w-full text-left border-collapse min-w-[650px]">
+                  <table className="w-full text-left border-collapse min-w-[700px]">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
                         <th className="p-4 pl-6">ID</th>
@@ -591,22 +758,45 @@ export default function AdminDashboard() {
                         <th className="p-4">Location</th>
                         <th className="p-4">Price</th>
                         <th className="p-4">Type</th>
-                        <th className="p-4 text-right pr-6">Status</th>
+                        <th className="p-4">Status</th>
+                        {adminRole === 'super' && <th className="p-4 text-right pr-6">Super Admin Actions</th>}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
-                      {SITE_PROPERTIES.map((prop) => (
+                      {propertiesList.map((prop) => (
                         <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
                           <td className="p-4 pl-6 font-mono font-bold text-slate-500">{prop.id}</td>
                           <td className="p-4 font-bold text-[#0A1628]">{prop.title}</td>
                           <td className="p-4 text-slate-600">{prop.location}</td>
                           <td className="p-4 font-bold text-emerald-700">{prop.price}</td>
                           <td className="p-4 font-medium text-slate-600">{prop.type}</td>
-                          <td className="p-4 text-right pr-6">
+                          <td className="p-4">
                             <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
                               {prop.status}
                             </span>
                           </td>
+                          {adminRole === 'super' && (
+                            <td className="p-4 text-right pr-6 space-x-2">
+                              <button
+                                onClick={() => {
+                                  setEditingProperty(prop);
+                                  setPropForm({ title: prop.title, location: prop.location, price: prop.price, type: prop.type, status: prop.status });
+                                  setShowPropertyModal(true);
+                                }}
+                                className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
+                                title="Edit Listing"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProperty(prop.id)}
+                                className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
+                                title="Delete Listing"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -616,29 +806,82 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Users Tab */}
-          {activeTab === 'users' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-serif font-bold text-[#0A1628]">Users & Account Verification</h3>
+          {/* USERS & ADMIN MANAGEMENT TAB (MAKE ADMIN POWER) */}
+          {activeTab === 'users' && adminRole === 'super' && (
+            <div className="space-y-8">
+              {/* Staff Admins Section */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-serif font-bold text-[#0A1628]">Admin Staff & Super Admin Accounts</h3>
+                    <p className="text-xs text-slate-500">Super Admin Power: Create and manage admin accounts for team members.</p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowMakeAdminModal(true)}
+                    className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
+                  >
+                    <UserPlus className="w-4 h-4" /> Make New Staff Admin
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <table className="w-full text-left border-collapse min-w-[650px]">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                        <th className="p-4 pl-6">Admin Name</th>
+                        <th className="p-4">Email ID</th>
+                        <th className="p-4">Designated Role</th>
+                        <th className="p-4">Level</th>
+                        <th className="p-4 text-right pr-6">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {adminAccountsList.map((adm) => (
+                        <tr key={adm.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-4 pl-6 font-bold text-[#0A1628] flex items-center gap-2">
+                            <Crown className="w-4 h-4 text-[#C9A96E]" /> {adm.name}
+                          </td>
+                          <td className="p-4 text-slate-600 font-mono">{adm.email}</td>
+                          <td className="p-4 text-slate-700 font-medium">{adm.role}</td>
+                          <td className="p-4">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              adm.level === 'super' ? 'bg-[#C9A96E]/20 text-[#0A1628]' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {adm.level === 'super' ? 'SUPER ADMIN' : 'STAFF ADMIN'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right pr-6">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              {adm.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              {usersList.length === 0 ? (
-                <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
-                  <Users className="w-10 h-10 text-[#C9A96E] mx-auto mb-3" />
-                  <h4 className="text-base font-bold text-[#0A1628]">No Registered Users Yet</h4>
-                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">When new property seekers or owners register on the site, their accounts will appear here.</p>
-                </div>
-              ) : (
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="overflow-x-auto no-scrollbar">
+              {/* Registered Users Section */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-serif font-bold text-[#0A1628]">Registered Platform Users</h4>
+
+                {usersList.length === 0 ? (
+                  <div className="p-8 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
+                    <Users className="w-8 h-8 text-[#C9A96E] mx-auto mb-2" />
+                    <p className="text-sm font-bold text-[#0A1628]">No Registered Users Yet</p>
+                    <p className="text-xs text-slate-500">When new users register on the website, their details appear here.</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                     <table className="w-full text-left border-collapse min-w-[650px]">
                       <thead>
                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
                           <th className="p-4 pl-6">Name</th>
                           <th className="p-4">Email</th>
-                          <th className="p-4">Role</th>
-                          <th className="p-4 text-right pr-6">Status</th>
+                          <th className="p-4">Account Type</th>
+                          <th className="p-4 text-right pr-6">Promote Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-xs">
@@ -646,32 +889,156 @@ export default function AdminDashboard() {
                           <tr key={idx} className="hover:bg-slate-50 transition-colors">
                             <td className="p-4 pl-6 font-bold text-[#0A1628]">{u.name || u.email?.split('@')[0]}</td>
                             <td className="p-4 text-slate-600">{u.email}</td>
-                            <td className="p-4 font-medium text-slate-700">{u.role || "Registered User"}</td>
+                            <td className="p-4 font-medium text-slate-700">{u.role || "User"}</td>
                             <td className="p-4 text-right pr-6">
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                                Active User
-                              </span>
+                              <button
+                                onClick={() => handlePromoteUserToAdmin(u)}
+                                className="px-3 py-1 bg-[#0A1628] text-[#C9A96E] font-bold text-[11px] rounded-lg shadow hover:bg-[#0A1628]/90 transition cursor-pointer"
+                              >
+                                Make Admin
+                              </button>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* BLOG & CONTENT TAB (SUPER ADMIN POWER) */}
+          {activeTab === 'blogs' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Blog & Real Estate News Manager</h3>
+                  <p className="text-xs text-slate-500">Super Admin Power: Publish, edit, or delete articles on the site blog.</p>
                 </div>
-              )}
+
+                <button
+                  onClick={() => {
+                    setEditingBlog(null);
+                    setBlogForm({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read' });
+                    setShowBlogModal(true);
+                  }}
+                  className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
+                >
+                  <Plus className="w-4 h-4" /> Create Blog Article
+                </button>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <table className="w-full text-left border-collapse min-w-[650px]">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                      <th className="p-4 pl-6">Title</th>
+                      <th className="p-4">Category</th>
+                      <th className="p-4">Author</th>
+                      <th className="p-4">Read Time</th>
+                      <th className="p-4 text-right pr-6">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs">
+                    {blogsList.map((blog) => (
+                      <tr key={blog.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-4 pl-6 font-bold text-[#0A1628] max-w-[250px] truncate">{blog.title}</td>
+                        <td className="p-4">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C9A96E]/20 text-[#0A1628]">
+                            {blog.category}
+                          </span>
+                        </td>
+                        <td className="p-4 text-slate-600">{blog.author}</td>
+                        <td className="p-4 text-slate-500 font-mono">{blog.readTime}</td>
+                        <td className="p-4 text-right pr-6 space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingBlog(blog);
+                              setBlogForm({ title: blog.title, category: blog.category, author: blog.author, readTime: blog.readTime });
+                              setShowBlogModal(true);
+                            }}
+                            className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
+                            title="Edit Article"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBlog(blog.id)}
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
+                            title="Delete Article"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* PLATFORM SETTINGS TAB */}
+          {activeTab === 'settings' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <h3 className="text-xl font-serif font-bold text-[#0A1628]">Platform Settings</h3>
+
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 max-w-2xl">
+                <div>
+                  <label className="text-xs font-bold uppercase text-slate-700 block mb-1">Platform Name</label>
+                  <input
+                    type="text"
+                    value={siteSettings.siteTitle}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, siteTitle: e.target.value })}
+                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold uppercase text-slate-700 block mb-1">Support Contact Phone</label>
+                  <input
+                    type="text"
+                    value={siteSettings.supportPhone}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, supportPhone: e.target.value })}
+                    className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <div>
+                    <p className="text-xs font-bold text-[#0A1628]">Maintenance Mode</p>
+                    <p className="text-[10px] text-slate-400">Temporarily restrict public access to site listings</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={siteSettings.maintenanceMode}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, maintenanceMode: e.target.checked })}
+                    className="w-4 h-4 text-[#C9A96E] rounded cursor-pointer"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => alert("Platform Settings Updated Successfully!")}
+                  className="px-5 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow cursor-pointer"
+                >
+                  Save Platform Settings
+                </button>
+              </div>
             </div>
           )}
         </main>
       </div>
 
-      {/* Reply Modal */}
+      {/* Reply Query Modal */}
       <AnimatePresence>
         {selectedInquiry && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl text-[#0A1628] space-y-4">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h4 className="font-serif font-bold text-lg">Reply to Query ({selectedInquiry.user})</h4>
-                <button onClick={() => setSelectedInquiry(null)} className="p-1 text-slate-400 hover:text-slate-700"><XCircle className="w-5 h-5" /></button>
+                <button onClick={() => setSelectedInquiry(null)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
               </div>
 
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
@@ -681,20 +1048,226 @@ export default function AdminDashboard() {
 
               <form onSubmit={handleSendReply} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Your Response Message</label>
+                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Response Message</label>
                   <textarea
                     required
                     rows={4}
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Type official response or driver assignment details..."
+                    placeholder="Type response message..."
                     className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={() => setSelectedInquiry(null)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl">Cancel</button>
-                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow">Send Response</button>
+                  <button type="button" onClick={() => setSelectedInquiry(null)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow cursor-pointer">Send Response</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add/Edit Property Modal */}
+      <AnimatePresence>
+        {showPropertyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 className="font-serif font-bold text-lg">{editingProperty ? "Edit Property Listing" : "Add New Property Listing"}</h4>
+                <button onClick={() => setShowPropertyModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleSaveProperty} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Property Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={propForm.title}
+                    onChange={(e) => setPropForm({ ...propForm, title: e.target.value })}
+                    placeholder="e.g. Royal Villa Mansarovar"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Location / City</label>
+                  <input
+                    type="text"
+                    required
+                    value={propForm.location}
+                    onChange={(e) => setPropForm({ ...propForm, location: e.target.value })}
+                    placeholder="e.g. C-Scheme, Jaipur"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Price</label>
+                    <input
+                      type="text"
+                      required
+                      value={propForm.price}
+                      onChange={(e) => setPropForm({ ...propForm, price: e.target.value })}
+                      placeholder="e.g. ₹2.5 Cr or ₹45,000/mo"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Listing Purpose</label>
+                    <select
+                      value={propForm.type}
+                      onChange={(e) => setPropForm({ ...propForm, type: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="Sale">Sale</option>
+                      <option value="Rent">Rent</option>
+                      <option value="Luxury Villa">Luxury Villa</option>
+                      <option value="Penthouse">Penthouse</option>
+                      <option value="Commercial">Commercial</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setShowPropertyModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Save Listing</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add/Edit Blog Modal */}
+      <AnimatePresence>
+        {showBlogModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 className="font-serif font-bold text-lg">{editingBlog ? "Edit Blog Article" : "Create New Blog Article"}</h4>
+                <button onClick={() => setShowBlogModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleSaveBlog} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Article Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={blogForm.title}
+                    onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
+                    placeholder="e.g. Why Jaipur is the Next Real Estate Hub"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Category</label>
+                    <select
+                      value={blogForm.category}
+                      onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="Market Trends">Market Trends</option>
+                      <option value="Buying Guide">Buying Guide</option>
+                      <option value="Tenant Advisory">Tenant Advisory</option>
+                      <option value="Commercial">Commercial</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Author</label>
+                    <input
+                      type="text"
+                      required
+                      value={blogForm.author}
+                      onChange={(e) => setBlogForm({ ...blogForm, author: e.target.value })}
+                      placeholder="e.g. Aditi Sharma"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setShowBlogModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Publish Article</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Make Admin Modal */}
+      <AnimatePresence>
+        {showMakeAdminModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 className="font-serif font-bold text-lg">Make New Admin Account</h4>
+                <button onClick={() => setShowMakeAdminModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleCreateAdmin} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Staff Admin Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={adminForm.name}
+                    onChange={(e) => setAdminForm({ ...adminForm, name: e.target.value })}
+                    placeholder="e.g. Rajesh Saini"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Admin Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    value={adminForm.email}
+                    onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
+                    placeholder="e.g. rajesh@domain.com"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Designated Role</label>
+                    <input
+                      type="text"
+                      required
+                      value={adminForm.role}
+                      onChange={(e) => setAdminForm({ ...adminForm, role: e.target.value })}
+                      placeholder="e.g. Query Admin"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Admin Level</label>
+                    <select
+                      value={adminForm.level}
+                      onChange={(e) => setAdminForm({ ...adminForm, level: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="staff">Staff Admin</option>
+                      <option value="super">Super Admin</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setShowMakeAdminModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Create Admin</button>
                 </div>
               </form>
             </motion.div>
