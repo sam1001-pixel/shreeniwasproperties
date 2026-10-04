@@ -43,7 +43,20 @@ export default function AiConciergeChatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [botPfp, setBotPfp] = useState('https://images.unsplash.com/photo-1599661559886-41b80c541b00?auto=format&fit=crop&q=80&w=400');
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('shreeniwas_platform_settings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        if (parsed.logoUrl) {
+          setBotPfp(parsed.logoUrl);
+        }
+      }
+    } catch (e) {}
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -167,8 +180,12 @@ export default function AiConciergeChatbot() {
           {isOpen ? (
             <X className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           ) : (
-            <div className="relative">
-              <Bot className="w-7 h-7 sm:w-8 sm:h-8 text-[#C9A96E]" />
+            <div className="relative flex items-center justify-center">
+              <img
+                src={botPfp}
+                alt="Shreeniwas AI"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-[#C9A96E] shadow"
+              />
               {hasUnread && (
                 <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-[#0A1628] animate-bounce"></span>
               )}
@@ -189,8 +206,8 @@ export default function AiConciergeChatbot() {
             {/* Chat Header */}
             <div className="bg-[#0A1628] text-white p-4 flex items-center justify-between border-b border-[#C9A96E]/30">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E] relative">
-                  <Bot className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-2xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 overflow-hidden relative shrink-0">
+                  <img src={botPfp} alt="Shreeniwas AI Concierge" className="w-full h-full object-cover" />
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0A1628]"></span>
                 </div>
                 <div>
@@ -214,11 +231,17 @@ export default function AiConciergeChatbot() {
               {messages.map(msg => (
                 <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                   <div className={`flex items-start gap-2 max-w-[85%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                      msg.sender === 'user' ? 'bg-[#0A1628] text-[#C9A96E]' : 'bg-[#C9A96E] text-[#0A1628]'
-                    }`}>
-                      {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                    </div>
+                    {msg.sender === 'user' ? (
+                      <div className="w-7 h-7 rounded-full bg-[#0A1628] text-[#C9A96E] flex items-center justify-center flex-shrink-0 text-xs font-bold">
+                        <User className="w-4 h-4" />
+                      </div>
+                    ) : (
+                      <img
+                        src={botPfp}
+                        alt="Shreeniwas AI"
+                        className="w-7 h-7 rounded-full object-cover border border-[#C9A96E] flex-shrink-0 shadow-sm"
+                      />
+                    )}
 
                     <div className={`p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                       msg.sender === 'user'
