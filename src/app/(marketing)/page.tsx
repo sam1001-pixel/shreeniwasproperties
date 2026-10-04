@@ -631,17 +631,15 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          {/* Unique Horizontal Scroll Track with Edge Fade Overlay */}
-          <div className="relative">
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
+          {/* Unique Horizontal Scroll Track with Zero Clipping */}
+          <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
             <div 
               ref={featuredScrollRef}
               onMouseEnter={() => setIsFeaturedPaused(true)}
               onMouseLeave={() => setIsFeaturedPaused(false)}
               onTouchStart={() => setIsFeaturedPaused(true)}
               onTouchEnd={() => setIsFeaturedPaused(false)}
-              className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth px-1"
+              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
             >
             {FEATURED_PROPERTIES.map((prop) => {
               const isCompared = compareItems.some(i => i.id === prop.id);
@@ -867,16 +865,15 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          <div className="relative">
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#0A1628] via-[#0A1628]/80 to-transparent z-10" />
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#0A1628] via-[#0A1628]/80 to-transparent z-10" />
+          {/* Spacious Horizontal Track with Zero Clipping */}
+          <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
             <div 
               ref={journeyScrollRef}
               onMouseEnter={() => setIsJourneyPaused(true)}
               onMouseLeave={() => setIsJourneyPaused(false)}
               onTouchStart={() => setIsJourneyPaused(true)}
               onTouchEnd={() => setIsJourneyPaused(false)}
-              className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth px-1"
+              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
             >
               {[
                 { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage.", icon: Search },
@@ -884,15 +881,19 @@ export default function MarketingPage() {
                 { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of land titles & encumbrance certificates.", icon: FileCheck },
                 { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive luxury keys.", icon: KeyRound },
               ].map((st, idx) => (
-                <div key={idx} className="w-64 sm:w-72 flex-shrink-0 snap-start bg-slate-900/90 p-5 rounded-2xl border border-white/10 shadow-xl relative group hover:border-[#C9A96E] hover:shadow-[0_0_20px_rgba(201,169,110,0.2)] transition-all">
-                  <span className="text-2xl font-serif font-extrabold text-[#C9A96E] block mb-2">
-                    {st.step}
-                  </span>
-                  <div className="w-10 h-10 rounded-xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E] mb-3 shadow">
-                    <st.icon className="w-5 h-5" />
+                <div key={idx} className="w-60 sm:w-72 flex-shrink-0 snap-start bg-slate-900/90 p-4 sm:p-5 rounded-2xl border border-white/10 shadow-lg relative group hover:border-[#C9A96E] hover:shadow-[0_0_20px_rgba(201,169,110,0.25)] transition-all flex flex-col justify-between min-h-[170px]">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xl font-serif font-extrabold text-[#C9A96E]">
+                        {st.step}
+                      </span>
+                      <div className="w-8 h-8 rounded-lg bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E]">
+                        <st.icon className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <h3 className="text-xs sm:text-sm font-serif font-bold text-white mb-1 leading-snug">{st.title}</h3>
                   </div>
-                  <h3 className="text-sm font-serif font-bold text-white mb-1.5">{st.title}</h3>
-                  <p className="text-[11px] text-slate-300 leading-relaxed font-light">{st.desc}</p>
+                  <p className="text-[11px] text-slate-300 leading-normal font-light">{st.desc}</p>
                 </div>
               ))}
             </div>
@@ -930,31 +931,29 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          {/* Spacious Horizontal Track with Generous Scroll Margins */}
+          {/* Spacious Horizontal Track with Zero Clipping */}
           <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 sm:w-12 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 sm:w-12 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
             <div 
               ref={testimonialScrollRef}
               onMouseEnter={() => setIsTestimonialPaused(true)}
               onMouseLeave={() => setIsTestimonialPaused(false)}
               onTouchStart={() => setIsTestimonialPaused(true)}
               onTouchEnd={() => setIsTestimonialPaused(false)}
-              className="flex gap-5 overflow-x-auto py-3 pb-8 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
+              className="flex gap-4 sm:gap-5 overflow-x-auto py-2 pb-6 no-scrollbar snap-x snap-mandatory scroll-smooth px-4 sm:px-6"
             >
               {TESTIMONIALS.map((t, idx) => (
-                <div key={idx} className="w-[280px] sm:w-[350px] flex-shrink-0 snap-start bg-[#FDFBF7] p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group flex flex-col justify-between">
+                <div key={idx} className="w-[260px] sm:w-[320px] flex-shrink-0 snap-start bg-[#FDFBF7] p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-md hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group flex flex-col justify-between min-h-[170px]">
                   <div>
-                    <Quote className="w-6 h-6 text-[#C9A96E]/30 group-hover:text-[#C9A96E]/60 transition-colors absolute top-4 right-4" />
-                    <div className="flex items-center gap-1 text-amber-500 mb-2.5">
+                    <Quote className="w-5 h-5 text-[#C9A96E]/30 group-hover:text-[#C9A96E]/60 transition-colors absolute top-4 right-4" />
+                    <div className="flex items-center gap-1 text-amber-500 mb-2">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                        <Star key={i} className="w-3 h-3 fill-current" />
                       ))}
                     </div>
-                    <p className="text-xs text-slate-700 leading-relaxed font-normal mb-5 italic">"{t.quote}"</p>
+                    <p className="text-[11px] sm:text-xs text-slate-700 leading-relaxed font-normal mb-3 italic">"{t.quote}"</p>
                   </div>
-                  <div className="flex items-center gap-3 pt-3 border-t border-slate-200/60">
-                    <div className="w-9 h-9 rounded-full overflow-hidden relative border-2 border-[#C9A96E] shadow-sm flex-shrink-0">
+                  <div className="flex items-center gap-2.5 pt-2.5 border-t border-slate-200/60">
+                    <div className="w-8 h-8 rounded-full overflow-hidden relative border-2 border-[#C9A96E] shadow-sm flex-shrink-0">
                       <Image src={t.image} alt={t.name} fill className="object-cover" />
                     </div>
                     <div>
