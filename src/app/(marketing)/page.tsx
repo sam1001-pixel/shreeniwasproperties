@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -14,6 +14,8 @@ import {
   Star,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   ArrowRight,
   TrendingUp,
   ShieldCheck,
@@ -297,6 +299,21 @@ export default function MarketingPage() {
   const [favorites, setFavorites] = useState<number[]>([]);
   const [compareItems, setCompareItems] = useState<PropertyCompareItem[]>([]);
 
+  const featuredScrollRef = useRef<HTMLDivElement>(null);
+  const journeyScrollRef = useRef<HTMLDivElement>(null);
+  const testimonialScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
+    if (ref.current) {
+      const { scrollLeft, clientWidth } = ref.current;
+      const scrollAmount = clientWidth * 0.75;
+      ref.current.scrollTo({
+        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const toggleFavorite = (id: number) => {
     setFavorites(prev => 
       prev.includes(id) ? prev.filter(fId => fId !== id) : [...prev, id]
@@ -508,43 +525,69 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 4. Featured Properties Collection (Compact Cards) */}
-      <section className="py-10 sm:py-14 px-4 bg-white">
+      {/* 4. Featured Rajasthan Properties Collection (Unique Scrollable Carousel) */}
+      <section className="py-10 sm:py-12 px-4 bg-white border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div>
-              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/30 text-[#C9A96E] font-bold text-[11px] uppercase tracking-wider mb-1.5">
-                <Sparkles className="w-3 h-3" /> Verified Collection
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/30 text-[#C9A96E] font-bold text-[10px] uppercase tracking-wider mb-1">
+                <Sparkles className="w-3 h-3" /> Handpicked Collection
               </div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-[#0A1628]">Featured Rajasthan Properties</h2>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-[#0A1628]">Featured Rajasthan Properties</h2>
             </div>
 
-            <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar w-full sm:w-auto">
-              {['All', 'Luxury Villas', 'Modern Apartments', 'Commercial', 'Heritage Havelis'].map(tab => (
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+              <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
+                {['All', 'Luxury Villas', 'Apartments', 'Commercial', 'Havelis'].map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setPropFilter(tab)}
+                    className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors ${
+                      propFilter === tab 
+                        ? 'bg-[#0A1628] text-[#C9A96E] border border-[#C9A96E]/40' 
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              {/* Unique Scroll Controls */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
-                  key={tab}
-                  onClick={() => setPropFilter(tab)}
-                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                    propFilter === tab 
-                      ? 'bg-[#0A1628] text-[#C9A96E] border border-[#C9A96E]/40' 
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                  onClick={() => scrollContainer(featuredScrollRef, 'left')}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-[#0A1628] hover:text-[#C9A96E] text-slate-700 flex items-center justify-center transition-all shadow-sm border border-slate-200"
+                  aria-label="Scroll left"
                 >
-                  {tab}
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-              ))}
+                <button
+                  onClick={() => scrollContainer(featuredScrollRef, 'right')}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-[#0A1628] hover:text-[#C9A96E] text-slate-700 flex items-center justify-center transition-all shadow-sm border border-slate-200"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Compact Property Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Unique Horizontal Scroll Track with Snap */}
+          <div 
+            ref={featuredScrollRef}
+            className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
+          >
             {FEATURED_PROPERTIES.map((prop) => {
               const isCompared = compareItems.some(i => i.id === prop.id);
               return (
-                <div key={prop.id} className="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+                <div 
+                  key={prop.id} 
+                  className="w-72 sm:w-80 flex-shrink-0 snap-start bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                >
                   <div>
-                    <div className="p-2.5">
-                      <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
+                    <div className="p-2">
+                      <div className="relative aspect-[16/10] rounded-xl overflow-hidden">
                         <Image 
                           src={prop.image} 
                           alt={prop.title} 
@@ -570,7 +613,7 @@ export default function MarketingPage() {
                         <div className="absolute top-2 right-2 flex items-center gap-1.5">
                           <button 
                             onClick={() => toggleCompare(prop)}
-                            className={`px-2 py-1 rounded-full text-[9px] font-bold backdrop-blur transition-all flex items-center gap-1 ${
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold backdrop-blur transition-all flex items-center gap-1 ${
                               isCompared 
                                 ? 'bg-[#C9A96E] text-[#0A1628] shadow' 
                                 : 'bg-white/90 text-slate-700 hover:bg-white'
@@ -589,30 +632,30 @@ export default function MarketingPage() {
                       </div>
                     </div>
 
-                    <div className="p-4 pt-1">
-                      <div className="flex items-center justify-between text-[11px] text-[#C9A96E] font-bold mb-0.5">
+                    <div className="p-3.5 pt-1">
+                      <div className="flex items-center justify-between text-[10px] text-[#C9A96E] font-bold mb-0.5">
                         <span>{prop.type}</span>
                         <span className="text-slate-400 font-normal">{prop.city}</span>
                       </div>
-                      <h3 className="text-base font-serif font-bold text-[#0A1628] mb-1 line-clamp-1 group-hover:text-[#C9A96E] transition-colors">
+                      <h3 className="text-sm font-serif font-bold text-[#0A1628] mb-1 line-clamp-1 group-hover:text-[#C9A96E] transition-colors">
                         {prop.title}
                       </h3>
-                      <p className="text-[11px] text-slate-500 flex items-center gap-1 mb-3">
+                      <p className="text-[11px] text-slate-500 flex items-center gap-1 mb-2.5">
                         <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" /> {prop.location}
                       </p>
 
                       {/* Key Spec Matrix */}
-                      <div className="grid grid-cols-3 gap-1.5 bg-slate-50 p-2 rounded-lg text-center mb-3 text-[11px]">
+                      <div className="grid grid-cols-3 gap-1 bg-slate-50 p-1.5 rounded-lg text-center mb-2 text-[10px]">
                         <div>
-                          <span className="text-[9px] text-slate-400 block uppercase">Area</span>
+                          <span className="text-[8px] text-slate-400 block uppercase">Area</span>
                           <span className="font-bold text-[#0A1628]">{prop.sqft} sqft</span>
                         </div>
                         <div className="border-x border-slate-200">
-                          <span className="text-[9px] text-slate-400 block uppercase">BHK</span>
+                          <span className="text-[8px] text-slate-400 block uppercase">BHK</span>
                           <span className="font-bold text-[#0A1628]">{prop.bhk}</span>
                         </div>
                         <div>
-                          <span className="text-[9px] text-slate-400 block uppercase">Rate</span>
+                          <span className="text-[8px] text-slate-400 block uppercase">Rate</span>
                           <span className="font-bold text-emerald-700">{prop.pricePerSqft}</span>
                         </div>
                       </div>
@@ -620,14 +663,14 @@ export default function MarketingPage() {
                   </div>
 
                   {/* Card Bottom Price & Action */}
-                  <div className="p-4 pt-0">
-                    <div className="flex items-center justify-between pt-2.5 border-t border-slate-100">
+                  <div className="p-3.5 pt-0">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                       <div>
                         <span className="text-[9px] text-slate-400 block">Total Price</span>
-                        <span className="text-lg font-bold text-[#0A1628]">{prop.price}</span>
+                        <span className="text-base font-bold text-[#0A1628]">{prop.price}</span>
                       </div>
                       <Link href={`/properties/${prop.id}`}>
-                        <button className="flex items-center gap-1 text-xs font-bold text-white bg-[#0A1628] hover:bg-[#0A1628]/90 px-3.5 py-2 rounded-lg transition-all shadow-sm cursor-pointer">
+                        <button className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#0A1628] hover:bg-[#0A1628]/90 px-3 py-1.5 rounded-lg transition-all shadow-sm cursor-pointer">
                           Details <ArrowRight className="w-3 h-3 text-[#C9A96E]" />
                         </button>
                       </Link>
@@ -637,82 +680,10 @@ export default function MarketingPage() {
               );
             })}
           </div>
-
-          <div className="mt-8 text-center">
-            <Link href="/properties">
-              <button className="px-6 py-3 rounded-xl border-2 border-[#0A1628] text-[#0A1628] font-bold text-xs hover:bg-[#0A1628] hover:text-[#C9A96E] transition-all w-full sm:w-auto shadow-sm">
-                Browse All 1,240+ Listings
-              </button>
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* 5. Interactive Home Buying Journey Steps (Compact 2x2 Grid) */}
-      <section className="py-8 sm:py-12 px-4 bg-slate-50 border-y border-slate-200/80">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-8">
-            <span className="text-[10px] font-bold text-[#C9A96E] uppercase tracking-wider block mb-1">Hassle-Free Process</span>
-            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#0A1628]">Your Seamless Home Buying Journey</h2>
-            <p className="text-slate-500 text-xs mt-1 max-w-xl mx-auto">From online search to physical cab walkthrough and key handover in 4 simple steps.</p>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {[
-              { step: "01", title: "Filter Properties", desc: "Browse 1,240+ RERA verified villas & plots.", icon: Search },
-              { step: "02", title: "VIP Cab Visit (₹499)", desc: "Guaranteed cab pickup with senior advisor.", icon: Calendar },
-              { step: "03", title: "Legal & RERA Audit", desc: "100% paper title verification.", icon: FileCheck },
-              { step: "04", title: "Keys Handover", desc: "Finalize payment & receive luxury keys.", icon: KeyRound },
-            ].map((st, idx) => (
-              <div key={idx} className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm relative group hover:border-[#C9A96E] transition-all">
-                <span className="text-xl sm:text-2xl font-serif font-extrabold text-[#C9A96E]/40 group-hover:text-[#C9A96E] transition-colors block mb-2">
-                  {st.step}
-                </span>
-                <div className="w-9 h-9 rounded-xl bg-[#0A1628] flex items-center justify-center text-[#C9A96E] mb-3 shadow">
-                  <st.icon className="w-4 h-4" />
-                </div>
-                <h3 className="text-sm font-serif font-bold text-[#0A1628] mb-1">{st.title}</h3>
-                <p className="text-[11px] text-slate-500 leading-normal">{st.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Verified Buyer Testimonials (Compact) */}
-      <section className="py-10 sm:py-12 px-4 bg-white border-b border-slate-100">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-8">
-            <span className="text-[10px] font-bold text-[#C9A96E] uppercase tracking-wider block mb-1">Verified Reviews</span>
-            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#0A1628]">What Our Buyers & Landlords Say</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-            {TESTIMONIALS.map((t, idx) => (
-              <div key={idx} className="bg-[#FDFBF7] p-5 rounded-2xl border border-slate-200/80 shadow-sm relative">
-                <Quote className="w-7 h-7 text-[#C9A96E]/20 absolute top-4 right-4" />
-                <div className="flex items-center gap-1 text-amber-500 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </div>
-                <p className="text-xs text-slate-700 leading-relaxed font-normal mb-4">"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full overflow-hidden relative border-2 border-[#C9A96E]">
-                    <Image src={t.image} alt={t.name} fill className="object-cover" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-[#0A1628] text-xs">{t.name}</h4>
-                    <p className="text-[10px] text-slate-500">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 7. "Post Property Free" Banner (Compact) */}
+      {/* 5. "Post Property Free" Banner */}
       <section className="py-10 px-4 bg-[#0A1628] text-white relative overflow-hidden">
         <div className="container mx-auto max-w-5xl relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/5 border border-white/10 p-6 sm:p-8 rounded-2xl backdrop-blur-xl">
           <div className="max-w-lg">
@@ -739,10 +710,10 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 8. Owner's Corner & Live Auto-Scrolling Reels Feed */}
+      {/* 6. Owner's Corner & Live Auto-Scrolling Reels Feed */}
       <OwnerReelsFeed />
 
-      {/* 9. Rajasthan Market Insights & Guides (Small & Horizontally Scrollable at End of Site) */}
+      {/* 7. Rajasthan Market Insights & Guides (Scrollable Track) */}
       <section className="py-10 px-4 bg-white border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-row justify-between items-center mb-6 gap-2">
@@ -795,6 +766,119 @@ export default function MarketingPage() {
                   </Link>
                 </div>
               </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Interactive Home Buying Journey Steps (Bottom Unique Left-to-Right Scrollable Track) */}
+      <section className="py-10 px-4 bg-[#0A1628] text-white border-y border-slate-800 relative overflow-hidden">
+        <div className="container mx-auto max-w-7xl relative z-10">
+          <div className="flex flex-row justify-between items-center mb-6 gap-2">
+            <div>
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#C9A96E]/20 text-[#C9A96E] border border-[#C9A96E]/40 text-[10px] font-bold uppercase tracking-wider mb-1">
+                <Sparkles className="w-3 h-3" /> Step-by-Step Experience
+              </div>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-white">Your Seamless Home Buying Journey</h2>
+            </div>
+
+            {/* Scroll Controls */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => scrollContainer(journeyScrollRef, 'left')}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-[#C9A96E] hover:text-[#0A1628] text-white flex items-center justify-center transition-all border border-white/10"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => scrollContainer(journeyScrollRef, 'right')}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-[#C9A96E] hover:text-[#0A1628] text-white flex items-center justify-center transition-all border border-white/10"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div 
+            ref={journeyScrollRef}
+            className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
+          >
+            {[
+              { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage.", icon: Search },
+              { step: "02", title: "Schedule VIP Cab Visit (₹499)", desc: "Book guaranteed cab pickup with senior advisor for physical tour.", icon: Calendar },
+              { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of land titles & encumbrance certificates.", icon: FileCheck },
+              { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive luxury keys.", icon: KeyRound },
+            ].map((st, idx) => (
+              <div key={idx} className="w-64 sm:w-72 flex-shrink-0 snap-start bg-slate-900/90 p-5 rounded-2xl border border-white/10 shadow-xl relative group hover:border-[#C9A96E] transition-all">
+                <span className="text-2xl font-serif font-extrabold text-[#C9A96E] block mb-2">
+                  {st.step}
+                </span>
+                <div className="w-10 h-10 rounded-xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E] mb-3 shadow">
+                  <st.icon className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-serif font-bold text-white mb-1.5">{st.title}</h3>
+                <p className="text-[11px] text-slate-300 leading-relaxed font-light">{st.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 9. Verified Buyer & Landlord Testimonials (Bottom Unique Left-to-Right Scrollable Track) */}
+      <section className="py-10 px-4 bg-white border-b border-slate-100">
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex flex-row justify-between items-center mb-6 gap-2">
+            <div>
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider mb-1">
+                <Star className="w-3 h-3 fill-current text-amber-500" /> 5-Star Rating
+              </div>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-[#0A1628]">What Our Buyers & Landlords Say</h2>
+            </div>
+
+            {/* Scroll Controls */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => scrollContainer(testimonialScrollRef, 'left')}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-[#0A1628] hover:text-[#C9A96E] text-slate-700 flex items-center justify-center transition-all border border-slate-200"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => scrollContainer(testimonialScrollRef, 'right')}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-[#0A1628] hover:text-[#C9A96E] text-slate-700 flex items-center justify-center transition-all border border-slate-200"
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div 
+            ref={testimonialScrollRef}
+            className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
+          >
+            {TESTIMONIALS.map((t, idx) => (
+              <div key={idx} className="w-80 sm:w-[380px] flex-shrink-0 snap-start bg-[#FDFBF7] p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all relative">
+                <Quote className="w-6 h-6 text-[#C9A96E]/30 absolute top-4 right-4" />
+                <div className="flex items-center gap-1 text-amber-500 mb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                  ))}
+                </div>
+                <p className="text-xs text-slate-700 leading-relaxed font-normal mb-4 italic">"{t.quote}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full overflow-hidden relative border-2 border-[#C9A96E]">
+                    <Image src={t.image} alt={t.name} fill className="object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-[#0A1628] text-xs">{t.name}</h4>
+                    <p className="text-[10px] text-slate-500">{t.role}</p>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
