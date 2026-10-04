@@ -318,52 +318,58 @@ export default function MarketingPage() {
     }
   };
 
-  // Auto-scroll Featured Properties
+  // Auto-scroll Featured Properties (Smooth continuous glide left-to-right)
   useEffect(() => {
-    if (isFeaturedPaused) return;
-    const interval = setInterval(() => {
-      if (featuredScrollRef.current) {
+    let animId: number;
+    const scroll = () => {
+      if (featuredScrollRef.current && !isFeaturedPaused) {
         const { scrollLeft, clientWidth, scrollWidth } = featuredScrollRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 20) {
-          featuredScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        if (scrollLeft + clientWidth >= scrollWidth - 4) {
+          featuredScrollRef.current.scrollLeft = 0;
         } else {
-          featuredScrollRef.current.scrollTo({ left: scrollLeft + 320, behavior: 'smooth' });
+          featuredScrollRef.current.scrollLeft += 0.85;
         }
       }
-    }, 3500);
-    return () => clearInterval(interval);
+      animId = requestAnimationFrame(scroll);
+    };
+    animId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animId);
   }, [isFeaturedPaused]);
 
-  // Auto-scroll Home Buying Journey
+  // Auto-scroll Home Buying Journey (Smooth continuous glide left-to-right)
   useEffect(() => {
-    if (isJourneyPaused) return;
-    const interval = setInterval(() => {
-      if (journeyScrollRef.current) {
+    let animId: number;
+    const scroll = () => {
+      if (journeyScrollRef.current && !isJourneyPaused) {
         const { scrollLeft, clientWidth, scrollWidth } = journeyScrollRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 20) {
-          journeyScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        if (scrollLeft + clientWidth >= scrollWidth - 4) {
+          journeyScrollRef.current.scrollLeft = 0;
         } else {
-          journeyScrollRef.current.scrollTo({ left: scrollLeft + 280, behavior: 'smooth' });
+          journeyScrollRef.current.scrollLeft += 0.75;
         }
       }
-    }, 4000);
-    return () => clearInterval(interval);
+      animId = requestAnimationFrame(scroll);
+    };
+    animId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animId);
   }, [isJourneyPaused]);
 
-  // Auto-scroll Buyer Testimonials
+  // Auto-scroll Buyer Testimonials (Smooth continuous glide left-to-right)
   useEffect(() => {
-    if (isTestimonialPaused) return;
-    const interval = setInterval(() => {
-      if (testimonialScrollRef.current) {
+    let animId: number;
+    const scroll = () => {
+      if (testimonialScrollRef.current && !isTestimonialPaused) {
         const { scrollLeft, clientWidth, scrollWidth } = testimonialScrollRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 20) {
-          testimonialScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        if (scrollLeft + clientWidth >= scrollWidth - 4) {
+          testimonialScrollRef.current.scrollLeft = 0;
         } else {
-          testimonialScrollRef.current.scrollTo({ left: scrollLeft + 360, behavior: 'smooth' });
+          testimonialScrollRef.current.scrollLeft += 0.8;
         }
       }
-    }, 4500);
-    return () => clearInterval(interval);
+      animId = requestAnimationFrame(scroll);
+    };
+    animId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animId);
   }, [isTestimonialPaused]);
 
   const toggleFavorite = (id: number) => {
@@ -625,15 +631,18 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          {/* Unique Horizontal Scroll Track with Snap */}
-          <div 
-            ref={featuredScrollRef}
-            onMouseEnter={() => setIsFeaturedPaused(true)}
-            onMouseLeave={() => setIsFeaturedPaused(false)}
-            onTouchStart={() => setIsFeaturedPaused(true)}
-            onTouchEnd={() => setIsFeaturedPaused(false)}
-            className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
-          >
+          {/* Unique Horizontal Scroll Track with Edge Fade Overlay */}
+          <div className="relative">
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
+            <div 
+              ref={featuredScrollRef}
+              onMouseEnter={() => setIsFeaturedPaused(true)}
+              onMouseLeave={() => setIsFeaturedPaused(false)}
+              onTouchStart={() => setIsFeaturedPaused(true)}
+              onTouchEnd={() => setIsFeaturedPaused(false)}
+              className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth px-1"
+            >
             {FEATURED_PROPERTIES.map((prop) => {
               const isCompared = compareItems.some(i => i.id === prop.id);
               return (
@@ -737,7 +746,8 @@ export default function MarketingPage() {
             })}
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* 5. "Post Property Free" Banner */}
       <section className="py-10 px-4 bg-[#0A1628] text-white relative overflow-hidden">
@@ -857,31 +867,35 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          <div 
-            ref={journeyScrollRef}
-            onMouseEnter={() => setIsJourneyPaused(true)}
-            onMouseLeave={() => setIsJourneyPaused(false)}
-            onTouchStart={() => setIsJourneyPaused(true)}
-            onTouchEnd={() => setIsJourneyPaused(false)}
-            className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
-          >
-            {[
-              { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage.", icon: Search },
-              { step: "02", title: "Schedule VIP Cab Visit (₹499)", desc: "Book guaranteed cab pickup with senior advisor for physical tour.", icon: Calendar },
-              { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of land titles & encumbrance certificates.", icon: FileCheck },
-              { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive luxury keys.", icon: KeyRound },
-            ].map((st, idx) => (
-              <div key={idx} className="w-64 sm:w-72 flex-shrink-0 snap-start bg-slate-900/90 p-5 rounded-2xl border border-white/10 shadow-xl relative group hover:border-[#C9A96E] transition-all">
-                <span className="text-2xl font-serif font-extrabold text-[#C9A96E] block mb-2">
-                  {st.step}
-                </span>
-                <div className="w-10 h-10 rounded-xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E] mb-3 shadow">
-                  <st.icon className="w-5 h-5" />
+          <div className="relative">
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#0A1628] via-[#0A1628]/80 to-transparent z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#0A1628] via-[#0A1628]/80 to-transparent z-10" />
+            <div 
+              ref={journeyScrollRef}
+              onMouseEnter={() => setIsJourneyPaused(true)}
+              onMouseLeave={() => setIsJourneyPaused(false)}
+              onTouchStart={() => setIsJourneyPaused(true)}
+              onTouchEnd={() => setIsJourneyPaused(false)}
+              className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth px-1"
+            >
+              {[
+                { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage.", icon: Search },
+                { step: "02", title: "Schedule VIP Cab Visit (₹499)", desc: "Book guaranteed cab pickup with senior advisor for physical tour.", icon: Calendar },
+                { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of land titles & encumbrance certificates.", icon: FileCheck },
+                { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive luxury keys.", icon: KeyRound },
+              ].map((st, idx) => (
+                <div key={idx} className="w-64 sm:w-72 flex-shrink-0 snap-start bg-slate-900/90 p-5 rounded-2xl border border-white/10 shadow-xl relative group hover:border-[#C9A96E] hover:shadow-[0_0_20px_rgba(201,169,110,0.2)] transition-all">
+                  <span className="text-2xl font-serif font-extrabold text-[#C9A96E] block mb-2">
+                    {st.step}
+                  </span>
+                  <div className="w-10 h-10 rounded-xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E] mb-3 shadow">
+                    <st.icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-sm font-serif font-bold text-white mb-1.5">{st.title}</h3>
+                  <p className="text-[11px] text-slate-300 leading-relaxed font-light">{st.desc}</p>
                 </div>
-                <h3 className="text-sm font-serif font-bold text-white mb-1.5">{st.title}</h3>
-                <p className="text-[11px] text-slate-300 leading-relaxed font-light">{st.desc}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -916,34 +930,38 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          <div 
-            ref={testimonialScrollRef}
-            onMouseEnter={() => setIsTestimonialPaused(true)}
-            onMouseLeave={() => setIsTestimonialPaused(false)}
-            onTouchStart={() => setIsTestimonialPaused(true)}
-            onTouchEnd={() => setIsTestimonialPaused(false)}
-            className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth"
-          >
-            {TESTIMONIALS.map((t, idx) => (
-              <div key={idx} className="w-80 sm:w-[380px] flex-shrink-0 snap-start bg-[#FDFBF7] p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all relative">
-                <Quote className="w-6 h-6 text-[#C9A96E]/30 absolute top-4 right-4" />
-                <div className="flex items-center gap-1 text-amber-500 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </div>
-                <p className="text-xs text-slate-700 leading-relaxed font-normal mb-4 italic">"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full overflow-hidden relative border-2 border-[#C9A96E]">
-                    <Image src={t.image} alt={t.name} fill className="object-cover" />
+          <div className="relative">
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
+            <div 
+              ref={testimonialScrollRef}
+              onMouseEnter={() => setIsTestimonialPaused(true)}
+              onMouseLeave={() => setIsTestimonialPaused(false)}
+              onTouchStart={() => setIsTestimonialPaused(true)}
+              onTouchEnd={() => setIsTestimonialPaused(false)}
+              className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory scroll-smooth px-1"
+            >
+              {TESTIMONIALS.map((t, idx) => (
+                <div key={idx} className="w-80 sm:w-[380px] flex-shrink-0 snap-start bg-[#FDFBF7] p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group">
+                  <Quote className="w-6 h-6 text-[#C9A96E]/30 group-hover:text-[#C9A96E]/60 transition-colors absolute top-4 right-4" />
+                  <div className="flex items-center gap-1 text-amber-500 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                    ))}
                   </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-[#0A1628] text-xs">{t.name}</h4>
-                    <p className="text-[10px] text-slate-500">{t.role}</p>
+                  <p className="text-xs text-slate-700 leading-relaxed font-normal mb-4 italic">"{t.quote}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full overflow-hidden relative border-2 border-[#C9A96E] shadow-sm">
+                      <Image src={t.image} alt={t.name} fill className="object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="font-serif font-bold text-[#0A1628] text-xs group-hover:text-[#C9A96E] transition-colors">{t.name}</h4>
+                      <p className="text-[10px] text-slate-500">{t.role}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
