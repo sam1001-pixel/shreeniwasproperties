@@ -66,6 +66,40 @@ export default function OwnerReelsFeed() {
   const [selectedReel, setSelectedReel] = useState<ReelItem | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [reelsList, setReelsList] = useState<ReelItem[]>(REELS_DATA);
+
+  const loadLiveReels = () => {
+    try {
+      const saved = localStorage.getItem('shreeniwas_admin_reels');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const formatted: ReelItem[] = parsed.map((r: any, idx: number) => ({
+            id: r.id || `reel-${idx}`,
+            title: r.title || 'Site Walkthrough Reel',
+            location: r.property || 'Jaipur, Rajasthan',
+            thumbnail: r.embedUrl || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=600',
+            videoUrl: r.instaUrl || '',
+            views: r.views || '12.5K',
+            likes: '2.4K',
+            duration: '0:45',
+            tag: 'Property Reel'
+          }));
+          setReelsList(formatted);
+        }
+      }
+    } catch (e) {}
+  };
+
+  React.useEffect(() => {
+    loadLiveReels();
+    window.addEventListener('shreeniwas_data_updated', loadLiveReels);
+    window.addEventListener('storage', loadLiveReels);
+    return () => {
+      window.removeEventListener('shreeniwas_data_updated', loadLiveReels);
+      window.removeEventListener('storage', loadLiveReels);
+    };
+  }, []);
 
   const handleShare = (reel: ReelItem) => {
     navigator.clipboard.writeText(`https://shreeniwasproperties-pi.vercel.app/reels/${reel.id}`);
@@ -74,7 +108,7 @@ export default function OwnerReelsFeed() {
   };
 
   // Duplicate reels array to ensure smooth continuous marquee looping
-  const loopedReels = [...REELS_DATA, ...REELS_DATA, ...REELS_DATA];
+  const loopedReels = [...reelsList, ...reelsList, ...reelsList];
 
   return (
     <section className="py-10 sm:py-12 px-4 bg-[#0A1628] text-white relative overflow-hidden">

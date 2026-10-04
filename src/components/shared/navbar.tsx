@@ -15,11 +15,27 @@ export function Navbar() {
   const [userName, setUserName] = useState('');
   const pathname = usePathname();
 
+  const [customLogo, setCustomLogo] = useState<string>('');
+
+  const loadNavbarSettings = () => {
+    try {
+      const saved = localStorage.getItem('shreeniwas_platform_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.logoUrl) setCustomLogo(parsed.logoUrl);
+      }
+    } catch (e) {}
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+
+    loadNavbarSettings();
+    window.addEventListener('shreeniwas_data_updated', loadNavbarSettings);
+    window.addEventListener('storage', loadNavbarSettings);
 
     // Check user session
     const session = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
@@ -33,7 +49,11 @@ export function Navbar() {
       } catch (e) {}
     }
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('shreeniwas_data_updated', loadNavbarSettings);
+      window.removeEventListener('storage', loadNavbarSettings);
+    };
   }, [pathname]);
 
   return (
@@ -49,8 +69,12 @@ export function Navbar() {
         <div className="h-16 sm:h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group whitespace-nowrap">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors shrink-0 shadow-sm">
-              <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9A96E]" />
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors shrink-0 shadow-sm overflow-hidden p-1">
+              {customLogo ? (
+                <img src={customLogo} alt="Shreeniwas Logo" className="w-full h-full object-contain rounded-lg" />
+              ) : (
+                <Building2 className="w-5 h-5 text-[#C9A96E]" />
+              )}
             </div>
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1">

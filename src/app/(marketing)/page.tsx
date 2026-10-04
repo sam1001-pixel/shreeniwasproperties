@@ -307,6 +307,10 @@ export default function MarketingPage() {
   const [favorites, setFavorites] = useState<number[]>([]);
   const [compareItems, setCompareItems] = useState<PropertyCompareItem[]>([]);
 
+  const [propertiesList, setPropertiesList] = useState<any[]>(FEATURED_PROPERTIES);
+  const [blogPostsList, setBlogPostsList] = useState<any[]>(BLOG_POSTS);
+  const [testimonialsList, setTestimonialsList] = useState<any[]>(TESTIMONIALS);
+
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const journeyScrollRef = useRef<HTMLDivElement>(null);
   const testimonialScrollRef = useRef<HTMLDivElement>(null);
@@ -314,6 +318,76 @@ export default function MarketingPage() {
   const [isFeaturedPaused, setIsFeaturedPaused] = useState(false);
   const [isJourneyPaused, setIsJourneyPaused] = useState(false);
   const [isTestimonialPaused, setIsTestimonialPaused] = useState(false);
+
+  const loadLiveData = () => {
+    try {
+      const savedProps = localStorage.getItem('shreeniwas_admin_properties');
+      if (savedProps) {
+        const parsed = JSON.parse(savedProps);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const formattedProps = parsed.map((p: any, idx: number) => ({
+            id: p.id || idx + 1,
+            title: p.title || 'Luxury Property',
+            location: p.location || 'Jaipur',
+            city: p.location?.includes('Udaipur') ? 'Udaipur' : p.location?.includes('Jodhpur') ? 'Jodhpur' : 'Jaipur',
+            price: p.price || 'Price on Request',
+            pricePerSqft: '₹8,500/sq.ft',
+            sqft: 2000,
+            bhk: p.type?.includes('Villa') ? '4 BHK' : p.type?.includes('Penthouse') ? '3 BHK' : '2 BHK',
+            type: p.type || 'Luxury Villa',
+            status: p.status || 'Ready to Move',
+            image: p.image || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800',
+            reraApproved: true,
+            verified: true,
+            zeroBrokerage: true
+          }));
+          setPropertiesList(formattedProps);
+        }
+      }
+
+      const savedBlogs = localStorage.getItem('shreeniwas_blog_posts');
+      if (savedBlogs) {
+        const parsed = JSON.parse(savedBlogs);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const formattedBlogs = parsed.map((b: any, idx: number) => ({
+            id: b.id || idx + 1,
+            slug: b.id?.toLowerCase() || `blog-${idx}`,
+            title: b.title || 'Jaipur Real Estate Insights',
+            category: b.category || 'Market Trends',
+            date: b.date || 'Oct 2024',
+            readTime: b.readTime || '5 min read',
+            excerpt: b.excerpt || b.title,
+            image: b.image || 'https://images.unsplash.com/photo-1599661559886-41b80c541b00?q=80&w=600'
+          }));
+          setBlogPostsList(formattedBlogs);
+        }
+      }
+
+      const savedReviews = localStorage.getItem('shreeniwas_testimonials_management');
+      if (savedReviews) {
+        const parsed = JSON.parse(savedReviews);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const formattedReviews = parsed.map((r: any) => ({
+            name: r.name || 'Verified Client',
+            role: r.role || 'Property Buyer',
+            image: r.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200',
+            quote: r.quote || 'Excellent service from Shreeniwas Properties!'
+          }));
+          setTestimonialsList(formattedReviews);
+        }
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    loadLiveData();
+    window.addEventListener('shreeniwas_data_updated', loadLiveData);
+    window.addEventListener('storage', loadLiveData);
+    return () => {
+      window.removeEventListener('shreeniwas_data_updated', loadLiveData);
+      window.removeEventListener('storage', loadLiveData);
+    };
+  }, []);
 
   const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
     if (ref.current) {
@@ -627,7 +701,7 @@ export default function MarketingPage() {
           {/* Reels-Style Continuous Marquee Auto-Scroll Track */}
           <div className="overflow-hidden relative w-full">
             <div className="flex gap-4 sm:gap-5 animate-marquee-slow pause-on-hover py-2">
-              {[...FEATURED_PROPERTIES, ...FEATURED_PROPERTIES, ...FEATURED_PROPERTIES].map((prop, idx) => {
+              {[...propertiesList, ...propertiesList, ...propertiesList].map((prop, idx) => {
                 const isCompared = compareItems.some(i => i.id === prop.id);
                 return (
                   <div 
@@ -782,7 +856,7 @@ export default function MarketingPage() {
 
           {/* Horizontally Scrollable Track */}
           <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory">
-            {BLOG_POSTS.map((post) => (
+            {blogPostsList.map((post) => (
               <article 
                 key={post.id} 
                 className="w-72 sm:w-80 flex-shrink-0 snap-start bg-[#FDFBF7] rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
@@ -874,7 +948,7 @@ export default function MarketingPage() {
           {/* Reels-Style Continuous Marquee Auto-Scroll Track */}
           <div className="overflow-hidden relative w-full">
             <div className="flex gap-4 sm:gap-5 animate-marquee-slow pause-on-hover py-2">
-              {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((t, idx) => (
+              {[...testimonialsList, ...testimonialsList, ...testimonialsList, ...testimonialsList].map((t, idx) => (
                 <div key={idx} className="w-[260px] sm:w-[320px] flex-shrink-0 bg-[#FDFBF7] p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-md hover:shadow-xl hover:border-[#C9A96E]/60 transition-all duration-300 relative group flex flex-col justify-between min-h-[170px]">
                   <div>
                     <Quote className="w-5 h-5 text-[#C9A96E]/30 group-hover:text-[#C9A96E]/60 transition-colors absolute top-4 right-4" />

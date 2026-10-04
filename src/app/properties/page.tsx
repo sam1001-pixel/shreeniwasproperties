@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Search, MapPin, Filter, Grid, List, 
@@ -147,12 +147,56 @@ export default function PropertiesPage() {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [compareItems, setCompareItems] = useState<PropertyCompareItem[]>([]);
+  const [propertiesList, setPropertiesList] = useState<any[]>(MOCK_PROPERTIES);
+
+  const loadLiveProperties = () => {
+    try {
+      const savedProps = localStorage.getItem('shreeniwas_admin_properties');
+      if (savedProps) {
+        const parsed = JSON.parse(savedProps);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const formattedProps = parsed.map((p: any, idx: number) => ({
+            id: p.id || String(idx + 1),
+            slug: p.id?.toLowerCase() || `property-${idx}`,
+            title: p.title || 'Luxury Property',
+            location: p.location || 'Jaipur',
+            city: p.location?.includes('Udaipur') ? 'Udaipur' : p.location?.includes('Jodhpur') ? 'Jodhpur' : 'Jaipur',
+            price: p.price || 'Price on Request',
+            pricePerSqft: '₹8,500/sq.ft',
+            purpose: p.type?.includes('Rent') ? 'Rent' : p.type?.includes('Commercial') ? 'Commercial' : 'Buy',
+            type: p.type || 'Luxury Villa',
+            bhk: p.type?.includes('Villa') ? '4 BHK' : p.type?.includes('Penthouse') ? '3 BHK' : '2 BHK',
+            area: '2,400 sq.ft',
+            carpetArea: '2,100 sq.ft',
+            facing: 'East (Vastu)',
+            baths: 3,
+            status: p.status || 'Ready to Move',
+            verified: true,
+            reraApproved: true,
+            zeroBrokerage: true,
+            image: p.image || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800',
+          }));
+          setPropertiesList(formattedProps);
+        }
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    loadLiveProperties();
+    window.addEventListener('shreeniwas_data_updated', loadLiveProperties);
+    window.addEventListener('storage', loadLiveProperties);
+    return () => {
+      window.removeEventListener('shreeniwas_data_updated', loadLiveProperties);
+      window.removeEventListener('storage', loadLiveProperties);
+    };
+  }, []);
 
   const toggleFavorite = (id: string) => {
     setFavorites(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const toggleCompare = (prop: typeof MOCK_PROPERTIES[0]) => {
+  const toggleCompare = (prop: any) => {
     setCompareItems(prev => {
       const exists = prev.some(item => item.id === prop.id);
       if (exists) {
@@ -178,7 +222,7 @@ export default function PropertiesPage() {
     });
   };
 
-  const filteredProperties = MOCK_PROPERTIES.filter(p => {
+  const filteredProperties = propertiesList.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           p.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = selectedTab === 'All' || 

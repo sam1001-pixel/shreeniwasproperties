@@ -140,6 +140,24 @@ export default function AdminDashboard() {
     setShowGalleryPicker(true);
   };
 
+  const notifyDataUpdated = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('shreeniwas_data_updated'));
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (dataUrl: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        callback(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Make Admin Modal
   const [showMakeAdminModal, setShowMakeAdminModal] = useState(false);
   const [adminForm, setAdminForm] = useState({ name: '', email: '', role: 'Query Coordinator', password: '', level: 'staff' });
@@ -345,6 +363,7 @@ export default function AdminDashboard() {
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
     }
+    notifyDataUpdated();
 
     setShowPropertyModal(false);
     setEditingProperty(null);
@@ -355,6 +374,7 @@ export default function AdminDashboard() {
     const updated = propertiesList.filter(p => p.id !== id);
     setPropertiesList(updated);
     localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+    notifyDataUpdated();
   };
 
   // Blog Handlers
@@ -372,6 +392,7 @@ export default function AdminDashboard() {
       setBlogsList(updated);
       localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
     }
+    notifyDataUpdated();
 
     setShowBlogModal(false);
     setEditingBlog(null);
@@ -382,6 +403,7 @@ export default function AdminDashboard() {
     const updated = blogsList.filter(b => b.id !== id);
     setBlogsList(updated);
     localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
+    notifyDataUpdated();
   };
 
   // Reel Handlers (Reels Management Power)
@@ -409,6 +431,7 @@ export default function AdminDashboard() {
       setReelsList(updated);
       localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
     }
+    notifyDataUpdated();
 
     setShowReelModal(false);
     setEditingReel(null);
@@ -419,6 +442,7 @@ export default function AdminDashboard() {
     const updated = reelsList.filter(r => r.id !== id);
     setReelsList(updated);
     localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
+    notifyDataUpdated();
   };
 
   // Review Handlers (Reviews Management Power)
@@ -436,6 +460,7 @@ export default function AdminDashboard() {
       setReviewsList(updated);
       localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(updated));
     }
+    notifyDataUpdated();
 
     setShowReviewModal(false);
     setEditingReview(null);
@@ -446,6 +471,7 @@ export default function AdminDashboard() {
     const updated = reviewsList.filter(r => r.id !== id);
     setReviewsList(updated);
     localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(updated));
+    notifyDataUpdated();
   };
 
   // Make Admin Handler
@@ -507,6 +533,7 @@ export default function AdminDashboard() {
     const updated = [newItem, ...mediaGallery];
     setMediaGallery(updated);
     localStorage.setItem('shreeniwas_media_gallery', JSON.stringify(updated));
+    notifyDataUpdated();
     setNewMediaForm({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
   };
 
@@ -528,6 +555,7 @@ export default function AdminDashboard() {
     const updated = mediaGallery.map(m => m.id === editingMedia.id ? { ...m, ...payload } : m);
     setMediaGallery(updated);
     localStorage.setItem('shreeniwas_media_gallery', JSON.stringify(updated));
+    notifyDataUpdated();
 
     setShowEditMediaModal(false);
     setEditingMedia(null);
@@ -538,12 +566,14 @@ export default function AdminDashboard() {
     const updated = mediaGallery.filter(m => m.id !== id);
     setMediaGallery(updated);
     localStorage.setItem('shreeniwas_media_gallery', JSON.stringify(updated));
+    notifyDataUpdated();
   };
 
   // Save Platform & Social Settings
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(siteSettings));
+    notifyDataUpdated();
     alert("Platform Logo, Social Media Handles & Settings Saved Live!");
   };
 
@@ -1095,14 +1125,25 @@ export default function AdminDashboard() {
                       <option value="video">Reel / Video Clip</option>
                     </select>
 
-                    <input
-                      type="url"
-                      required
-                      placeholder="Image / Thumbnail URL"
-                      value={newMediaForm.url}
-                      onChange={(e) => setNewMediaForm({ ...newMediaForm, url: e.target.value })}
-                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    />
+                    <div className="flex flex-col gap-1">
+                      <input
+                        type="text"
+                        required
+                        placeholder="Image / Thumbnail URL or Upload File"
+                        value={newMediaForm.url}
+                        onChange={(e) => setNewMediaForm({ ...newMediaForm, url: e.target.value })}
+                        className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                      <label className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-[#0A1628] font-bold text-[10px] rounded-lg cursor-pointer flex items-center justify-center gap-1 border border-slate-300 transition-colors">
+                        <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Photo/Video from Device
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, (dataUrl) => setNewMediaForm(prev => ({ ...prev, url: dataUrl })))}
+                        />
+                      </label>
+                    </div>
 
                     <input
                       type="url"
@@ -1535,23 +1576,35 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <label className="font-bold uppercase text-slate-700">Custom Logo Image URL</label>
-                        <button
-                          type="button"
-                          onClick={() => openGalleryPicker((url) => setSiteSettings(prev => ({ ...prev, logoUrl: url })), 'Logos & Avatars')}
-                          className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                        >
-                          <Camera className="w-3 h-3" /> Pick from Gallery
-                        </button>
+                        <label className="font-bold uppercase text-slate-700">Custom Logo Image</label>
+                        <div className="flex items-center gap-2">
+                          <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                            <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleFileUpload(e, (dataUrl) => setSiteSettings(prev => ({ ...prev, logoUrl: dataUrl })))}
+                            />
+                          </label>
+                          <span className="text-slate-300">|</span>
+                          <button
+                            type="button"
+                            onClick={() => openGalleryPicker((url) => setSiteSettings(prev => ({ ...prev, logoUrl: url })), 'Logos & Avatars')}
+                            className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                          >
+                            <Camera className="w-3 h-3" /> Pick Gallery
+                          </button>
+                        </div>
                       </div>
                       <input
-                        type="url"
+                        type="text"
                         value={siteSettings.logoUrl}
                         onChange={(e) => setSiteSettings({ ...siteSettings, logoUrl: e.target.value })}
-                        placeholder="https://example.com/logo.png"
+                        placeholder="https://example.com/logo.png or uploaded image"
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Paste absolute image URL or select from site gallery.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Upload from device, pick from gallery, or paste image URL.</p>
                     </div>
 
                     <div>
@@ -1751,20 +1804,32 @@ export default function AdminDashboard() {
 
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="font-bold uppercase text-slate-700">Property Cover Image URL</label>
-                    <button
-                      type="button"
-                      onClick={() => openGalleryPicker((url) => setPropForm(prev => ({ ...prev, image: url })), 'Properties')}
-                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                    >
-                      <Camera className="w-3 h-3" /> Pick from Gallery
-                    </button>
+                    <label className="font-bold uppercase text-slate-700">Property Cover Image</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                        <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, (dataUrl) => setPropForm(prev => ({ ...prev, image: dataUrl })))}
+                        />
+                      </label>
+                      <span className="text-slate-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() => openGalleryPicker((url) => setPropForm(prev => ({ ...prev, image: url })), 'Properties')}
+                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Camera className="w-3 h-3" /> Pick Gallery
+                      </button>
+                    </div>
                   </div>
                   <input
-                    type="url"
+                    type="text"
                     value={propForm.image}
                     onChange={(e) => setPropForm({ ...propForm, image: e.target.value })}
-                    placeholder="https://images.unsplash.com/photo-..."
+                    placeholder="https://images.unsplash.com/... or upload from device"
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
@@ -1865,21 +1930,33 @@ export default function AdminDashboard() {
 
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="font-bold uppercase text-slate-700">Video Reel Thumbnail URL</label>
-                    <button
-                      type="button"
-                      onClick={() => openGalleryPicker((url) => setReelForm(prev => ({ ...prev, embedUrl: url })), 'Properties')}
-                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                    >
-                      <Camera className="w-3 h-3" /> Pick from Gallery
-                    </button>
+                    <label className="font-bold uppercase text-slate-700">Video Reel / Thumbnail Asset</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                        <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, (dataUrl) => setReelForm(prev => ({ ...prev, embedUrl: dataUrl })))}
+                        />
+                      </label>
+                      <span className="text-slate-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() => openGalleryPicker((url) => setReelForm(prev => ({ ...prev, embedUrl: url })), 'Properties')}
+                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Camera className="w-3 h-3" /> Pick Gallery
+                      </button>
+                    </div>
                   </div>
                   <input
-                    type="url"
+                    type="text"
                     required
                     value={reelForm.embedUrl}
                     onChange={(e) => setReelForm({ ...reelForm, embedUrl: e.target.value })}
-                    placeholder="https://images.unsplash.com/photo-..."
+                    placeholder="https://images.unsplash.com/... or upload photo/video from device"
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
@@ -1983,20 +2060,32 @@ export default function AdminDashboard() {
 
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="font-bold uppercase text-slate-700">Reviewer Avatar Image URL</label>
-                    <button
-                      type="button"
-                      onClick={() => openGalleryPicker((url) => setReviewForm(prev => ({ ...prev, avatar: url })), 'Logos & Avatars')}
-                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                    >
-                      <Camera className="w-3 h-3" /> Pick from Gallery
-                    </button>
+                    <label className="font-bold uppercase text-slate-700">Reviewer Avatar Image</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                        <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, (dataUrl) => setReviewForm(prev => ({ ...prev, avatar: dataUrl })))}
+                        />
+                      </label>
+                      <span className="text-slate-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() => openGalleryPicker((url) => setReviewForm(prev => ({ ...prev, avatar: url })), 'Logos & Avatars')}
+                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Camera className="w-3 h-3" /> Pick Gallery
+                      </button>
+                    </div>
                   </div>
                   <input
-                    type="url"
+                    type="text"
                     value={reviewForm.avatar}
                     onChange={(e) => setReviewForm({ ...reviewForm, avatar: e.target.value })}
-                    placeholder="https://images.unsplash.com/photo-..."
+                    placeholder="https://images.unsplash.com/... or upload photo from device"
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
@@ -2036,20 +2125,32 @@ export default function AdminDashboard() {
 
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="font-bold uppercase text-slate-700">Article Cover Image URL</label>
-                    <button
-                      type="button"
-                      onClick={() => openGalleryPicker((url) => setBlogForm(prev => ({ ...prev, image: url })), 'Blogs')}
-                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                    >
-                      <Camera className="w-3 h-3" /> Pick from Gallery
-                    </button>
+                    <label className="font-bold uppercase text-slate-700">Article Cover Image</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                        <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, (dataUrl) => setBlogForm(prev => ({ ...prev, image: dataUrl })))}
+                        />
+                      </label>
+                      <span className="text-slate-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() => openGalleryPicker((url) => setBlogForm(prev => ({ ...prev, image: url })), 'Blogs')}
+                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Camera className="w-3 h-3" /> Pick Gallery
+                      </button>
+                    </div>
                   </div>
                   <input
-                    type="url"
+                    type="text"
                     value={blogForm.image}
                     onChange={(e) => setBlogForm({ ...blogForm, image: e.target.value })}
-                    placeholder="https://images.unsplash.com/photo-..."
+                    placeholder="https://images.unsplash.com/... or upload photo from device"
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
@@ -2293,13 +2394,24 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1">Image / Video Thumbnail URL</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold uppercase text-slate-700">Image / Video Thumbnail Asset</label>
+                    <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                      <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, (dataUrl) => setMediaForm(prev => ({ ...prev, url: dataUrl })))}
+                      />
+                    </label>
+                  </div>
                   <input
-                    type="url"
+                    type="text"
                     required
                     value={mediaForm.url}
                     onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
-                    placeholder="https://images.unsplash.com/photo-..."
+                    placeholder="https://images.unsplash.com/... or upload photo/video from device"
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
