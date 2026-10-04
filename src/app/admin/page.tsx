@@ -12,21 +12,22 @@ import {
 import Link from 'next/link';
 
 // Initial Seed Data (Fallbacks if localStorage is empty)
+// Initial Seed Data (Fallbacks if localStorage is empty)
 const DEFAULT_SITE_PROPERTIES = [
-  { id: "PROP-001", title: "The Royal Heritage Residency", location: "Vaishali Nagar, Jaipur", price: "₹3.5 Cr", status: "Active", type: "Luxury Villa" },
-  { id: "PROP-002", title: "Lakeview Palace Heights", location: "Fatehpura, Udaipur", price: "₹1.8 Cr", status: "Active", type: "Penthouse" },
-  { id: "PROP-003", title: "Commercial Business Hub", location: "C-Scheme, Jaipur", price: "₹2.2 Cr", status: "Active", type: "Commercial" },
-  { id: "PROP-004", title: "Heritage Haveli Jodhpur", location: "Ratanada, Jodhpur", price: "₹5.5 Cr", status: "Active", type: "Heritage" },
-  { id: "PROP-005", title: "Modern 3BHK Apartment", location: "Vaishali Nagar, Jaipur", price: "₹45,000/mo", status: "Active", type: "Rent" },
-  { id: "PROP-006", title: "Luxury Penthouse", location: "Mansarovar, Jaipur", price: "₹1.25 Cr", status: "Active", type: "Sale" },
-  { id: "PROP-007", title: "Exclusive Villa", location: "Jagatpura, Jaipur", price: "₹2.1 Cr", status: "Active", type: "Sale" },
-  { id: "PROP-008", title: "Studio Apartment", location: "Malviya Nagar, Jaipur", price: "₹18,000/mo", status: "Active", type: "Rent" },
+  { id: "PROP-001", title: "The Royal Heritage Residency", location: "Vaishali Nagar, Jaipur", price: "₹3.5 Cr", status: "Active", type: "Luxury Villa", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800" },
+  { id: "PROP-002", title: "Lakeview Palace Heights", location: "Fatehpura, Udaipur", price: "₹1.8 Cr", status: "Active", type: "Penthouse", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800" },
+  { id: "PROP-003", title: "Commercial Business Hub", location: "C-Scheme, Jaipur", price: "₹2.2 Cr", status: "Active", type: "Commercial", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800" },
+  { id: "PROP-004", title: "Heritage Haveli Jodhpur", location: "Ratanada, Jodhpur", price: "₹5.5 Cr", status: "Active", type: "Heritage", image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800" },
+  { id: "PROP-005", title: "Modern 3BHK Apartment", location: "Vaishali Nagar, Jaipur", price: "₹45,000/mo", status: "Active", type: "Rent", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800" },
+  { id: "PROP-006", title: "Luxury Penthouse", location: "Mansarovar, Jaipur", price: "₹1.25 Cr", status: "Active", type: "Sale", image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=800" },
+  { id: "PROP-007", title: "Exclusive Villa", location: "Jagatpura, Jaipur", price: "₹2.1 Cr", status: "Active", type: "Sale", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800" },
+  { id: "PROP-008", title: "Studio Apartment", location: "Malviya Nagar, Jaipur", price: "₹18,000/mo", status: "Active", type: "Rent", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800" },
 ];
 
 const DEFAULT_BLOGS = [
-  { id: "BLOG-1", title: "Why Jaipur is the Next Big Real Estate Hub in India", category: "Market Trends", author: "Aditi Sharma", readTime: "5 min read", status: "Published" },
-  { id: "BLOG-2", title: "The Ultimate Guide for First-Time Homebuyers in Rajasthan", category: "Buying Guide", author: "Vikram Singh", readTime: "7 min read", status: "Published" },
-  { id: "BLOG-3", title: "Understanding RERA Rajasthan: What Every Buyer Must Know", category: "Tenant Advisory", author: "Rajesh Rathore", readTime: "4 min read", status: "Published" },
+  { id: "BLOG-1", title: "Why Jaipur is the Next Big Real Estate Hub in India", category: "Market Trends", author: "Aditi Sharma", readTime: "5 min read", status: "Published", image: "https://images.unsplash.com/photo-1599661559882-6296fc1cb475?auto=format&fit=crop&w=800&q=80" },
+  { id: "BLOG-2", title: "The Ultimate Guide for First-Time Homebuyers in Rajasthan", category: "Buying Guide", author: "Vikram Singh", readTime: "7 min read", status: "Published", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80" },
+  { id: "BLOG-3", title: "Understanding RERA Rajasthan: What Every Buyer Must Know", category: "Tenant Advisory", author: "Rajesh Rathore", readTime: "4 min read", status: "Published", image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80" },
 ];
 
 const DEFAULT_ADMIN_ACCOUNTS = [
@@ -41,9 +42,34 @@ const DEFAULT_REELS = [
 ];
 
 const DEFAULT_REVIEWS = [
-  { id: "REV-01", name: "Dr. Alok & Sunita Mehta", role: "Villa Buyers in Jaipur", rating: 5, quote: "Shreeniwas Properties made buying our 4 BHK villa in Vaishali Nagar effortless. The VIP site visit with guaranteed cab pickup gave us 100% peace of mind.", status: "Featured" },
-  { id: "REV-02", name: "Vikramaditya Singh", role: "Heritage Property Investor", rating: 5, quote: "Their team has unmatched local authority across Udaipur & Jodhpur. I found a prime lakeview commercial plot direct from owner with zero hassle.", status: "Featured" },
-  { id: "REV-03", name: "Radhika Khandelwal", role: "Apartment Landlord", rating: 5, quote: "Listed my C-Scheme apartment on Shreeniwas Properties and got verified corporate tenants within 48 hours. Excellent service!", status: "Featured" }
+  { id: "REV-01", name: "Dr. Alok & Sunita Mehta", role: "Villa Buyers in Jaipur", rating: 5, quote: "Shreeniwas Properties made buying our 4 BHK villa in Vaishali Nagar effortless. The VIP site visit with guaranteed cab pickup gave us 100% peace of mind.", status: "Featured", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400" },
+  { id: "REV-02", name: "Vikramaditya Singh", role: "Heritage Property Investor", rating: 5, quote: "Their team has unmatched local authority across Udaipur & Jodhpur. I found a prime lakeview commercial plot direct from owner with zero hassle.", status: "Featured", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400" },
+  { id: "REV-03", name: "Radhika Khandelwal", role: "Apartment Landlord", rating: 5, quote: "Listed my C-Scheme apartment on Shreeniwas Properties and got verified corporate tenants within 48 hours. Excellent service!", status: "Featured", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400" }
+];
+
+const DEFAULT_MEDIA_GALLERY = [
+  { id: "MED-01", title: "Royal Villa Exterior & Pool", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-02", title: "Lakeview Penthouse Sunset", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-03", title: "Heritage Haveli Courtyard", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-04", title: "Luxury Living Room Interior", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-05", title: "Modern Modular Kitchen", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-06", title: "Master Bedroom Suite", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-07", title: "Commercial Business Tower", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-08", title: "Executive Villa Lawn", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-09", title: "High-rise Terrace View", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-10", title: "Green Residential Plot", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800" },
+  { id: "MED-11", title: "4 BHK Villa 360° Walkthrough", category: "Reels & Videos", type: "video", url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800", instaUrl: "https://www.instagram.com/reel/C8XYZ12345/" },
+  { id: "MED-12", title: "Lakeview Penthouse Sunset Tour", category: "Reels & Videos", type: "video", url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800", instaUrl: "https://www.instagram.com/reel/C9ABC67890/" },
+  { id: "MED-13", title: "Heritage Haveli Royal Courtyard", category: "Reels & Videos", type: "video", url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800", instaUrl: "https://www.instagram.com/reel/C7DEF11223/" },
+  { id: "MED-14", title: "Infinity Pool Walkaround Reel", category: "Reels & Videos", type: "video", url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800", instaUrl: "https://www.instagram.com/reel/C6JKL55667/" },
+  { id: "MED-15", title: "Shreeniwas Gold Crest Emblem", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1599661559886-41b80c541b00?auto=format&fit=crop&q=80&w=400" },
+  { id: "MED-16", title: "Executive Director Avatar", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400" },
+  { id: "MED-17", title: "Luxury Consultant Avatar", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400" },
+  { id: "MED-18", title: "Client Reviewer Avatar 1", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400" },
+  { id: "MED-19", title: "Client Reviewer Avatar 2", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400" },
+  { id: "MED-20", title: "Jaipur Real Estate Growth Cover", category: "Blogs", type: "image", url: "https://images.unsplash.com/photo-1599661559882-6296fc1cb475?auto=format&fit=crop&w=800&q=80" },
+  { id: "MED-21", title: "First-Time Buyer Keys Cover", category: "Blogs", type: "image", url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80" },
+  { id: "MED-22", title: "RERA Law & Advisory Cover", category: "Blogs", type: "image", url: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80" }
 ];
 
 export default function AdminDashboard() {
@@ -77,15 +103,23 @@ export default function AdminDashboard() {
   const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null);
   const [replyText, setReplyText] = useState('');
 
+  // Media Gallery States
+  const [mediaGallery, setMediaGallery] = useState<any[]>(DEFAULT_MEDIA_GALLERY);
+  const [showGalleryPicker, setShowGalleryPicker] = useState(false);
+  const [galleryCategoryFilter, setGalleryCategoryFilter] = useState('All');
+  const [gallerySearchQuery, setGallerySearchQuery] = useState('');
+  const [galleryTargetCallback, setGalleryTargetCallback] = useState<((url: string, item?: any) => void) | null>(null);
+  const [newMediaForm, setNewMediaForm] = useState({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
+
   // Property Modal
   const [showPropertyModal, setShowPropertyModal] = useState(false);
   const [editingProperty, setEditingProperty] = useState<any | null>(null);
-  const [propForm, setPropForm] = useState({ title: '', location: '', price: '', type: 'Sale', status: 'Active' });
+  const [propForm, setPropForm] = useState({ title: '', location: '', price: '', type: 'Sale', status: 'Active', image: '' });
 
   // Blog Modal
   const [showBlogModal, setShowBlogModal] = useState(false);
   const [editingBlog, setEditingBlog] = useState<any | null>(null);
-  const [blogForm, setBlogForm] = useState({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read' });
+  const [blogForm, setBlogForm] = useState({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read', image: '' });
 
   // Reel Modal
   const [showReelModal, setShowReelModal] = useState(false);
@@ -95,7 +129,13 @@ export default function AdminDashboard() {
   // Review Modal
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [editingReview, setEditingReview] = useState<any | null>(null);
-  const [reviewForm, setReviewForm] = useState({ name: '', role: '', rating: 5, quote: '', status: 'Featured' });
+  const [reviewForm, setReviewForm] = useState({ name: '', role: '', rating: 5, quote: '', status: 'Featured', avatar: '' });
+
+  const openGalleryPicker = (onSelectUrl: (url: string, item?: any) => void, initialCategory = 'All') => {
+    setGalleryCategoryFilter(initialCategory);
+    setGalleryTargetCallback(() => (url: string, item?: any) => onSelectUrl(url, item));
+    setShowGalleryPicker(true);
+  };
 
   // Make Admin Modal
   const [showMakeAdminModal, setShowMakeAdminModal] = useState(false);
@@ -175,6 +215,10 @@ export default function AdminDashboard() {
     // Load Platform Settings
     const savedSettings = localStorage.getItem('shreeniwas_platform_settings');
     if (savedSettings) { try { setSiteSettings(JSON.parse(savedSettings)); } catch (e) {} }
+
+    // Load Media Gallery
+    const savedGallery = localStorage.getItem('shreeniwas_media_gallery');
+    if (savedGallery) { try { setMediaGallery(JSON.parse(savedGallery)); } catch (e) {} }
 
     setIsLoaded(true);
   }, []);
@@ -301,7 +345,7 @@ export default function AdminDashboard() {
 
     setShowPropertyModal(false);
     setEditingProperty(null);
-    setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active' });
+    setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active', image: '' });
   };
 
   const handleDeleteProperty = (id: string) => {
@@ -328,7 +372,7 @@ export default function AdminDashboard() {
 
     setShowBlogModal(false);
     setEditingBlog(null);
-    setBlogForm({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read' });
+    setBlogForm({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read', image: '' });
   };
 
   const handleDeleteBlog = (id: string) => {
@@ -392,7 +436,7 @@ export default function AdminDashboard() {
 
     setShowReviewModal(false);
     setEditingReview(null);
-    setReviewForm({ name: '', role: '', rating: 5, quote: '', status: 'Featured' });
+    setReviewForm({ name: '', role: '', rating: 5, quote: '', status: 'Featured', avatar: '' });
   };
 
   const handleDeleteReview = (id: string) => {
@@ -438,6 +482,37 @@ export default function AdminDashboard() {
     alert(`${user.email} has been promoted to Staff Admin!`);
   };
 
+  // Media Gallery Handlers
+  const handleAddMedia = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMediaForm.title || !newMediaForm.url) return;
+
+    let formattedInstaUrl = newMediaForm.instaUrl.trim();
+    if (formattedInstaUrl && !formattedInstaUrl.startsWith('http://') && !formattedInstaUrl.startsWith('https://')) {
+      formattedInstaUrl = `https://${formattedInstaUrl}`;
+    }
+
+    const newItem = {
+      id: `MED-0${mediaGallery.length + 1}`,
+      title: newMediaForm.title,
+      category: newMediaForm.category,
+      type: newMediaForm.type,
+      url: newMediaForm.url.trim(),
+      instaUrl: formattedInstaUrl
+    };
+
+    const updated = [newItem, ...mediaGallery];
+    setMediaGallery(updated);
+    localStorage.setItem('shreeniwas_media_gallery', JSON.stringify(updated));
+    setNewMediaForm({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
+  };
+
+  const handleDeleteMedia = (id: string) => {
+    const updated = mediaGallery.filter(m => m.id !== id);
+    setMediaGallery(updated);
+    localStorage.setItem('shreeniwas_media_gallery', JSON.stringify(updated));
+  };
+
   // Save Platform & Social Settings
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
@@ -450,6 +525,7 @@ export default function AdminDashboard() {
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
     { id: 'reels', label: 'Property Video Reels', icon: Video },
     { id: 'reviews', label: 'Buyer & Landlord Reviews', icon: Star },
+    { id: 'gallery', label: 'Media & Video Gallery', icon: Camera },
     { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
     { id: 'attendance', label: 'Staff Attendance System', icon: Clock },
     { id: 'users', label: 'Users & Admin Management', icon: Users },
@@ -707,7 +783,7 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => {
                       setEditingProperty(null);
-                      setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active' });
+                      setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active', image: '' });
                       setShowPropertyModal(true);
                     }}
                     className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
@@ -749,7 +825,7 @@ export default function AdminDashboard() {
                               <button
                                 onClick={() => {
                                   setEditingProperty(prop);
-                                  setPropForm({ title: prop.title, location: prop.location, price: prop.price, type: prop.type, status: prop.status });
+                                  setPropForm({ title: prop.title, location: prop.location, price: prop.price, type: prop.type, status: prop.status, image: prop.image || '' });
                                   setShowPropertyModal(true);
                                 }}
                                 className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
@@ -875,7 +951,7 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => {
                     setEditingReview(null);
-                    setReviewForm({ name: '', role: '', rating: 5, quote: '', status: 'Featured' });
+                    setReviewForm({ name: '', role: '', rating: 5, quote: '', status: 'Featured', avatar: '' });
                     setShowReviewModal(true);
                   }}
                   className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
@@ -908,7 +984,7 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => {
                               setEditingReview(rev);
-                              setReviewForm({ name: rev.name, role: rev.role, rating: rev.rating, quote: rev.quote, status: rev.status });
+                              setReviewForm({ name: rev.name, role: rev.role, rating: rev.rating, quote: rev.quote, status: rev.status, avatar: rev.avatar || '' });
                               setShowReviewModal(true);
                             }}
                             className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
@@ -928,6 +1004,165 @@ export default function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* MEDIA & VIDEO GALLERY TAB */}
+          {activeTab === 'gallery' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <h3 className="text-xl font-serif font-bold text-[#0A1628] flex items-center gap-2">
+                      <Camera className="w-5 h-5 text-[#C9A96E]" /> Media & Video Asset Gallery
+                    </h3>
+                    <p className="text-xs text-slate-500">Centralized gallery for property photos, video reel thumbnails, Instagram links, brand logos, and avatars.</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <input
+                      type="text"
+                      placeholder="Search gallery assets..."
+                      value={gallerySearchQuery}
+                      onChange={(e) => setGallerySearchQuery(e.target.value)}
+                      className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] w-full md:w-56"
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Add Media Asset Form */}
+                <form onSubmit={handleAddMedia} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 text-xs">
+                  <div className="flex items-center gap-2 font-bold text-slate-700 uppercase tracking-wider text-[11px]">
+                    <Plus className="w-3.5 h-3.5 text-[#C9A96E]" /> Add New Image / Video to Site Gallery
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Asset Title (e.g. Royal Villa Pool)"
+                      value={newMediaForm.title}
+                      onChange={(e) => setNewMediaForm({ ...newMediaForm, title: e.target.value })}
+                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+
+                    <select
+                      value={newMediaForm.category}
+                      onChange={(e) => setNewMediaForm({ ...newMediaForm, category: e.target.value })}
+                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="Properties">Properties</option>
+                      <option value="Reels & Videos">Reels & Videos</option>
+                      <option value="Logos & Avatars">Logos & Avatars</option>
+                      <option value="Blogs">Blogs</option>
+                    </select>
+
+                    <select
+                      value={newMediaForm.type}
+                      onChange={(e) => setNewMediaForm({ ...newMediaForm, type: e.target.value })}
+                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="image">Image Asset</option>
+                      <option value="video">Reel / Video Clip</option>
+                    </select>
+
+                    <input
+                      type="url"
+                      required
+                      placeholder="Image / Thumbnail URL"
+                      value={newMediaForm.url}
+                      onChange={(e) => setNewMediaForm({ ...newMediaForm, url: e.target.value })}
+                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+
+                    <input
+                      type="url"
+                      placeholder="Instagram Reel Link (Optional)"
+                      value={newMediaForm.instaUrl}
+                      onChange={(e) => setNewMediaForm({ ...newMediaForm, instaUrl: e.target.value })}
+                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button type="submit" className="px-4 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl text-xs hover:bg-slate-800 transition cursor-pointer shadow">
+                      + Save to Gallery
+                    </button>
+                  </div>
+                </form>
+
+                {/* Category Filter Tabs */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-2">
+                  {['All', 'Properties', 'Reels & Videos', 'Logos & Avatars', 'Blogs'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setGalleryCategoryFilter(cat)}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+                        galleryCategoryFilter === cat
+                          ? 'bg-[#0A1628] text-[#C9A96E] shadow-sm'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Gallery Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2">
+                  {mediaGallery
+                    .filter(m => galleryCategoryFilter === 'All' || m.category === galleryCategoryFilter)
+                    .filter(m => !gallerySearchQuery || m.title.toLowerCase().includes(gallerySearchQuery.toLowerCase()) || m.category.toLowerCase().includes(gallerySearchQuery.toLowerCase()))
+                    .map((item) => (
+                      <div key={item.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col justify-between space-y-2 group hover:shadow-md transition">
+                        <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-slate-200">
+                          <img src={item.url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          
+                          {item.type === 'video' && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                              <span className="p-2 bg-[#C9A96E] text-[#0A1628] rounded-full shadow">
+                                <Video className="w-4 h-4 fill-current" />
+                              </span>
+                            </div>
+                          )}
+
+                          <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold rounded-md">
+                            {item.category}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h5 className="font-bold text-xs text-[#0A1628] truncate">{item.title}</h5>
+                          {item.instaUrl && (
+                            <a href={item.instaUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-pink-600 font-bold hover:underline block truncate mt-0.5">
+                              Instagram Reel Link ↗
+                            </a>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-[11px]">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(item.url);
+                              alert("Media URL copied to clipboard!");
+                            }}
+                            className="text-slate-600 font-bold hover:text-[#0A1628] cursor-pointer"
+                          >
+                            Copy Link
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteMedia(item.id)}
+                            className="p-1 text-rose-500 hover:text-rose-700 cursor-pointer"
+                            title="Delete Asset"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
           )}
@@ -1181,7 +1416,7 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => {
                     setEditingBlog(null);
-                    setBlogForm({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read' });
+                    setBlogForm({ title: '', category: 'Market Trends', author: 'Admin Team', readTime: '5 min read', image: '' });
                     setShowBlogModal(true);
                   }}
                   className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
@@ -1216,7 +1451,7 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => {
                               setEditingBlog(blog);
-                              setBlogForm({ title: blog.title, category: blog.category, author: blog.author, readTime: blog.readTime });
+                              setBlogForm({ title: blog.title, category: blog.category, author: blog.author, readTime: blog.readTime, image: blog.image || '' });
                               setShowBlogModal(true);
                             }}
                             className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
@@ -1257,7 +1492,16 @@ export default function AdminDashboard() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div>
-                      <label className="font-bold uppercase text-slate-700 block mb-1">Custom Logo Image URL</label>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="font-bold uppercase text-slate-700">Custom Logo Image URL</label>
+                        <button
+                          type="button"
+                          onClick={() => openGalleryPicker((url) => setSiteSettings(prev => ({ ...prev, logoUrl: url })), 'Logos & Avatars')}
+                          className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Camera className="w-3 h-3" /> Pick from Gallery
+                        </button>
+                      </div>
                       <input
                         type="url"
                         value={siteSettings.logoUrl}
@@ -1265,7 +1509,7 @@ export default function AdminDashboard() {
                         placeholder="https://example.com/logo.png"
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Paste absolute image URL for site header logo.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Paste absolute image URL or select from site gallery.</p>
                     </div>
 
                     <div>
@@ -1463,6 +1707,26 @@ export default function AdminDashboard() {
                   />
                 </div>
 
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold uppercase text-slate-700">Property Cover Image URL</label>
+                    <button
+                      type="button"
+                      onClick={() => openGalleryPicker((url) => setPropForm(prev => ({ ...prev, image: url })), 'Properties')}
+                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Camera className="w-3 h-3" /> Pick from Gallery
+                    </button>
+                  </div>
+                  <input
+                    type="url"
+                    value={propForm.image}
+                    onChange={(e) => setPropForm({ ...propForm, image: e.target.value })}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="font-bold uppercase text-slate-700 block mb-1">Price</label>
@@ -1538,7 +1802,16 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1">Instagram Reel Link (URL)</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold uppercase text-slate-700">Instagram Reel Link (URL)</label>
+                    <button
+                      type="button"
+                      onClick={() => openGalleryPicker((url, item) => setReelForm(prev => ({ ...prev, instaUrl: item?.instaUrl || url })), 'Reels & Videos')}
+                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Camera className="w-3 h-3" /> Pick from Gallery
+                    </button>
+                  </div>
                   <input
                     type="url"
                     value={reelForm.instaUrl}
@@ -1549,7 +1822,16 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1">Video Reel Thumbnail URL</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold uppercase text-slate-700">Video Reel Thumbnail URL</label>
+                    <button
+                      type="button"
+                      onClick={() => openGalleryPicker((url) => setReelForm(prev => ({ ...prev, embedUrl: url })), 'Properties')}
+                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Camera className="w-3 h-3" /> Pick from Gallery
+                    </button>
+                  </div>
                   <input
                     type="url"
                     required
@@ -1657,6 +1939,26 @@ export default function AdminDashboard() {
                   />
                 </div>
 
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold uppercase text-slate-700">Reviewer Avatar Image URL</label>
+                    <button
+                      type="button"
+                      onClick={() => openGalleryPicker((url) => setReviewForm(prev => ({ ...prev, avatar: url })), 'Logos & Avatars')}
+                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Camera className="w-3 h-3" /> Pick from Gallery
+                    </button>
+                  </div>
+                  <input
+                    type="url"
+                    value={reviewForm.avatar}
+                    onChange={(e) => setReviewForm({ ...reviewForm, avatar: e.target.value })}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
                 <div className="flex justify-end gap-2 pt-2">
                   <button type="button" onClick={() => setShowReviewModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
                   <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Save Review</button>
@@ -1686,6 +1988,26 @@ export default function AdminDashboard() {
                     value={blogForm.title}
                     onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
                     placeholder="e.g. Why Jaipur is the Next Real Estate Hub"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold uppercase text-slate-700">Article Cover Image URL</label>
+                    <button
+                      type="button"
+                      onClick={() => openGalleryPicker((url) => setBlogForm(prev => ({ ...prev, image: url })), 'Blogs')}
+                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Camera className="w-3 h-3" /> Pick from Gallery
+                    </button>
+                  </div>
+                  <input
+                    type="url"
+                    value={blogForm.image}
+                    onChange={(e) => setBlogForm({ ...blogForm, image: e.target.value })}
+                    placeholder="https://images.unsplash.com/photo-..."
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
@@ -1794,6 +2116,84 @@ export default function AdminDashboard() {
                   <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Create Admin</button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Media Gallery Picker Modal */}
+      <AnimatePresence>
+        {showGalleryPicker && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl text-[#0A1628] space-y-4 max-h-[85vh] flex flex-col">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
+                <div>
+                  <h4 className="font-serif font-bold text-lg flex items-center gap-2">
+                    <Camera className="w-5 h-5 text-[#C9A96E]" /> Pick Media from Site Gallery
+                  </h4>
+                  <p className="text-xs text-slate-500">Click any image or video thumbnail to select it for your active form.</p>
+                </div>
+                <button onClick={() => setShowGalleryPicker(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              {/* Filter Tabs & Search */}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+                  {['All', 'Properties', 'Reels & Videos', 'Logos & Avatars', 'Blogs'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setGalleryCategoryFilter(cat)}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+                        galleryCategoryFilter === cat
+                          ? 'bg-[#0A1628] text-[#C9A96E]'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  type="text"
+                  placeholder="Filter media..."
+                  value={gallerySearchQuery}
+                  onChange={(e) => setGallerySearchQuery(e.target.value)}
+                  className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] w-full sm:w-44"
+                />
+              </div>
+
+              {/* Gallery Items Grid */}
+              <div className="overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 p-1">
+                {mediaGallery
+                  .filter(m => galleryCategoryFilter === 'All' || m.category === galleryCategoryFilter)
+                  .filter(m => !gallerySearchQuery || m.title.toLowerCase().includes(gallerySearchQuery.toLowerCase()))
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        if (galleryTargetCallback) {
+                          galleryTargetCallback(item.url || item.instaUrl, item);
+                        }
+                        setShowGalleryPicker(false);
+                      }}
+                      className="group cursor-pointer bg-slate-50 border border-slate-200 hover:border-[#C9A96E] hover:ring-2 hover:ring-[#C9A96E] rounded-2xl p-2 transition-all space-y-1"
+                    >
+                      <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-slate-200">
+                        <img src={item.url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        {item.type === 'video' && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <span className="p-1.5 bg-[#C9A96E] text-[#0A1628] rounded-full">
+                              <Video className="w-3.5 h-3.5 fill-current" />
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <h5 className="font-bold text-[11px] text-[#0A1628] truncate">{item.title}</h5>
+                      <p className="text-[10px] text-slate-400 font-semibold uppercase">{item.category}</p>
+                    </div>
+                  ))}
+              </div>
             </motion.div>
           </div>
         )}
