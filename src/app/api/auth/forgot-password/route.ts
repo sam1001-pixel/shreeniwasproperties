@@ -2,14 +2,13 @@ import { NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/auth/rate-limiter';
 import { ForgotPasswordSchema } from '@/lib/auth/validation';
 import { generateSecureToken, hashToken } from '@/lib/auth/security';
+import { sendPasswordResetEmail } from '@/lib/email/email-service';
 
-// In-memory token store for demonstration / local persistence
 // Structure: hashedToken -> { email: string, expiresAt: number, used: boolean }
 export interface ResetTokenRecord {
   email: string;
   expiresAt: number;
   used: boolean;
-  plainTokenForPreview?: string; // only provided in non-production preview for testing
 }
 
 // Global variable across API requests in Node runtime
@@ -52,16 +51,25 @@ export async function POST(request: Request) {
       email,
       expiresAt,
       used: false,
-      plainTokenForPreview: rawToken,
     });
 
-    const resetLink = `/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    // Determine host origin for absolute email link
+    const proto = request.headers.get('x-forwarded-proto') || 'http';
+    const host = request.headers.get('host') || 'localhost:3000';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${proto}://${host}`;
+    const absoluteResetLink = `${siteUrl.replace(/\/$/, '')}/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
 
-    // Generic response to avoid user enumeration
+    // Dispatch email to recipient's Gmail / email inbox
+    await sendPasswordResetEmail({
+      toEmail: email,
+      resetLink: absoluteResetLink,
+      expiresInMinutes: 15,
+    });
+
+    // Generic response to avoid user enumeration, with no exposed developer tokens
     return NextResponse.json({
       success: true,
-      message: 'If an account exists with this email address, a password reset link has been dispatched.',
-      previewResetLink: resetLink, // Dev convenience preview
+      message: 'If an account exists with this email address, a password reset link has been dispatched to your Gmail / email inbox.',
       expiresInMinutes: 15,
     });
 

@@ -3,16 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Building2, KeyRound } from 'lucide-react';
+import { Mail, CheckCircle2, AlertCircle, Building2, KeyRound, ArrowLeft } from 'lucide-react';
 import { ForgotPasswordSchema } from '@/lib/auth/validation';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [successInfo, setSuccessInfo] = useState<{
+  const [successData, setSuccessData] = useState<{
     message: string;
-    previewLink?: string;
+    targetEmail: string;
   } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,9 +42,9 @@ export default function ForgotPasswordPage() {
         return;
       }
 
-      setSuccessInfo({
+      setSuccessData({
         message: data.message,
-        previewLink: data.previewResetLink,
+        targetEmail: validation.data.email,
       });
 
     } catch (err: any) {
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
           </Link>
           <h1 className="text-3xl font-serif font-bold text-white mb-1">Forgot Password</h1>
           <p className="text-slate-300 text-xs sm:text-sm font-light">
-            Enter your email to receive a secure, time-sensitive reset link
+            Enter your registered email to receive a secure password reset link
           </p>
         </div>
 
@@ -89,41 +89,39 @@ export default function ForgotPasswordPage() {
             </div>
           )}
 
-          {successInfo ? (
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium space-y-2">
-                <div className="flex items-center gap-2 font-bold text-emerald-950 text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Check Your Inbox</span>
-                </div>
-                <p className="leading-relaxed">
-                  {successInfo.message}
+          {successData ? (
+            <div className="space-y-5 text-center">
+              <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600 mb-2">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-[#0A1628]">Check Your Gmail / Email</h3>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  We have dispatched a secure password reset link to{' '}
+                  <span className="font-bold text-[#0A1628]">{successData.targetEmail}</span>.
                 </p>
-                <p className="text-[11px] text-emerald-700">
-                  The link is cryptographically signed and will remain valid for <strong>15 minutes</strong>.
+                <p className="text-[11px] text-slate-500 mt-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  Please open your Gmail inbox and click the reset link to choose a new password. The link will remain active for <strong>15 minutes</strong>.
                 </p>
               </div>
 
-              {successInfo.previewLink && (
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Developer & Testing Access Link
-                  </span>
-                  <Link
-                    href={successInfo.previewLink}
-                    className="text-xs font-bold text-[#0A1628] hover:text-[#C9A96E] flex items-center gap-1 break-all"
-                  >
-                    <span>Click here to test reset flow</span>
-                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
-                  </Link>
-                </div>
-              )}
+              <div className="pt-2 flex flex-col gap-2.5">
+                <a
+                  href="https://mail.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] font-bold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  Open Gmail
+                </a>
 
-              <div className="pt-2 text-center">
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0A1628] hover:text-[#C9A96E]"
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5"
                 >
+                  <ArrowLeft className="w-4 h-4" />
                   Return to Sign In
                 </Link>
               </div>
@@ -142,7 +140,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] placeholder-slate-400 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white transition-all"
-                    placeholder="name@example.com"
+                    placeholder="name@gmail.com"
                   />
                 </div>
               </div>
