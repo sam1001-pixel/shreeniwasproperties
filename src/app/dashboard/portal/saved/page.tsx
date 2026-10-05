@@ -257,11 +257,6 @@ export default function SavedPropertiesPage() {
                           <ShieldCheck className="w-3 h-3 text-emerald-600" /> RERA
                         </span>
                       )}
-                      {property.zeroBrokerage && (
-                        <span className="bg-[#0A1628]/90 backdrop-blur text-[#C9A96E] text-[10px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1 border border-[#C9A96E]/30">
-                          <Zap className="w-3 h-3 text-[#C9A96E]" /> 0% Brokerage
-                        </span>
-                      )}
                     </div>
 
                     {/* Remove Action Button */}

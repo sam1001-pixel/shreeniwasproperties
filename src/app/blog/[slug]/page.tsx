@@ -72,7 +72,7 @@ const DEFAULT_ARTICLES: Record<string, BlogPostData> = {
     readTime: '7 min read',
     image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80',
     authorImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-    summary: 'Navigating the property market for your first home can be exhilarating yet daunting. Understanding Rajasthan registry norms, legal title verification, and zero brokerage options can save lakhs.',
+    summary: 'Navigating the property market for your first home can be exhilarating yet daunting. Understanding Rajasthan registry norms, legal title verification, and transparent negotiation options can save lakhs.',
     content: [
       {
         heading: '1. Budgeting and Credit Eligibility',

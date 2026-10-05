@@ -43,7 +43,7 @@ const EXPLORE_LOCATIONS = [
 const PROPERTY_CATEGORIES = [
   { title: 'All Properties', href: '/properties', icon: Home, desc: '1,240+ verified RERA listings' },
   { title: 'Luxury Buy', href: '/properties?purpose=sale', icon: Sparkles, desc: 'Villas, bungalows & penthouses' },
-  { title: 'Verified Rentals', href: '/properties?purpose=rent', icon: KeyRound, desc: '0% brokerage family flats' },
+  { title: 'Verified Rentals', href: '/properties?purpose=rent', icon: KeyRound, desc: 'Verified family flats & houses' },
   { title: 'Commercial & Plots', href: '/properties?purpose=commercial_lease', icon: Briefcase, desc: 'High ROI retail & office hubs' },
 ];
 
@@ -575,7 +575,7 @@ export function Navbar() {
                   <ShieldCheck className="w-5 h-5 text-[#C9A96E] shrink-0" />
                   <div className="text-slate-300">
                     <p className="font-bold text-white">RERA Approved Properties</p>
-                    <p className="text-[11px] text-slate-400">Zero Brokerage Deals across Rajasthan</p>
+                    <p className="text-[11px] text-slate-400">Direct Verified Deals across Rajasthan</p>
                   </div>
                 </div>
 

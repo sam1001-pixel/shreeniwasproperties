@@ -192,7 +192,7 @@ const BLOG_POSTS = [
 
 // Home Buying Journey Steps Data
 const JOURNEY_STEPS = [
-  { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with 0% brokerage.", icon: Search },
+  { step: "01", title: "Filter Verified Properties", desc: "Browse 1,240+ RERA verified villas, apartments & plots with transparent pricing.", icon: Search },
   { step: "02", title: "Schedule VIP Cab Visit (₹499)", desc: "Book guaranteed cab pickup with senior advisor for physical tour.", icon: Calendar },
   { step: "03", title: "Legal & RERA Audit", desc: "100% paper verification of land titles & encumbrance certificates.", icon: FileCheck },
   { step: "04", title: "Keys Handover & Move", desc: "Finalize payment at best negotiated price and receive luxury keys.", icon: KeyRound }
@@ -210,7 +210,7 @@ const TESTIMONIALS = [
     name: "Vikramaditya Singh",
     role: "Heritage Property Investor",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200",
-    quote: "Their team has unmatched local authority across Udaipur & Jodhpur. I found a prime lakeview commercial plot with 0% brokerage direct from owner!"
+    quote: "Their team has unmatched local authority across Udaipur & Jodhpur. I found a prime lakeview commercial plot direct from owner!"
   }
 ];
 
@@ -804,11 +804,6 @@ export default function MarketingPage() {
                               <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" /> RERA
                             </span>
                           )}
-                          {prop.zeroBrokerage && (
-                            <span className="bg-[#0A1628]/90 backdrop-blur text-[#C9A96E] text-[9px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1 border border-[#C9A96E]/30">
-                              <Zap className="w-2.5 h-2.5 text-[#C9A96E]" /> 0% Brokerage
-                            </span>
-                          )}
                         </div>
 
                         {/* Compare & Heart Buttons */}
@@ -895,7 +890,7 @@ export default function MarketingPage() {
               Are you an Owner? Post Your Property <span className="text-[#C9A96E]">FREE</span>
             </h2>
             <p className="text-slate-300 text-xs font-light mb-4">
-              Connect directly with verified buyers and tenants across Rajasthan with 0% brokerage.
+              Connect directly with verified buyers and tenants across Rajasthan with transparent pricing.
             </p>
             <div className="flex flex-wrap gap-3 text-[11px] font-medium text-slate-300">
               <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Free Listing</span>

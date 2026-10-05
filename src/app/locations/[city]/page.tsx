@@ -364,8 +364,8 @@ export default function CityLocationPage() {
               <span className="text-base sm:text-lg font-bold text-emerald-400">{cityData.growth}</span>
             </div>
             <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-slate-300 block">Brokerage Fee</span>
-              <span className="text-base sm:text-lg font-bold text-white">0% Direct</span>
+              <span className="text-[10px] uppercase font-bold text-slate-300 block">Documentation</span>
+              <span className="text-base sm:text-lg font-bold text-white">100% Legal RERA</span>
             </div>
           </div>
         </div>
@@ -469,11 +469,6 @@ export default function CityLocationPage() {
                         {property.reraApproved && (
                           <span className="bg-white/95 backdrop-blur text-[#0A1628] text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1 border border-emerald-500/20">
                             <ShieldCheck className="w-3 h-3 text-emerald-600" /> RERA Approved
-                          </span>
-                        )}
-                        {property.zeroBrokerage && (
-                          <span className="bg-[#0A1628]/90 backdrop-blur text-[#C9A96E] text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1">
-                            <Zap className="w-3 h-3 text-[#C9A96E]" /> 0% Brokerage
                           </span>
                         )}
                       </div>

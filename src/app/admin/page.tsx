@@ -1237,8 +1237,8 @@ export default function AdminDashboard() {
                         checked={brokerageSettings.model === 'zero'} 
                         onChange={() => setBrokerageSettings({ ...brokerageSettings, model: 'zero' })} 
                       />
-                      <span className="font-bold text-sm block text-[#0A1628] mb-1">0% Zero Brokerage (Direct Owner)</span>
-                      <p className="text-slate-500 text-[11px]">Free listing for direct owners; platform charges 0% commission from buyers/tenants.</p>
+                      <span className="font-bold text-sm block text-[#0A1628] mb-1">Direct Owner (Zero Commission Option)</span>
+                      <p className="text-slate-500 text-[11px]">Free listing for direct owners; platform charges no commission from buyers/tenants.</p>
                     </label>
 
                     <label className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${

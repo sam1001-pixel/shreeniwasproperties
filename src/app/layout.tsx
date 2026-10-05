@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Shreeniwas Properties | Premium Real Estate in Rajasthan',
-    description: 'Find verified luxury villas, penthouses, commercial spaces, and land across Rajasthan with zero brokerage.',
+    description: 'Find verified luxury villas, penthouses, commercial spaces, and land across Rajasthan with transparent pricing.',
     url: 'https://shreeniwasproperties-pi.vercel.app',
     siteName: 'Shreeniwas Properties',
     images: [

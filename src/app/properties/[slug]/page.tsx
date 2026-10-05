@@ -449,11 +449,6 @@ export default function PropertyDetailPage() {
               <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full uppercase tracking-wider flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" /> Verified Listing
               </span>
-              {property.zeroBrokerage && (
-                <span className="px-3 py-1 bg-[#0A1628] text-[#C9A96E] text-xs font-bold rounded-full uppercase tracking-wider flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5" /> 0% Brokerage
-                </span>
-              )}
             </div>
             <h1 className="text-2xl md:text-4xl font-serif font-bold text-[#0A1628] mb-2">{property.title}</h1>
             <div className="flex flex-wrap items-center gap-2 text-slate-600 text-sm md:text-base">

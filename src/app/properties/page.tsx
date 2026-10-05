@@ -698,11 +698,6 @@ function PropertiesContent() {
                             <ShieldCheck className="w-3 h-3 text-emerald-600" /> RERA Approved
                           </span>
                         )}
-                        {property.zeroBrokerage && (
-                          <span className="bg-[#0A1628]/90 backdrop-blur text-[#C9A96E] text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1">
-                            <Zap className="w-3 h-3 text-[#C9A96E]" /> 0% Brokerage
-                          </span>
-                        )}
                       </div>
 
                       {/* Compare & Heart Buttons */}

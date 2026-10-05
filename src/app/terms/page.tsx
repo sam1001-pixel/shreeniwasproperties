@@ -39,12 +39,12 @@ export default function TermsOfServicePage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-xl font-serif font-bold text-[#0A1628]">2. Platform Role & Zero Brokerage Policy</h2>
+            <h2 className="text-xl font-serif font-bold text-[#0A1628]">2. Platform Role & Listing Policy</h2>
             <p>
-              Shreeniwas Properties is an online marketplace facilitating direct connections between genuine property owners, buyers, tenants, and authorized builders across Rajasthan. 
+              Shreeniwas Properties is a verified real estate network facilitating direct connections between genuine property owners, buyers, tenants, and authorized builders across Rajasthan. 
             </p>
             <ul className="list-disc pl-5 space-y-1.5">
-              <li>Direct listings tagged as &quot;0% Brokerage&quot; incur no commission fees to Shreeniwas Properties.</li>
+              <li>All listings undergo mandatory phone and documentation verification before public display.</li>
               <li>Users are encouraged to verify legal title deeds, mutation records, and local authority approvals before entering into monetary sales or lease agreements.</li>
             </ul>
           </section>

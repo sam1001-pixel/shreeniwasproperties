@@ -328,7 +328,7 @@ export default function NewProjectsSection() {
               New Projects & Builder Townships
             </h2>
             <p className="text-slate-600 text-xs mt-0.5 max-w-2xl">
-              Verified high-rise societies and township developments from Rajasthan’s leading builders with RERA credentials and 0% brokerage.
+              Verified high-rise societies and township developments from Rajasthan’s leading builders with RERA credentials.
             </p>
           </div>
 
