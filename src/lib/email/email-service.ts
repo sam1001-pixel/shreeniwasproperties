@@ -21,7 +21,8 @@ export interface EmailDispatchResult {
  */
 function getEmailTransporter() {
   const gmailUser = process.env.GMAIL_USER || process.env.SMTP_GMAIL_USER;
-  const gmailAppPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_GMAIL_APP_PASSWORD;
+  const rawGmailAppPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_GMAIL_APP_PASSWORD;
+  const gmailAppPass = rawGmailAppPass ? rawGmailAppPass.trim().replace(/\s+/g, '') : undefined;
 
   if (gmailUser && gmailAppPass) {
     return {
