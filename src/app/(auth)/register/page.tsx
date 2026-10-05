@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Building2, UserCheck, Mail, Lock, User, Phone, CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Building2, UserCheck, Mail, Lock, Phone, CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
+import { RegisterSchema } from "@/lib/auth/validation";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,27 +29,29 @@ export default function RegisterPage() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    const trimmedEmail = email.trim().toLowerCase();
-    const trimmedPass = password.trim();
-    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim() || "New User";
+    const validation = RegisterSchema.safeParse({
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+      role
+    });
 
-    if (!trimmedEmail || !trimmedPass || !firstName.trim() || !lastName.trim()) {
-      setErrorMsg("Please fill in all required fields.");
+    if (!validation.success) {
+      setErrorMsg(validation.error.errors[0]?.message || "Please fill in all required fields accurately.");
       setLoading(false);
       return;
     }
 
-    if (trimmedPass.length < 6) {
-      setErrorMsg("Password must be at least 6 characters long.");
-      setLoading(false);
-      return;
-    }
+    const { firstName: vFirst, lastName: vLast, email: vEmail, phone: vPhone, password: vPassword } = validation.data;
+    const fullName = `${vFirst} ${vLast}`.trim();
 
     // Check existing registered users
     const rawRegisteredUsers = localStorage.getItem("shreeniwas_registered_users");
     let registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [];
 
-    const existingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === trimmedEmail);
+    const existingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === vEmail);
     if (existingUser) {
       setErrorMsg("An account with this email already exists. Please sign in.");
       setLoading(false);
@@ -56,50 +59,73 @@ export default function RegisterPage() {
     }
 
     try {
-      // 1. Register with Supabase
-      const { data, error } = await supabase.auth.signUp({
-        email: trimmedEmail,
-        password: trimmedPass,
+      // 1. Check rate limit via API and get bcrypt hash
+      const apiCheck = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: vFirst,
+          lastName: vLast,
+          email: vEmail,
+          phone: vPhone,
+          password: vPassword,
+          role
+        }),
+      });
+
+      const apiResult = await apiCheck.json();
+      if (!apiCheck.ok) {
+        setErrorMsg(apiResult.error || "Registration rate limit exceeded.");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Register with Supabase
+      const { data } = await supabase.auth.signUp({
+        email: vEmail,
+        password: vPassword,
         options: {
           data: {
             full_name: fullName,
             role: role === "seeker" ? "Property Seeker" : "Property Owner",
-            phone: phone,
+            phone: vPhone,
           },
         },
       });
 
-      // 2. Add to registered users repository
+      // 3. Add to registered users repository with bcrypt password hash
       const newUserRecord = {
         name: fullName,
-        email: trimmedEmail,
-        password: trimmedPass,
+        email: vEmail,
+        password: apiResult.user?.hashedPassword || vPassword, // bcrypt hashed password
         role: role === "seeker" ? "Property Seeker" : "Property Owner",
-        phone: phone || "+91 98765 43210",
+        phone: vPhone,
+        preferredCity: "Jaipur",
+        avatar: "",
         registeredAt: new Date().toISOString()
       };
 
       registeredUsers.push(newUserRecord);
       localStorage.setItem("shreeniwas_registered_users", JSON.stringify(registeredUsers));
 
-      // 3. Create active session
+      // 4. Create active session
       const userSession = {
         name: fullName,
-        email: data?.user?.email || trimmedEmail,
+        email: data?.user?.email || vEmail,
         role: role === "seeker" ? "Property Seeker" : "Property Owner",
-        phone: phone || "+91 98765 43210",
+        phone: vPhone,
         city: "Jaipur, Rajasthan",
         savedCount: 0,
         visitCount: 0,
         loggedIn: true,
         token: data?.session?.access_token || `shreeniwas_token_${Date.now()}`,
-        memberSince: "Oct 2024"
+        memberSince: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
       };
 
       localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
       sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
 
-      setSuccessMsg("Account registered successfully! Redirecting to your User Portal...");
+      setSuccessMsg("Account registered securely! Redirecting to your User Portal...");
       setTimeout(() => {
         router.push("/dashboard/portal");
       }, 600);
@@ -136,7 +162,7 @@ export default function RegisterPage() {
           <p className="text-slate-300 text-sm font-light">Join Rajasthan's premier real estate network</p>
         </div>
 
-        {/* Ultra Pro Max High-Contrast Card */}
+        {/* High-Contrast Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-[#C9A96E]/30 text-[#0A1628]">
           {/* Role Toggle */}
           <div className="flex p-1.5 bg-slate-100 rounded-2xl mb-6 border border-slate-200">
@@ -253,7 +279,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] placeholder-slate-400 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white"
-                  placeholder="••••••••"
+                  placeholder="Min 8 chars, 1 uppercase, 1 number"
                 />
                 <button 
                   type="button"
@@ -263,6 +289,7 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              <p className="text-[10px] text-slate-400 mt-1">Must be at least 8 chars with 1 uppercase letter & 1 digit.</p>
             </div>
 
             <button 

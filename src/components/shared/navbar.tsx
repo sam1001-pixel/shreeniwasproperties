@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Heart, User, Building2, PlusCircle, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mainNav } from '@/config/nav';
+import { useSiteSettings } from '@/lib/settings/site-settings-context';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -15,27 +16,13 @@ export function Navbar() {
   const [userName, setUserName] = useState('');
   const pathname = usePathname();
 
-  const [customLogo, setCustomLogo] = useState<string>('');
-
-  const loadNavbarSettings = () => {
-    try {
-      const saved = localStorage.getItem('shreeniwas_platform_settings');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.logoUrl) setCustomLogo(parsed.logoUrl);
-      }
-    } catch (e) {}
-  };
+  const { settings } = useSiteSettings();
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-
-    loadNavbarSettings();
-    window.addEventListener('shreeniwas_data_updated', loadNavbarSettings);
-    window.addEventListener('storage', loadNavbarSettings);
 
     // Check user session
     const session = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
@@ -51,14 +38,16 @@ export function Navbar() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('shreeniwas_data_updated', loadNavbarSettings);
-      window.removeEventListener('storage', loadNavbarSettings);
     };
   }, [pathname]);
 
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/admin')) {
     return null;
   }
+
+  const titleParts = (settings.siteTitle || 'Shreeniwas Properties').split(' ');
+  const titleFirst = titleParts[0] || 'Shreeniwas';
+  const titleRest = titleParts.slice(1).join(' ') || 'Properties';
 
   return (
     <>
@@ -71,11 +60,11 @@ export function Navbar() {
         )}
       >
         <div className="h-14 sm:h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo & Title dynamically synced */}
           <Link href="/" className="flex items-center gap-2 group whitespace-nowrap">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#0A1628] flex items-center justify-center border border-[#C9A96E]/40 group-hover:border-[#C9A96E] transition-colors shrink-0 shadow-sm overflow-hidden p-1">
-              {customLogo ? (
-                <img src={customLogo} alt="Shreeniwas Logo" className="w-full h-full object-contain rounded-lg" />
+              {settings.logoUrl ? (
+                <img src={settings.logoUrl} alt={settings.siteTitle} className="w-full h-full object-contain rounded-lg" />
               ) : (
                 <Building2 className="w-5 h-5 text-[#C9A96E]" />
               )}
@@ -83,13 +72,15 @@ export function Navbar() {
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1">
                 <span className="text-lg sm:text-xl font-serif font-bold text-[#C9A96E]">
-                  Shreeniwas
+                  {titleFirst}
                 </span>
                 <span className="text-lg sm:text-xl font-bold text-[#0A1628]">
-                  Properties
+                  {titleRest}
                 </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-500 font-medium -mt-1">Rajasthan Real Estate</span>
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-500 font-medium -mt-1">
+                Rajasthan Real Estate
+              </span>
             </div>
           </Link>
 
@@ -115,36 +106,37 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Right Side Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/dashboard/portal"
-              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-[#0A1628] hover:text-[#C9A96E] p-2 rounded-xl hover:bg-slate-100 transition-colors"
-              title="View Saved Favorites"
-            >
-              <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-              <span>Saved</span>
-            </Link>
-
+          {/* User Account & Actions */}
+          <div className="flex items-center gap-2.5 sm:gap-4">
             {isLoggedIn ? (
               <Link
                 href="/dashboard/portal"
-                className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0A1628] text-[#C9A96E] font-bold text-xs shadow-md"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#C9A96E]/50 bg-[#0A1628] px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:border-[#C9A96E] transition-all cursor-pointer"
               >
                 <div className="w-5 h-5 rounded-full bg-[#C9A96E] text-[#0A1628] flex items-center justify-center font-bold text-[10px]">
-                  {userName.charAt(0)}
+                  {userName.charAt(0) || 'U'}
                 </div>
-                <span>{userName}</span>
+                <span className="hidden sm:inline font-semibold">{userName.split(' ')[0]}</span>
               </Link>
             ) : (
-              <Link
-                href="/login"
-                className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-[#0A1628] bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition-all border border-slate-200"
-              >
-                <User className="w-4 h-4 text-[#C9A96E]" />
-                Sign In
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-[#0A1628] hover:bg-slate-50 transition-colors"
+                >
+                  <User className="w-3.5 h-3.5 text-[#C9A96E]" />
+                  <span>Sign In</span>
+                </Link>
+              </div>
             )}
+
+            <Link
+              href="/dashboard/portal/saved"
+              className="p-2 text-slate-700 hover:text-[#C9A96E] rounded-xl hover:bg-slate-100 transition-colors relative"
+              aria-label="Saved properties"
+            >
+              <Heart className="w-5 h-5" />
+            </Link>
 
             <Link
               href="/dashboard/landlord/properties/new"
@@ -178,8 +170,8 @@ export function Navbar() {
             <div className="flex-1">
               <div className="flex items-center justify-between pb-6 border-b border-white/10">
                 <div className="flex items-center gap-2 whitespace-nowrap">
-                  <span className="text-xl font-serif font-bold text-[#C9A96E]">Shreeniwas</span>
-                  <span className="text-xl font-bold">Properties</span>
+                  <span className="text-xl font-serif font-bold text-[#C9A96E]">{titleFirst}</span>
+                  <span className="text-xl font-bold">{titleRest}</span>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

@@ -7,6 +7,7 @@ import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 import { PropertyAlertModal } from '@/components/shared/property-alert-modal';
 import AiConciergeChatbot from '@/components/shared/ai-concierge-chatbot';
+import { SiteSettingsProvider } from '@/lib/settings/site-settings-context';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -91,13 +92,15 @@ export default function RootLayout({
           playfair.variable
         )}
       >
-        <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
-        <PropertyAlertModal />
-        <AiConciergeChatbot />
+        <SiteSettingsProvider>
+          <Navbar />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+          <PropertyAlertModal />
+          <AiConciergeChatbot />
+        </SiteSettingsProvider>
       </body>
     </html>
   );

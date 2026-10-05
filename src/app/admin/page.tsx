@@ -695,12 +695,23 @@ export default function AdminDashboard() {
     notifyDataUpdated();
   };
 
-  // Save Platform & Social Settings
+  // Global Site Settings Confirmation Modal State
+  const [showSettingsConfirmModal, setShowSettingsConfirmModal] = useState(false);
+  const [settingsSaveSuccess, setSettingsSaveSuccess] = useState(false);
+
+  // Save Platform & Social Settings with Confirmation
+  const executeSaveSettings = () => {
+    localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(siteSettings));
+    window.dispatchEvent(new Event('shreeniwas_data_updated'));
+    notifyDataUpdated();
+    setShowSettingsConfirmModal(false);
+    setSettingsSaveSuccess(true);
+    setTimeout(() => setSettingsSaveSuccess(false), 4000);
+  };
+
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(siteSettings));
-    notifyDataUpdated();
-    alert("Platform Logo, Social Media Handles & Settings Saved Live!");
+    setShowSettingsConfirmModal(true);
   };
 
   const navItems = adminRole === 'super' ? [
@@ -2212,15 +2223,66 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {settingsSaveSuccess && (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs font-semibold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Global site settings saved and propagated immediately across all headers, footers, and contact pages!</span>
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  className="px-6 py-3.5 bg-[#0A1628] text-[#C9A96E] font-extrabold text-xs rounded-2xl shadow-xl hover:bg-[#0A1628]/90 transition cursor-pointer border border-[#C9A96E]/30"
+                  className="px-6 py-3.5 bg-[#0A1628] text-[#C9A96E] font-extrabold text-xs rounded-2xl shadow-xl hover:bg-[#0A1628]/90 transition cursor-pointer border border-[#C9A96E]/30 flex items-center gap-2"
                 >
+                  <ShieldCheck className="w-4 h-4 text-[#C9A96E]" />
                   Save All Platform & Social Settings Live
                 </button>
               </form>
             </div>
           )}
+
+          {/* Site Settings Global Confirmation Modal */}
+          <AnimatePresence>
+            {showSettingsConfirmModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+                  <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-lg text-[#0A1628]">Confirm Global Site Update</h4>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      You are about to update global site information ({siteSettings.siteTitle}). These changes will instantly propagate across all visitor sessions, headers, footers, and chatbots.
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1">
+                    <div><strong>Title:</strong> {siteSettings.siteTitle}</div>
+                    <div><strong>Phone:</strong> {siteSettings.supportPhone}</div>
+                    <div><strong>Email:</strong> {siteSettings.contactEmail}</div>
+                    <div><strong>Head Office:</strong> {siteSettings.headOffice}</div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowSettingsConfirmModal(false)}
+                      className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs cursor-pointer hover:bg-slate-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={executeSaveSettings}
+                      className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl text-xs shadow cursor-pointer hover:bg-[#14233c]"
+                    >
+                      Yes, Publish Live
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
 

@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Building2, ShieldCheck, Mail, Lock, AlertCircle, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { Eye, EyeOff, Building2, ShieldCheck, Mail, Lock, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
+import { LoginSchema } from "@/lib/auth/validation";
+import { comparePassword } from "@/lib/auth/security";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,27 +27,64 @@ export default function LoginPage() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    const trimmedEmail = email.trim().toLowerCase();
-    const trimmedPass = password.trim();
-
-    if (!trimmedEmail || !trimmedPass) {
-      setErrorMsg("Please enter both email and password.");
+    const validation = LoginSchema.safeParse({ email, password, role });
+    if (!validation.success) {
+      setErrorMsg(validation.error.errors[0]?.message || "Please provide valid credentials.");
       setLoading(false);
       return;
     }
 
+    const { email: validatedEmail, password: validatedPassword } = validation.data;
+
     try {
-      // 1. Attempt Supabase Authentication
+      // 1. Check rate limit via API
+      const apiCheck = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: validatedEmail, password: validatedPassword, role }),
+      });
+
+      const apiResult = await apiCheck.json();
+      if (!apiCheck.ok) {
+        setErrorMsg(apiResult.error || "Login rate limit exceeded. Please wait.");
+        setLoading(false);
+        return;
+      }
+
+      // Check if Super Admin login
+      if (apiResult.user?.role === 'SUPER_ADMIN') {
+        sessionStorage.setItem('shreeniwas_admin_auth', 'true');
+        sessionStorage.setItem('shreeniwas_admin_role', 'super');
+        
+        const superSession = {
+          name: apiResult.user.name,
+          email: apiResult.user.email,
+          role: 'SUPER_ADMIN',
+          phone: apiResult.user.phone,
+          city: apiResult.user.city,
+          loggedIn: true,
+          memberSince: 'Oct 2024'
+        };
+        localStorage.setItem("shreeniwas_user_session", JSON.stringify(superSession));
+        sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(superSession));
+
+        setSuccessMsg("Super Administrator access verified! Redirecting to Control Center...");
+        setTimeout(() => {
+          router.push("/admin");
+        }, 600);
+        return;
+      }
+
+      // 2. Attempt Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password: trimmedPass,
+        email: validatedEmail,
+        password: validatedPassword,
       });
 
       if (!error && data?.user && data?.session) {
-        // Supabase Auth Success
         const userSession = {
-          name: data.user.user_metadata?.full_name || trimmedEmail.split('@')[0],
-          email: data.user.email || trimmedEmail,
+          name: data.user.user_metadata?.full_name || validatedEmail.split('@')[0],
+          email: data.user.email || validatedEmail,
           role: role === "seeker" ? "Property Seeker" : "Property Owner",
           phone: data.user.user_metadata?.phone || "+91 98765 43210",
           city: "Jaipur, Rajasthan",
@@ -66,38 +105,38 @@ export default function LoginPage() {
         return;
       }
 
-      // 2. Check local registered user database (if Supabase user is freshly created locally or offline)
+      // 3. Fallback: Local registered user repository verification with bcrypt check
       const rawRegisteredUsers = localStorage.getItem("shreeniwas_registered_users");
       const registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [];
 
-      const matchingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === trimmedEmail);
+      const matchingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === validatedEmail);
 
       if (!matchingUser) {
-        // User is not registered! Reject login.
-        setErrorMsg("No account found with this email. Please sign up first before signing in.");
+        setErrorMsg("No account found with this email. Please register first.");
         setLoading(false);
         return;
       }
 
-      if (matchingUser.password !== trimmedPass) {
-        // Registered email, but wrong password! Reject login.
-        setErrorMsg("Invalid password. Please check your password and try again.");
+      const isPasswordMatch = await comparePassword(validatedPassword, matchingUser.password);
+      if (!isPasswordMatch) {
+        setErrorMsg("Invalid password. Please check your credentials or reset your password.");
         setLoading(false);
         return;
       }
 
-      // 3. Valid registered user credentials match
+      // Valid registered credentials match
       const userSession = {
-        name: matchingUser.name || trimmedEmail.split('@')[0],
+        name: matchingUser.name || validatedEmail.split('@')[0],
         email: matchingUser.email,
         role: matchingUser.role || (role === "seeker" ? "Property Seeker" : "Property Owner"),
         phone: matchingUser.phone || "+91 98765 43210",
-        city: "Jaipur, Rajasthan",
+        city: matchingUser.preferredCity || "Jaipur, Rajasthan",
+        avatar: matchingUser.avatar || "",
         savedCount: 3,
         visitCount: 1,
         loggedIn: true,
         token: `shreeniwas_token_${Date.now()}`,
-        memberSince: "Oct 2024"
+        memberSince: matchingUser.registeredAt ? new Date(matchingUser.registeredAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : "Oct 2024"
       };
 
       localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
@@ -140,7 +179,7 @@ export default function LoginPage() {
           <p className="text-slate-300 text-sm font-light">Enter your credentials to access your user portal</p>
         </div>
 
-        {/* Ultra Pro Max High-Contrast Card */}
+        {/* High-Contrast Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border-2 border-[#C9A96E]/30 text-[#0A1628]">
           {/* Account Role Selector */}
           <div className="flex p-1.5 bg-slate-100 rounded-2xl mb-6 border border-slate-200">
@@ -210,7 +249,9 @@ export default function LoginPage() {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Password</label>
-                <Link href="#" className="text-xs font-bold text-[#C9A96E] hover:underline">Forgot?</Link>
+                <Link href="/forgot-password" className="text-xs font-bold text-[#C9A96E] hover:underline">
+                  Forgot Password?
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
