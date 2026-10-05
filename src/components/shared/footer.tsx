@@ -116,15 +116,19 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 py-2 text-base text-white/70">
                 <Phone className="h-5 w-5 text-[#C9A96E] shrink-0 mt-0.5" />
-                <span>{settings?.supportPhone || siteConfig?.contact?.phone || '+91 98765 43210'}</span>
+                <a href="tel:+916376117833" className="hover:text-[#C9A96E] transition-colors">
+                  {settings?.supportPhone || siteConfig?.contact?.phone || '+91 6376117833'}
+                </a>
               </li>
               <li className="flex items-start gap-3 py-2 text-base text-white/70 break-all">
                 <Mail className="h-5 w-5 text-[#C9A96E] shrink-0 mt-0.5" />
-                <span>{settings?.contactEmail || siteConfig?.contact?.email || 'contact@shreeniwasproperties.com'}</span>
+                <a href="mailto:info@shreeniwasproperties.com" className="hover:text-[#C9A96E] transition-colors">
+                  {settings?.contactEmail || siteConfig?.contact?.email || 'info@shreeniwasproperties.com'}
+                </a>
               </li>
               <li className="flex items-start gap-3 py-2 text-base text-white/70">
                 <MapPin className="h-5 w-5 text-[#C9A96E] shrink-0 mt-0.5" />
-                <span>{settings?.headOffice || siteConfig?.contact?.address || '15 Royal Avenue, C-Scheme, Jaipur, Rajasthan 302001'}</span>
+                <span>{settings?.headOffice || siteConfig?.contact?.address || '103, Jodhana Arcade, Bombay Motor Circle, Jodhpur, Rajasthan'}</span>
               </li>
             </ul>
           </div>

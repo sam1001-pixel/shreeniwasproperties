@@ -6,6 +6,7 @@ export const mainNav = [
   { title: "Rentals", href: "/properties?purpose=rent" },
   { title: "Buy", href: "/properties?purpose=sale" },
   { title: "Commercial", href: "/properties?purpose=commercial_lease" },
+  { title: "Tariff & Visits", href: "/tariff" },
   { title: "Blog", href: "/blog" },
   { title: "About", href: "/about" },
   { title: "Contact", href: "/contact" },

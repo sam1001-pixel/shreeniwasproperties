@@ -66,8 +66,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Head Office</h4>
-                    <p className="text-gray-600 mt-1">15 Royal Avenue, C-Scheme<br/>Jaipur, Rajasthan 302001</p>
-                    <a href="#" className="text-[#C9A96E] text-base sm:text-sm font-medium mt-2 inline-block hover:underline">View on Map &rarr;</a>
+                    <p className="text-gray-600 mt-1">103, Jodhana Arcade, Bombay Motor Circle<br/>Jodhpur, Rajasthan</p>
+                    <a href="https://maps.google.com/?q=Bombay+Motor+Circle+Jodhpur" target="_blank" rel="noopener noreferrer" className="text-[#C9A96E] text-base sm:text-sm font-medium mt-2 inline-block hover:underline">View on Map &rarr;</a>
                   </div>
                 </div>
 
@@ -77,8 +77,15 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Direct Contact</h4>
-                    <p className="text-gray-600 mt-1">+91 98765 43210</p>
-                    <button className="mt-2 px-4 py-2 bg-green-500 text-white rounded text-base sm:text-sm font-medium hover:bg-green-600 transition">WhatsApp Us</button>
+                    <p className="text-gray-600 mt-1">+91 6376117833</p>
+                    <a 
+                      href="https://wa.me/916376117833?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20have%20an%20inquiry" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block px-4 py-2 bg-green-500 text-white rounded text-base sm:text-sm font-medium hover:bg-green-600 transition"
+                    >
+                      WhatsApp Us
+                    </a>
                   </div>
                 </div>
 

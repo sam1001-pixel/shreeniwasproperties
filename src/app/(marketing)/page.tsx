@@ -43,6 +43,7 @@ import PropertyComparison, { PropertyCompareItem } from "@/components/shared/pro
 import AmenitiesShowcase from "@/components/shared/amenities-showcase";
 import OwnerReelsFeed from "@/components/shared/owner-reels-feed";
 import NewProjectsSection from "@/components/shared/new-projects-section";
+import PricingTariffSection from "@/components/shared/pricing-tariff-section";
 
 // Featured Properties
 const FEATURED_PROPERTIES = [
@@ -904,6 +905,9 @@ export default function MarketingPage() {
 
       {/* 6. Owner's Corner & Live Auto-Scrolling Reels Feed */}
       <OwnerReelsFeed />
+
+      {/* Transparent Brokerage Tariff & Site Visit Passes (From Posters) */}
+      <PricingTariffSection />
 
       {/* 7. Rajasthan Market Insights & Guides (Scrollable Track) */}
       <section className="py-10 px-4 bg-white border-b border-slate-100">
