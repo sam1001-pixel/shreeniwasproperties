@@ -159,35 +159,35 @@ export function Navbar() {
         )}
       >
         {/* Main Navbar Bar */}
-        <div className="h-14 sm:h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+        <div className="h-14 sm:h-16 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* 1. Brand Logo */}
           <Link 
             href="/" 
-            className="flex items-center gap-2.5 group whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E] rounded-xl"
+            className="flex items-center gap-2 sm:gap-2.5 group min-w-0 shrink focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E] rounded-xl"
             aria-label={`${settings.siteTitle || 'Shreeniwas Properties'} Home`}
           >
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#0A1628] to-[#162744] flex items-center justify-center border border-[#C9A96E]/50 group-hover:border-[#C9A96E] transition-all shrink-0 shadow-md p-1 group-hover:scale-105">
+            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#0A1628] to-[#162744] flex items-center justify-center border border-[#C9A96E]/50 group-hover:border-[#C9A96E] transition-all shrink-0 shadow-md p-1 group-hover:scale-105">
               {settings.logoUrl ? (
                 <img 
                   src={settings.logoUrl} 
                   alt={settings.siteTitle || 'Shreeniwas Properties'} 
-                  className="w-full h-full object-contain rounded-lg" 
+                  className="w-full h-full object-contain rounded-md sm:rounded-lg" 
                 />
               ) : (
-                <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#C9A96E]" />
+                <Building2 className="w-4 h-4 sm:w-6 sm:h-6 text-[#C9A96E]" />
               )}
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-baseline gap-1">
-                <span className="text-lg sm:text-xl font-serif font-bold text-[#C9A96E] tracking-tight">
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-baseline gap-1 truncate">
+                <span className="text-base sm:text-xl font-serif font-bold text-[#C9A96E] tracking-tight shrink-0">
                   {titleFirst}
                 </span>
-                <span className="text-lg sm:text-xl font-bold text-[#0A1628] tracking-tight">
+                <span className="text-base sm:text-xl font-bold text-[#0A1628] tracking-tight truncate">
                   {titleRest}
                 </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-500 font-semibold -mt-1 flex items-center gap-1">
+              <span className="hidden sm:flex text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-500 font-semibold -mt-1 items-center gap-1">
                 <span>Rajasthan Real Estate</span>
                 <span className="w-1 h-1 rounded-full bg-[#C9A96E] inline-block" />
                 <span className="text-[#C9A96E] font-bold">Verified</span>
@@ -395,7 +395,7 @@ export function Navbar() {
           </nav>
 
           {/* 3. Action Buttons & User Profile */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             
             {/* Shortlist Heart Button */}
             <Link
@@ -431,7 +431,7 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={() => setActiveDropdown(activeDropdown === 'user' ? null : 'user')}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[#C9A96E]/40 bg-[#0A1628] hover:bg-[#14233c] px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-bold text-white shadow-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E]"
+                  className="inline-flex items-center gap-1.5 sm:gap-2 rounded-xl border border-[#C9A96E]/40 bg-[#0A1628] hover:bg-[#14233c] px-2 py-1.5 sm:px-3.5 sm:py-2 text-xs font-bold text-white shadow-sm transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E]"
                   aria-expanded={activeDropdown === 'user'}
                 >
                   <div className="w-5 h-5 rounded-full bg-[#C9A96E] text-[#0A1628] flex items-center justify-center font-extrabold text-[10px]">
@@ -492,11 +492,11 @@ export function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-bold text-[#0A1628] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E]"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-bold text-[#0A1628] transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E]"
               >
                 <User className="w-3.5 h-3.5 text-[#C9A96E]" />
                 <span className="hidden sm:inline">Sign In</span>
-                <span className="sm:hidden">Login</span>
+                <span className="sm:hidden text-[11px]">Login</span>
               </Link>
             )}
 
