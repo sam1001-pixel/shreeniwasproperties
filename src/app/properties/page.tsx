@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PropertyComparison, { PropertyCompareItem } from '@/components/shared/property-comparison';
 import AmenitiesShowcase from '@/components/shared/amenities-showcase';
 import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
+import SavePropertyButton from '@/components/shared/save-property-button';
 import { 
   detectUserCityViaGPS, 
   getSavedDetectedCity, 
@@ -715,12 +716,7 @@ function PropertiesContent() {
                           <Scale className="w-3 h-3" />
                           {isCompared ? 'Compared' : 'Compare'}
                         </button>
-                        <button 
-                          onClick={() => toggleFavorite(property.id)} 
-                          className="w-7 h-7 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white"
-                        >
-                          <Heart className={`w-4 h-4 ${favorites[property.id] ? 'fill-rose-500 text-rose-500' : 'text-slate-600'}`} />
-                        </button>
+                        <SavePropertyButton property={property} />
                       </div>
 
                       <div className="absolute bottom-3 left-3 bg-[#0A1628]/90 backdrop-blur text-white text-xs font-extrabold px-3 py-1 rounded-lg">

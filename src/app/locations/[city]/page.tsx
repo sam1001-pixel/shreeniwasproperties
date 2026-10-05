@@ -9,6 +9,7 @@ import {
   TrendingUp, CheckCircle2, Search, ArrowLeft
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import SavePropertyButton from '@/components/shared/save-property-button';
 
 interface CityInfo {
   name: string;
@@ -475,6 +476,10 @@ export default function CityLocationPage() {
                             <Zap className="w-3 h-3 text-[#C9A96E]" /> 0% Brokerage
                           </span>
                         )}
+                      </div>
+
+                      <div className="absolute top-3 right-3">
+                        <SavePropertyButton property={property} />
                       </div>
 
                       <div className="absolute bottom-3 left-3 bg-[#0A1628]/90 backdrop-blur text-white text-xs font-extrabold px-3 py-1 rounded-lg">

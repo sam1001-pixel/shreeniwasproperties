@@ -44,6 +44,7 @@ import AmenitiesShowcase from "@/components/shared/amenities-showcase";
 import OwnerReelsFeed from "@/components/shared/owner-reels-feed";
 import NewProjectsSection from "@/components/shared/new-projects-section";
 import PricingTariffSection from "@/components/shared/pricing-tariff-section";
+import SavePropertyButton from "@/components/shared/save-property-button";
 
 // Featured Properties
 const FEATURED_PROPERTIES = [
@@ -823,12 +824,7 @@ export default function MarketingPage() {
                             <Scale className="w-2.5 h-2.5" />
                             {isCompared ? 'Compared' : 'Compare'}
                           </button>
-                          <button 
-                            onClick={() => toggleFavorite(prop.id)}
-                            className="w-6 h-6 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors"
-                          >
-                            <Heart className={`w-3 h-3 transition-colors ${favorites.includes(prop.id) ? 'fill-rose-500 text-rose-500' : 'text-slate-600'}`} />
-                          </button>
+                          <SavePropertyButton property={prop} />
                         </div>
                       </div>
                     </div>

@@ -10,6 +10,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import ScheduleVisitModal from './schedule-visit-modal';
+import SavePropertyButton from './save-property-button';
 
 export interface NewProjectItem {
   id: string;
@@ -212,6 +213,23 @@ export default function NewProjectsSection() {
             }`}>
               {proj.status}
             </span>
+          </div>
+
+          {/* Save / Shortlist Button */}
+          <div className="absolute top-2.5 right-2.5 z-10">
+            <SavePropertyButton
+              property={{
+                id: proj.id,
+                slug: proj.id,
+                title: proj.name,
+                location: proj.location,
+                city: proj.city,
+                price: proj.priceRange,
+                bhk: proj.configurations.join(', '),
+                image: proj.coverImage,
+                type: 'Township / Project'
+              }}
+            />
           </div>
 
           {/* Builder Name Watermark */}

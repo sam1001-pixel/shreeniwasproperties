@@ -8,12 +8,14 @@ import { Menu, X, Heart, User, Building2, PlusCircle, ShieldCheck } from 'lucide
 import { cn } from '@/lib/utils';
 import { mainNav } from '@/config/nav';
 import { useSiteSettings } from '@/lib/settings/site-settings-context';
+import { getSavedCount } from '@/lib/saved-properties';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [savedCount, setSavedCount] = useState(0);
   const pathname = usePathname();
 
   const { settings } = useSiteSettings();
@@ -23,6 +25,14 @@ export function Navbar() {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+
+    // Initial saved count & event listener
+    setSavedCount(getSavedCount());
+    const handleFavsUpdate = () => {
+      setSavedCount(getSavedCount());
+    };
+    window.addEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
+    window.addEventListener('storage', handleFavsUpdate);
 
     // Check user session
     const session = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
@@ -38,6 +48,8 @@ export function Navbar() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
+      window.removeEventListener('storage', handleFavsUpdate);
     };
   }, [pathname]);
 
@@ -132,10 +144,25 @@ export function Navbar() {
 
             <Link
               href="/dashboard/portal/saved"
-              className="p-2 text-slate-700 hover:text-[#C9A96E] rounded-xl hover:bg-slate-100 transition-colors relative"
+              className="p-2 text-slate-700 hover:text-rose-600 rounded-xl hover:bg-rose-50/50 transition-colors relative flex items-center justify-center group cursor-pointer"
               aria-label="Saved properties"
+              title="View Shortlisted Properties"
             >
-              <Heart className="w-5 h-5" />
+              <Heart className={`w-5 h-5 transition-transform group-hover:scale-110 ${savedCount > 0 ? 'text-rose-500 fill-rose-500' : 'text-slate-700'}`} />
+              <AnimatePresence>
+                {savedCount > 0 && (
+                  <motion.span
+                    key={savedCount}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: [0.8, 1.25, 1], opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute -top-0.5 -right-0.5 bg-rose-500 text-white text-[9px] font-extrabold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center shadow-md border-2 border-white pointer-events-none"
+                  >
+                    {savedCount > 9 ? '9+' : savedCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
 
             <Link
@@ -203,11 +230,27 @@ export function Navbar() {
 
               <div className="mt-8 space-y-3 pt-6 border-t border-white/10">
                 <Link
+                  href="/dashboard/portal/saved"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-3 bg-white/10 hover:bg-white/15 text-white font-bold text-sm rounded-xl flex items-center justify-between px-4 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Heart className={`w-4 h-4 ${savedCount > 0 ? 'text-rose-500 fill-rose-500' : 'text-[#C9A96E]'}`} />
+                    <span>Saved Shortlist</span>
+                  </div>
+                  {savedCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-xs font-extrabold">
+                      {savedCount}
+                    </span>
+                  )}
+                </Link>
+
+                <Link
                   href="/dashboard/portal"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-3 bg-white/10 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"
                 >
-                  <User className="w-4 h-4 text-[#C9A96E]" /> My Profile & Saved Favorites
+                  <User className="w-4 h-4 text-[#C9A96E]" /> My Profile Center
                 </Link>
 
                 <Link

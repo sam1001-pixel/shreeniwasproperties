@@ -78,6 +78,8 @@ export const metadata: Metadata = {
   }
 };
 
+import SaveToastNotifier from '@/components/shared/save-toast-notifier';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -100,6 +102,7 @@ export default function RootLayout({
           <Footer />
           <PropertyAlertModal />
           <AiConciergeChatbot />
+          <SaveToastNotifier />
         </SiteSettingsProvider>
       </body>
     </html>

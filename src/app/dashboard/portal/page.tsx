@@ -11,6 +11,7 @@ import {
 import Image from 'next/image';
 import { ProfileUpdateSchema, PasswordChangeSchema } from '@/lib/auth/validation';
 import { comparePassword, hashPassword } from '@/lib/auth/security';
+import { getSavedProperties, removeSavedProperty } from '@/lib/saved-properties';
 
 const MOCK_VIP_VISITS = [
   {
@@ -79,13 +80,8 @@ export default function UserProfileDashboard() {
           setProfileCity(parsed.city?.split(',')[0]?.trim() || 'Jaipur');
           setProfileAvatar(parsed.avatar || '');
 
-          const userFavsKey = `shreeniwas_saved_favorites_${parsed.email}`;
-          const storedFavs = localStorage.getItem(userFavsKey);
-          if (storedFavs) {
-            try { setSavedList(JSON.parse(storedFavs)); } catch (e) { setSavedList([]); }
-          } else {
-            setSavedList([]);
-          }
+          // Load from unified saved properties manager
+          setSavedList(getSavedProperties());
 
           const userVisitsKey = `shreeniwas_vip_visits_${parsed.email}`;
           const storedVisits = localStorage.getItem(userVisitsKey);
@@ -104,6 +100,14 @@ export default function UserProfileDashboard() {
     router.push('/login?redirect=/dashboard/portal');
   }, [router]);
 
+  useEffect(() => {
+    const handleFavsUpdate = () => {
+      setSavedList(getSavedProperties());
+    };
+    window.addEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
+    return () => window.removeEventListener('shreeniwas_favorites_updated', handleFavsUpdate);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('shreeniwas_user_session');
     sessionStorage.removeItem('shreeniwas_user_session');
@@ -117,11 +121,8 @@ export default function UserProfileDashboard() {
   };
 
   const removeFavorite = (id: string) => {
-    const updated = savedList.filter(item => item.id !== id);
-    setSavedList(updated);
-    if (userSession?.email) {
-      localStorage.setItem(`shreeniwas_saved_favorites_${userSession.email}`, JSON.stringify(updated));
-    }
+    removeSavedProperty(id);
+    setSavedList(getSavedProperties());
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
+import SavePropertyButton from '@/components/shared/save-property-button';
 
 const BASE_MOCK_PROPERTIES: Record<string, any> = {
   'royal-heritage-residency-jaipur': {
@@ -335,9 +336,18 @@ export default function PropertyDetailPage() {
           <button onClick={handleShare} className="p-2 bg-slate-100 rounded-full shadow-sm text-slate-700" title="Share Property">
             {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4"/>}
           </button>
-          <button onClick={handleToggleSave} className="p-2 bg-slate-100 rounded-full shadow-sm cursor-pointer" title="Save Favorite">
-            <Heart className={`w-4 h-4 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-slate-600'}`}/>
-          </button>
+          <SavePropertyButton
+            property={{
+              id: property.id || slug,
+              slug,
+              title: property.title,
+              location: property.location,
+              price: property.price,
+              bhk: property.bhk,
+              image: property.images?.[0],
+              type: property.type
+            }}
+          />
         </div>
       </div>
 
@@ -350,17 +360,19 @@ export default function PropertyDetailPage() {
             <span className="text-[#0A1628]">{property.title}</span>
           </div>
           <div className="flex items-center gap-4">
-            <button 
-              onClick={handleToggleSave}
-              className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
-                isSaved 
-                  ? 'bg-rose-50 border-rose-200 text-rose-600' 
-                  : 'bg-white border-slate-200 text-slate-600 hover:text-[#0A1628] hover:bg-slate-50'
-              }`}
-            >
-              <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-slate-500'}`} />
-              <span>{isSaved ? 'Saved to Favorites' : 'Save Property'}</span>
-            </button>
+            <SavePropertyButton
+              property={{
+                id: property.id || slug,
+                slug,
+                title: property.title,
+                location: property.location,
+                price: property.price,
+                bhk: property.bhk,
+                image: property.images?.[0],
+                type: property.type
+              }}
+              variant="detail"
+            />
             <button 
               onClick={handleShare}
               className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-[#C9A96E] font-bold cursor-pointer"
