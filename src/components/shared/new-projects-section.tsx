@@ -9,6 +9,7 @@ import {
   ArrowRight, Phone, MessageSquare, ChevronRight, Award,
   ChevronLeft
 } from 'lucide-react';
+import ScheduleVisitModal from './schedule-visit-modal';
 
 export interface NewProjectItem {
   id: string;
@@ -102,6 +103,7 @@ export default function NewProjectsSection() {
   const [leadPhone, setLeadPhone] = useState('');
   const [leadName, setLeadName] = useState('');
   const [leadSent, setLeadSent] = useState(false);
+  const [bookingProject, setBookingProject] = useState<NewProjectItem | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -283,15 +285,14 @@ export default function NewProjectsSection() {
           </a>
         </div>
 
-        <a
-          href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hello Shreeniwas Properties, I want to book a VIP Site Visit for project ${proj.name} by ${proj.builder} in ${proj.city}.`)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full py-2 bg-[#0A1628] hover:bg-[#0A1628]/90 text-white rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 shadow-xs border border-[#C9A96E]/30 cursor-pointer"
+        <button
+          type="button"
+          onClick={() => setBookingProject(proj)}
+          className="w-full py-2 bg-[#0A1628] hover:bg-[#0A1628]/90 text-white rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs border border-[#C9A96E]/30 cursor-pointer"
         >
           <Calendar className="w-3 h-3 text-[#C9A96E]" />
           <span>VIP Site Visit</span>
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -427,6 +428,16 @@ export default function NewProjectsSection() {
           </div>
         </div>
       )}
+
+      {/* Schedule Visit Modal with 3 Time Variations */}
+      <ScheduleVisitModal
+        isOpen={!!bookingProject}
+        onClose={() => setBookingProject(null)}
+        propertyTitle={bookingProject ? `${bookingProject.name} by ${bookingProject.builder}` : "New Project"}
+        propertyLocation={bookingProject ? `${bookingProject.location}, ${bookingProject.city}` : "Rajasthan"}
+        propertyPrice={bookingProject?.priceRange}
+        propertyImage={bookingProject?.coverImage}
+      />
     </section>
   );
 }

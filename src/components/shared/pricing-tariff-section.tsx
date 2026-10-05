@@ -17,11 +17,14 @@ import {
   FileCheck,
   Percent,
   BadgeCheck,
-  Info
+  Info,
+  Clock
 } from 'lucide-react';
+import ScheduleVisitModal from './schedule-visit-modal';
 
 export default function PricingTariffSection({ showHeader = true }: { showHeader?: boolean }) {
   const [activeTab, setActiveTab] = useState<'visits' | 'brokerage'>('visits');
+  const [selectedPackageForSchedule, setSelectedPackageForSchedule] = useState<any>(null);
 
   const phoneNumber = '+91 6376117833';
   const whatsappBase = 'https://wa.me/916376117833';
@@ -218,19 +221,30 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
                       {pkg.note}
                     </p>
 
-                    <a
-                      href={pkg.ctaWhatsapp}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                        pkg.highlight
-                          ? 'bg-[#0A1628] text-[#C9A96E] hover:bg-[#14233c]'
-                          : 'bg-slate-900 text-white hover:bg-slate-800'
-                      }`}
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      <span>{pkg.ctaText}</span>
-                    </a>
+                    <div className="space-y-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPackageForSchedule(pkg)}
+                        className="w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200 hover:border-[#C9A96E] text-[#0A1628] hover:text-[#C9A96E] bg-slate-50 hover:bg-white transition-all cursor-pointer shadow-xs"
+                      >
+                        <Clock className="w-3.5 h-3.5 text-[#C9A96E]" />
+                        <span>Schedule Time Slot (Online)</span>
+                      </button>
+
+                      <a
+                        href={pkg.ctaWhatsapp}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                          pkg.highlight
+                            ? 'bg-[#0A1628] text-[#C9A96E] hover:bg-[#14233c]'
+                            : 'bg-slate-900 text-white hover:bg-slate-800'
+                        }`}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>{pkg.ctaText}</span>
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -505,6 +519,15 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
           </div>
         </div>
       </div>
+
+      {/* Schedule Visit Modal with 3 Time Variations */}
+      <ScheduleVisitModal
+        isOpen={!!selectedPackageForSchedule}
+        onClose={() => setSelectedPackageForSchedule(null)}
+        propertyTitle={selectedPackageForSchedule ? `${selectedPackageForSchedule.name} (${selectedPackageForSchedule.price})` : "Site Visit"}
+        propertyLocation="Rajasthan Premier Properties"
+        propertyPrice={selectedPackageForSchedule?.price}
+      />
     </section>
   );
 }

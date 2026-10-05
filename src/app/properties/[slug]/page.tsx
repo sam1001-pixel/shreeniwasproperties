@@ -11,6 +11,7 @@ import {
   AlertCircle, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
 
 const BASE_MOCK_PROPERTIES: Record<string, any> = {
   'royal-heritage-residency-jaipur': {
@@ -153,14 +154,8 @@ export default function PropertyDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeSection, setActiveSection] = useState('overview');
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-
-  // VIP Visit form fields
-  const [visitorName, setVisitorName] = useState('');
-  const [visitorPhone, setVisitorPhone] = useState('');
-  const [visitDate, setVisitDate] = useState('');
 
   useEffect(() => {
     // 1. Check built-in mock properties
@@ -327,39 +322,6 @@ export default function PropertyDetailPage() {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     }
-  };
-
-  const handleVIPVisitSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!visitorName.trim() || !visitorPhone.trim() || !visitDate) return;
-
-    // Save visit booking to inquiries in localStorage
-    try {
-      const existingRaw = localStorage.getItem('shreeniwas_inquiries');
-      const existing = existingRaw ? JSON.parse(existingRaw) : [];
-      const newInq = {
-        id: `VIP-${Date.now().toString().slice(-4)}`,
-        user: visitorName.trim(),
-        phone: visitorPhone.trim(),
-        email: "vip.visit@shreeniwas.com",
-        property: property.title,
-        type: "VIP Site Visit Booking",
-        status: "Confirmed & Scheduled",
-        query: `Scheduled VIP Walkthrough on ${visitDate}. ₹499 priority fee accepted.`,
-        reply: ""
-      };
-      localStorage.setItem('shreeniwas_inquiries', JSON.stringify([newInq, ...existing]));
-      window.dispatchEvent(new Event('shreeniwas_data_updated'));
-    } catch (e) {}
-
-    setBookingSuccess(true);
-    setTimeout(() => {
-      setBookingSuccess(false);
-      setIsBookModalOpen(false);
-      setVisitorName('');
-      setVisitorPhone('');
-      setVisitDate('');
-    }, 2500);
   };
 
   return (
@@ -631,81 +593,14 @@ export default function PropertyDetailPage() {
         </div>
       </div>
 
-      {/* VIP Site Visit Booking Modal */}
-      <AnimatePresence>
-        {isBookModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 relative"
-            >
-              <button 
-                onClick={() => setIsBookModalOpen(false)}
-                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 rounded-full"
-              >
-                ✕
-              </button>
-
-              <div className="text-center mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-[#0A1628] flex items-center justify-center mx-auto mb-3 border border-[#C9A96E]/40 text-[#C9A96E]">
-                  <Crown className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-serif font-bold text-[#0A1628]">Schedule VIP Site Visit</h3>
-                <p className="text-xs text-slate-500 mt-1">₹499 Priority Walkthrough Fee (Fully Refundable on Booking)</p>
-              </div>
-
-              {bookingSuccess ? (
-                <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-2xl text-center text-emerald-800 space-y-2">
-                  <Check className="w-10 h-10 text-emerald-600 mx-auto" />
-                  <h4 className="font-bold text-base">Site Visit Requested!</h4>
-                  <p className="text-xs text-emerald-700">Our Senior Advisor will call you within 15 minutes to confirm timing.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleVIPVisitSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Your Full Name</label>
-                    <input 
-                      type="text" 
-                      required 
-                      value={visitorName}
-                      onChange={(e) => setVisitorName(e.target.value)}
-                      placeholder="Enter full name" 
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number (WhatsApp)</label>
-                    <input 
-                      type="tel" 
-                      required 
-                      value={visitorPhone}
-                      onChange={(e) => setVisitorPhone(e.target.value)}
-                      placeholder="+91 98765 43210" 
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Preferred Date</label>
-                    <input 
-                      type="date" 
-                      required 
-                      value={visitDate}
-                      onChange={(e) => setVisitDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]" 
-                    />
-                  </div>
-
-                  <button type="submit" className="w-full py-4 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] font-bold text-sm rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer">
-                    <CreditCard className="w-4 h-4" /> Confirm Visit Booking
-                  </button>
-                </form>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* VIP Site Visit Booking Modal with 3 Time Variations (9am-12, 12-3pm, 5-7pm) */}
+      <ScheduleVisitModal
+        isOpen={isBookModalOpen}
+        onClose={() => setIsBookModalOpen(false)}
+        propertyTitle={property.title}
+        propertyLocation={property.location}
+        propertyPrice={property.price}
+      />
 
       {/* Sticky Mobile Bottom Contact Bar */}
       <div className="block lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 p-3 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">

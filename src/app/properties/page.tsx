@@ -6,11 +6,12 @@ import Link from 'next/link';
 import { 
   Search, MapPin, Filter, Grid, List, 
   Heart, CheckCircle2, MessageSquare, X, BedDouble, Bath, Square,
-  ShieldCheck, Zap, Scale, ArrowRight, IndianRupee, Compass, Building2, ChevronDown, Sparkles, RefreshCw, LocateFixed, Loader2
+  ShieldCheck, Zap, Scale, ArrowRight, IndianRupee, Compass, Building2, ChevronDown, Sparkles, RefreshCw, LocateFixed, Loader2, Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PropertyComparison, { PropertyCompareItem } from '@/components/shared/property-comparison';
 import AmenitiesShowcase from '@/components/shared/amenities-showcase';
+import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
 import { 
   detectUserCityViaGPS, 
   getSavedDetectedCity, 
@@ -212,6 +213,7 @@ function PropertiesContent() {
   const [propertiesList, setPropertiesList] = useState<any[]>(MOCK_PROPERTIES);
   const [isLocating, setIsLocating] = useState(false);
   const [detectedNote, setDetectedNote] = useState<string | null>(null);
+  const [bookingProperty, setBookingProperty] = useState<any>(null);
 
   // Initialize filters from URL search params or detected GPS
   useEffect(() => {
@@ -761,22 +763,34 @@ function PropertiesContent() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1">
-                      <a 
-                        href={`https://wa.me/919829000000?text=Hi,%20I'm%20interested%20in%20${encodeURIComponent(property.title)}%20in%20${encodeURIComponent(property.location)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                    <div className="flex items-center justify-between pt-1 gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => setBookingProperty(property)}
+                        className="px-3 py-2 bg-[#0A1628]/5 hover:bg-[#0A1628] text-[#0A1628] hover:text-[#C9A96E] text-xs font-bold rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer border border-[#C9A96E]/30"
                       >
-                        <MessageSquare className="w-3.5 h-3.5" /> WhatsApp Owner
-                      </a>
+                        <Calendar className="w-3.5 h-3.5 text-[#C9A96E]" />
+                        <span>Book Visit</span>
+                      </button>
 
-                      <Link 
-                        href={`/properties/${property.slug}`}
-                        className="px-4 py-2 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] text-xs font-bold rounded-xl transition-colors inline-flex items-center gap-1"
-                      >
-                        Details <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <a 
+                          href={`https://wa.me/916376117833?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20am%20interested%20in%20${encodeURIComponent(property.title)}%20in%20${encodeURIComponent(property.location)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="WhatsApp Advisor"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </a>
+
+                        <Link 
+                          href={`/properties/${property.slug}`}
+                          className="px-3.5 py-2 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] text-xs font-bold rounded-xl transition-colors inline-flex items-center gap-1"
+                        >
+                          Details <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -796,6 +810,16 @@ function PropertiesContent() {
         <div className="mt-16">
           <AmenitiesShowcase />
         </div>
+
+        {/* Schedule Visit Modal with 3 Time Variations */}
+        <ScheduleVisitModal
+          isOpen={!!bookingProperty}
+          onClose={() => setBookingProperty(null)}
+          propertyTitle={bookingProperty?.title}
+          propertyLocation={bookingProperty?.location}
+          propertyPrice={bookingProperty?.price}
+          propertyImage={bookingProperty?.image}
+        />
       </div>
     </div>
   );

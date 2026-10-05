@@ -1831,7 +1831,14 @@ export default function AdminDashboard() {
                                 {inq.type}
                               </span>
                             </td>
-                            <td className="p-4 text-slate-600 max-w-[200px] truncate">{inq.query || "No notes"}</td>
+                            <td className="p-4 text-slate-600 max-w-[240px]">
+                              <p className="font-medium text-slate-800 line-clamp-2">{inq.query || "No notes"}</p>
+                              {(inq.visitTimeSlot || inq.slotLabel) && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#A27B36] bg-[#C9A96E]/15 px-2 py-0.5 rounded-full mt-1 border border-[#C9A96E]/30">
+                                  <Clock className="w-2.5 h-2.5" /> Slot: {inq.slotLabel || inq.visitTimeSlot}
+                                </span>
+                              )}
+                            </td>
                             <td className="p-4">
                               <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                                 inq.status?.includes('Paid') || inq.status?.includes('Responded') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
