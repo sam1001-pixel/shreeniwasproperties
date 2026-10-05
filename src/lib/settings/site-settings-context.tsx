@@ -3,6 +3,42 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { siteConfig } from '@/config/site';
 
+export interface PaymentSettings {
+  upiId: string;
+  merchantName: string;
+  customQrUrl: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  accountHolder: string;
+  accountType: string;
+  standardPassFee: number;
+  premiumPassFee: number;
+  vipSiteVisitFee: number;
+  enableDirectUpiPay: boolean;
+  enableDownloadQr: boolean;
+  enableShareQr: boolean;
+  paymentInstructions: string;
+}
+
+export const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
+  upiId: '6376117833@okbizaxis',
+  merchantName: 'Shreeniwas Properties',
+  customQrUrl: '',
+  bankName: 'HDFC Bank Ltd',
+  accountNumber: '50200089123456',
+  ifscCode: 'HDFC0001234',
+  accountHolder: 'Shreeniwas Properties Pvt Ltd',
+  accountType: 'Current Account',
+  standardPassFee: 500,
+  premiumPassFee: 999,
+  vipSiteVisitFee: 499,
+  enableDirectUpiPay: true,
+  enableDownloadQr: true,
+  enableShareQr: true,
+  paymentInstructions: 'Scan QR with any UPI app (GPay, PhonePe, Paytm, BHIM) or tap Direct Pay buttons below. After payment, enter your 12-digit UTR reference number for instant confirmation.',
+};
+
 export interface GlobalSiteSettings {
   siteTitle: string;
   tagline: string;
@@ -18,6 +54,7 @@ export interface GlobalSiteSettings {
   linkedinLink: string;
   twitterLink: string;
   maintenanceMode: boolean;
+  payment: PaymentSettings;
 }
 
 export const DEFAULT_SITE_SETTINGS: GlobalSiteSettings = {
@@ -35,11 +72,13 @@ export const DEFAULT_SITE_SETTINGS: GlobalSiteSettings = {
   linkedinLink: 'https://linkedin.com/company/shreeniwasproperties',
   twitterLink: 'https://x.com/shreeniwasprop',
   maintenanceMode: false,
+  payment: DEFAULT_PAYMENT_SETTINGS,
 };
 
 interface SiteSettingsContextType {
   settings: GlobalSiteSettings;
   updateSettings: (newSettings: Partial<GlobalSiteSettings>) => void;
+  updatePaymentSettings: (newPayment: Partial<PaymentSettings>) => void;
   resetToDefaults: () => void;
   isLoading: boolean;
 }
@@ -47,6 +86,7 @@ interface SiteSettingsContextType {
 const SiteSettingsContext = createContext<SiteSettingsContextType>({
   settings: DEFAULT_SITE_SETTINGS,
   updateSettings: () => {},
+  updatePaymentSettings: () => {},
   resetToDefaults: () => {},
   isLoading: true,
 });
@@ -65,9 +105,17 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
           parsed.heroBgUrl = '/hero/jodhpur-hero-royal.jpg';
           localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
         }
+
+        // Merge payment settings safely if not present
+        const mergedPayment: PaymentSettings = {
+          ...DEFAULT_PAYMENT_SETTINGS,
+          ...(parsed.payment || {}),
+        };
+
         setSettings((prev) => ({
           ...prev,
           ...parsed,
+          payment: mergedPayment,
         }));
       }
     } catch (err) {
@@ -101,10 +149,24 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
     }
   };
 
+  const updatePaymentSettings = (newPayment: Partial<PaymentSettings>) => {
+    const updatedPayment = { ...settings.payment, ...newPayment };
+    const updated = { ...settings, payment: updatedPayment };
+    setSettings(updated);
+    try {
+      localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(updated));
+      localStorage.setItem('shreeniwas_payment_settings', JSON.stringify(updatedPayment));
+      window.dispatchEvent(new Event('shreeniwas_data_updated'));
+    } catch (err) {
+      console.error('Failed to persist payment settings:', err);
+    }
+  };
+
   const resetToDefaults = () => {
     setSettings(DEFAULT_SITE_SETTINGS);
     try {
       localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(DEFAULT_SITE_SETTINGS));
+      localStorage.setItem('shreeniwas_payment_settings', JSON.stringify(DEFAULT_PAYMENT_SETTINGS));
       window.dispatchEvent(new Event('shreeniwas_data_updated'));
     } catch (err) {
       console.error('Failed to reset site settings:', err);
@@ -116,6 +178,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       value={{
         settings,
         updateSettings,
+        updatePaymentSettings,
         resetToDefaults,
         isLoading,
       }}

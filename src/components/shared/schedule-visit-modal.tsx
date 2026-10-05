@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Calendar, Clock, Sunrise, Sun, Sunset, 
   Crown, Check, CheckCircle2, Phone, User, 
-  MessageSquare, ShieldCheck, MapPin, Sparkles, ArrowRight
+  MessageSquare, ShieldCheck, MapPin, Sparkles, ArrowRight, QrCode
 } from 'lucide-react';
+import SecureQrPaymentModal from './secure-qr-payment-modal';
 
 export type TimeSlotId = '9am-12' | '12-3pm' | '5-7pm';
 
@@ -78,6 +79,7 @@ export default function ScheduleVisitModal({
   const [selectedSlotId, setSelectedSlotId] = useState<TimeSlotId>('9am-12');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const selectedSlot = VISIT_TIME_SLOTS.find(s => s.id === selectedSlotId) || VISIT_TIME_SLOTS[0];
 
@@ -246,6 +248,15 @@ export default function ScheduleVisitModal({
                 </div>
 
                 <div className="pt-2 space-y-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowPaymentModal(true)}
+                    className="w-full py-3.5 bg-[#0A1628] hover:bg-[#132238] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md border border-[#C9A96E]/40 cursor-pointer"
+                  >
+                    <QrCode className="w-4 h-4 text-[#C9A96E]" />
+                    <span>Pay ₹499 VIP Pass via UPI QR / Direct Pay</span>
+                  </button>
+
                   <a
                     href={`https://wa.me/916376117833?text=${whatsappMessage}`}
                     target="_blank"
@@ -428,6 +439,15 @@ export default function ScheduleVisitModal({
           </div>
         </motion.div>
       </div>
+
+      {/* Embedded Secure UPI QR Payment Modal */}
+      <SecureQrPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        propertyName={propertyTitle}
+        amount={499}
+        purpose="VIP Site Visit & Cab Pickup Pass"
+      />
     </AnimatePresence>
   );
 }

@@ -6,13 +6,14 @@ import Link from 'next/link';
 import { 
   Search, MapPin, Filter, Grid, List, 
   Heart, CheckCircle2, MessageSquare, X, BedDouble, Bath, Square,
-  ShieldCheck, Zap, Scale, ArrowRight, IndianRupee, Compass, Building2, ChevronDown, Sparkles, RefreshCw, LocateFixed, Loader2, Calendar
+  ShieldCheck, Zap, Scale, ArrowRight, IndianRupee, Compass, Building2, ChevronDown, Sparkles, RefreshCw, LocateFixed, Loader2, Calendar, Share2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PropertyComparison, { PropertyCompareItem } from '@/components/shared/property-comparison';
 import AmenitiesShowcase from '@/components/shared/amenities-showcase';
 import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
 import SavePropertyButton from '@/components/shared/save-property-button';
+import PropertyShareModal, { ShareableProperty } from '@/components/shared/property-share-modal';
 import { 
   detectUserCityViaGPS, 
   getSavedDetectedCity, 
@@ -215,6 +216,7 @@ function PropertiesContent() {
   const [isLocating, setIsLocating] = useState(false);
   const [detectedNote, setDetectedNote] = useState<string | null>(null);
   const [bookingProperty, setBookingProperty] = useState<any>(null);
+  const [sharingProperty, setSharingProperty] = useState<ShareableProperty | null>(null);
 
   // Initialize filters from URL search params or detected GPS
   useEffect(() => {
@@ -764,7 +766,25 @@ function PropertiesContent() {
                         <span>Book Visit</span>
                       </button>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSharingProperty({
+                            id: property.id,
+                            slug: property.slug,
+                            title: property.title,
+                            price: property.price,
+                            location: property.location,
+                            type: property.type,
+                            bhk: property.bhk,
+                            image: property.image,
+                          })}
+                          className="p-2 text-slate-500 hover:text-[#0A1628] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                          title="Share Property on Apps"
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </button>
+
                         <a 
                           href={`https://wa.me/916376117833?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20am%20interested%20in%20${encodeURIComponent(property.title)}%20in%20${encodeURIComponent(property.location)}`}
                           target="_blank"
@@ -810,6 +830,13 @@ function PropertiesContent() {
           propertyLocation={bookingProperty?.location}
           propertyPrice={bookingProperty?.price}
           propertyImage={bookingProperty?.image}
+        />
+
+        {/* Multi-App Direct Property Share Modal */}
+        <PropertyShareModal
+          isOpen={!!sharingProperty}
+          onClose={() => setSharingProperty(null)}
+          property={sharingProperty}
         />
       </div>
     </div>

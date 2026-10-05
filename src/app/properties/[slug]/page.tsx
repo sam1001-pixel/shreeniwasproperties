@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
 import SavePropertyButton from '@/components/shared/save-property-button';
+import PropertyShareModal from '@/components/shared/property-share-modal';
 
 const BASE_MOCK_PROPERTIES: Record<string, any> = {
   'royal-heritage-residency-jaipur': {
@@ -155,6 +156,7 @@ export default function PropertyDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeSection, setActiveSection] = useState('overview');
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -318,11 +320,7 @@ export default function PropertyDetailPage() {
   ];
 
   const handleShare = () => {
-    if (typeof window !== 'undefined') {
-      navigator.clipboard.writeText(window.location.href);
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
-    }
+    setIsShareModalOpen(true);
   };
 
   return (
@@ -607,6 +605,21 @@ export default function PropertyDetailPage() {
         propertyTitle={property.title}
         propertyLocation={property.location}
         propertyPrice={property.price}
+      />
+
+      {/* Multi-App Direct Property Share Modal */}
+      <PropertyShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        property={{
+          slug,
+          title: property.title,
+          price: property.price,
+          location: property.location,
+          type: property.type,
+          bhk: property.bhk,
+          image: property.images?.[0]
+        }}
       />
 
       {/* Sticky Mobile Bottom Contact Bar */}

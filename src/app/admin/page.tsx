@@ -7,10 +7,12 @@ import {
   Search, MoreVertical, Plus, CheckCircle2, XCircle, Edit, Trash2, 
   MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound,
   Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck, UserPlus,
-  Video, Star, Share2, Camera, ThumbsUp, IndianRupee, Layers, ExternalLink, Download, ShieldCheck
+  Video, Star, Share2, Camera, ThumbsUp, IndianRupee, Layers, ExternalLink, Download, ShieldCheck,
+  QrCode, Smartphone, RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 import { DEFAULT_NEW_PROJECTS, NewProjectItem } from '@/components/shared/new-projects-section';
+import { DEFAULT_PAYMENT_SETTINGS, PaymentSettings } from '@/lib/settings/site-settings-context';
 
 // Initial Seed Data (Fallbacks if localStorage is empty)
 // Initial Seed Data (Fallbacks if localStorage is empty)
@@ -220,6 +222,9 @@ export default function AdminDashboard() {
     maintenanceMode: false
   });
 
+  // Super Admin Payment Gateway & UPI Settings State
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(DEFAULT_PAYMENT_SETTINGS);
+
   useEffect(() => {
     const authSession = sessionStorage.getItem('shreeniwas_admin_auth');
     const storedRole = sessionStorage.getItem('shreeniwas_admin_role');
@@ -289,6 +294,21 @@ export default function AdminDashboard() {
     // Load Brokerage Commission Settings (Super Admin Only)
     const savedBrokerage = localStorage.getItem('shreeniwas_brokerage_settings');
     if (savedBrokerage) { try { setBrokerageSettings(JSON.parse(savedBrokerage)); } catch (e) {} }
+
+    // Load Payment Gateway & UPI Settings (Super Admin Only)
+    const savedPayment = localStorage.getItem('shreeniwas_payment_settings');
+    if (savedPayment) { 
+      try { 
+        setPaymentSettings(prev => ({ ...prev, ...JSON.parse(savedPayment) })); 
+      } catch (e) {} 
+    } else if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        if (parsed.payment) {
+          setPaymentSettings(prev => ({ ...prev, ...parsed.payment }));
+        }
+      } catch (e) {}
+    }
 
     setIsLoaded(true);
   }, []);
@@ -501,6 +521,24 @@ export default function AdminDashboard() {
     localStorage.setItem('shreeniwas_brokerage_settings', JSON.stringify(brokerageSettings));
     notifyDataUpdated();
     alert('Super Admin Brokerage & Platform Financial Controls Saved Live!');
+  };
+
+  // Super Admin Payment Gateway & UPI Save Handler
+  const handleSavePayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminRole !== 'super') {
+      alert('Access Denied: Only Super Admin can modify payment gateways and UPI configurations.');
+      return;
+    }
+    localStorage.setItem('shreeniwas_payment_settings', JSON.stringify(paymentSettings));
+    const updatedPlatformSettings = {
+      ...siteSettings,
+      payment: paymentSettings,
+    };
+    setSiteSettings(updatedPlatformSettings);
+    localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(updatedPlatformSettings));
+    notifyDataUpdated();
+    alert('Super Admin: Payment Gateway, UPI ID & QR Code Settings Saved Live!');
   };
 
   // Blog Handlers
@@ -718,6 +756,7 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
     { id: 'projects', label: 'Builder Projects & Townships', icon: Layers },
+    { id: 'payments', label: 'Payment Gateway & UPI Setup', icon: QrCode },
     { id: 'brokerage', label: 'Brokerage & Financials', icon: IndianRupee },
     { id: 'reels', label: 'Property Video Reels', icon: Video },
     { id: 'reviews', label: 'Buyer & Landlord Reviews', icon: Star },
@@ -1378,6 +1417,377 @@ export default function AdminDashboard() {
                   Save Super Admin Brokerage Controls Live
                 </button>
               </form>
+            </div>
+          )}
+
+          {/* SUPER ADMIN PAYMENT GATEWAY & UPI ALL SETUP TAB */}
+          {activeTab === 'payments' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-1 border border-emerald-500/30">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Super Admin Financial Engine
+                  </div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Payment Gateway, UPI & QR Code All Setup</h3>
+                  <p className="text-xs text-slate-500">
+                    Super Admin Power: Manage primary UPI IDs, QR code graphics, direct-to-pay apps (GPay, PhonePe, Paytm, BHIM), download/share buttons, and bank transfer credentials.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Form Settings (8 Columns) */}
+                <form onSubmit={handleSavePayment} className="lg:col-span-7 space-y-6">
+                  {/* 1. UPI Merchant Credentials */}
+                  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
+                      <QrCode className="w-4 h-4 text-[#C9A96E]" /> Merchant UPI Identity
+                    </h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">
+                          Primary UPI ID <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={paymentSettings.upiId}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, upiId: e.target.value.trim() })}
+                          placeholder="e.g. 6376117833@okbizaxis or shreeniwas@upi"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">Accepts payments from GPay, PhonePe, Paytm, BHIM, and bank UPI apps.</p>
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">
+                          Merchant / Payee Name <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={paymentSettings.merchantName}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, merchantName: e.target.value })}
+                          placeholder="e.g. Shreeniwas Properties Pvt Ltd"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">Displays on customer UPI checkout screens & receipts.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. QR Code Graphics & Upload */}
+                  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                      <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] flex items-center gap-2">
+                        <Camera className="w-4 h-4 text-[#C9A96E]" /> QR Code Graphic & Branding
+                      </h4>
+                      <div className="flex items-center gap-2 text-xs">
+                        <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                          <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Custom QR
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleFileUpload(e, (dataUrl) => setPaymentSettings(prev => ({ ...prev, customQrUrl: dataUrl })))}
+                          />
+                        </label>
+                        <span className="text-slate-300">|</span>
+                        <button
+                          type="button"
+                          onClick={() => openGalleryPicker((url) => setPaymentSettings(prev => ({ ...prev, customQrUrl: url })), 'QR Codes & Logos')}
+                          className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Camera className="w-3 h-3" /> Pick Gallery
+                        </button>
+                        {paymentSettings.customQrUrl && (
+                          <>
+                            <span className="text-slate-300">|</span>
+                            <button
+                              type="button"
+                              onClick={() => setPaymentSettings(prev => ({ ...prev, customQrUrl: '' }))}
+                              className="text-rose-600 hover:underline font-bold text-[10px] cursor-pointer"
+                            >
+                              Reset to Auto QR
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-xs space-y-2">
+                      <label className="font-bold uppercase text-slate-700 block">Custom QR Code Image URL</label>
+                      <input
+                        type="text"
+                        value={paymentSettings.customQrUrl}
+                        onChange={(e) => setPaymentSettings({ ...paymentSettings, customQrUrl: e.target.value })}
+                        placeholder="Leave empty to auto-generate dynamic QR from UPI ID"
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                      <p className="text-[10px] text-slate-400">
+                        When empty, the platform auto-generates a high-resolution NPCI QR code containing your UPI ID and dynamic amount.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 3. Direct App Pay & Feature Buttons */}
+                  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
+                      <Smartphone className="w-4 h-4 text-[#C9A96E]" /> Direct App Pay & Modal Action Buttons
+                    </h4>
+
+                    <div className="space-y-3 text-xs">
+                      <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/70 border border-slate-200 cursor-pointer transition">
+                        <input
+                          type="checkbox"
+                          checked={paymentSettings.enableDirectUpiPay}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, enableDirectUpiPay: e.target.checked })}
+                          className="w-4 h-4 accent-[#0A1628] cursor-pointer rounded"
+                        />
+                        <div>
+                          <span className="font-bold text-[#0A1628] block">Enable Direct App Pay Intents (GPay, PhonePe, Paytm, BHIM)</span>
+                          <span className="text-[11px] text-slate-500">
+                            Allows customers on mobile devices to tap a button to directly open their installed UPI app with amount and merchant pre-filled.
+                          </span>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/70 border border-slate-200 cursor-pointer transition">
+                        <input
+                          type="checkbox"
+                          checked={paymentSettings.enableDownloadQr}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, enableDownloadQr: e.target.checked })}
+                          className="w-4 h-4 accent-[#0A1628] cursor-pointer rounded"
+                        />
+                        <div>
+                          <span className="font-bold text-[#0A1628] block">Provide 'Download QR Image' Button</span>
+                          <span className="text-[11px] text-slate-500">
+                            Enables users to download the high-resolution QR graphic directly to their gallery/files to scan in secondary apps.
+                          </span>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/70 border border-slate-200 cursor-pointer transition">
+                        <input
+                          type="checkbox"
+                          checked={paymentSettings.enableShareQr}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, enableShareQr: e.target.checked })}
+                          className="w-4 h-4 accent-[#0A1628] cursor-pointer rounded"
+                        />
+                        <div>
+                          <span className="font-bold text-[#0A1628] block">Provide 'Share QR Code' Button</span>
+                          <span className="text-[11px] text-slate-500">
+                            Allows customers to share the QR code and payment link directly to family, partners, or other devices via WhatsApp/Telegram/Share Sheet.
+                          </span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* 4. Tariffs & Pass Fees */}
+                  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
+                      <IndianRupee className="w-4 h-4 text-[#C9A96E]" /> Platform Visit Pass Tariffs & Fees
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">VIP Cab & Site Visit (₹)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={paymentSettings.vipSiteVisitFee}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, vipSiteVisitFee: parseInt(e.target.value) || 0 })}
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-bold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">Default: ₹499 (Refundable on booking)</p>
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Standard Pass (3 Visits) (₹)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={paymentSettings.standardPassFee}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, standardPassFee: parseInt(e.target.value) || 0 })}
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-bold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">Default: ₹500 (No expiry)</p>
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Premium Pass (6 Mo VIP) (₹)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={paymentSettings.premiumPassFee}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, premiumPassFee: parseInt(e.target.value) || 0 })}
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-bold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">Default: ₹999 (Unlimited walkthroughs)</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 5. Direct Bank Transfer Credentials */}
+                  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-[#C9A96E]" /> Direct Bank Wire / NEFT / RTGS Details
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Bank Name</label>
+                        <input
+                          type="text"
+                          value={paymentSettings.bankName}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, bankName: e.target.value })}
+                          placeholder="e.g. HDFC Bank Ltd"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Account Holder / Beneficiary</label>
+                        <input
+                          type="text"
+                          value={paymentSettings.accountHolder}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, accountHolder: e.target.value })}
+                          placeholder="e.g. Shreeniwas Properties Pvt Ltd"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Account Number</label>
+                        <input
+                          type="text"
+                          value={paymentSettings.accountNumber}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, accountNumber: e.target.value })}
+                          placeholder="e.g. 50200089123456"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">IFSC Code</label>
+                        <input
+                          type="text"
+                          value={paymentSettings.ifscCode}
+                          onChange={(e) => setPaymentSettings({ ...paymentSettings, ifscCode: e.target.value.toUpperCase() })}
+                          placeholder="e.g. HDFC0001234"
+                          className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 6. Custom Instructions */}
+                  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2">
+                      Customer Payment Instructions
+                    </h4>
+                    <textarea
+                      rows={3}
+                      value={paymentSettings.paymentInstructions}
+                      onChange={(e) => setPaymentSettings({ ...paymentSettings, paymentInstructions: e.target.value })}
+                      className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-4 bg-[#0A1628] text-[#C9A96E] font-extrabold text-sm rounded-2xl shadow-xl hover:bg-[#132238] transition cursor-pointer border border-[#C9A96E]/40 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+                  >
+                    <ShieldCheck className="w-5 h-5 text-[#C9A96E]" />
+                    <span>Save Super Admin Payment Setup Live</span>
+                  </button>
+                </form>
+
+                {/* Right Column: Live Interactive Customer Checkout Preview (5 Columns) */}
+                <div className="lg:col-span-5 sticky top-24 space-y-4">
+                  <div className="bg-[#0A1628] text-white p-4 rounded-3xl border-2 border-[#C9A96E]/40 shadow-2xl">
+                    <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-[#C9A96E]" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-[#C9A96E]">
+                          Live Customer Checkout Preview
+                        </span>
+                      </div>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/40 font-mono">
+                        Active
+                      </span>
+                    </div>
+
+                    {/* Miniature Modal Card Mockup */}
+                    <div className="bg-white text-[#0A1628] rounded-2xl p-4 space-y-4 shadow-lg">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                        <div>
+                          <p className="text-[10px] text-slate-500 font-medium">VIP Site Visit Pass</p>
+                          <p className="font-bold text-[#0A1628] text-xs">Vaishali Nagar Luxury Villa</p>
+                        </div>
+                        <span className="text-lg font-black text-emerald-700">₹{paymentSettings.vipSiteVisitFee || 499}</span>
+                      </div>
+
+                      {/* Live Generated QR */}
+                      <div className="text-center space-y-2">
+                        <div className="inline-block p-2.5 bg-white rounded-2xl border-2 border-[#C9A96E]/40 shadow-md">
+                          <img
+                            src={paymentSettings.customQrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=${encodeURIComponent(paymentSettings.upiId)}%26pn=${encodeURIComponent(paymentSettings.merchantName)}%26am=${paymentSettings.vipSiteVisitFee || 499}%26cu=INR`}
+                            alt="Preview QR"
+                            className="w-36 h-36 object-contain rounded-lg mx-auto"
+                          />
+                        </div>
+                        <div className="text-[10px] text-slate-600 font-bold flex items-center justify-center gap-1">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Payee: {paymentSettings.merchantName || 'Shreeniwas Properties'}</span>
+                        </div>
+                      </div>
+
+                      {/* Preview Action Buttons */}
+                      <div className="grid grid-cols-2 gap-2 text-[10px] font-bold">
+                        <div className="p-2 bg-slate-100 rounded-lg text-center border border-slate-200 text-slate-700 flex items-center justify-center gap-1">
+                          <Download className="w-3 h-3" /> Download QR
+                        </div>
+                        <div className="p-2 bg-slate-100 rounded-lg text-center border border-slate-200 text-slate-700 flex items-center justify-center gap-1">
+                          <Share2 className="w-3 h-3" /> Share QR
+                        </div>
+                      </div>
+
+                      {/* Direct App Pay Preview */}
+                      {paymentSettings.enableDirectUpiPay && (
+                        <div className="space-y-1.5 pt-1">
+                          <div className="p-2 bg-[#0A1628] text-[#C9A96E] rounded-xl text-center text-xs font-bold flex items-center justify-center gap-1.5">
+                            <Smartphone className="w-3.5 h-3.5" /> Direct Pay via Any UPI App
+                          </div>
+                          <div className="grid grid-cols-4 gap-1 text-[9px] font-extrabold text-center">
+                            <span className="p-1.5 bg-slate-100 rounded-lg text-[#4285F4] border border-slate-200">GPay</span>
+                            <span className="p-1.5 bg-slate-100 rounded-lg text-[#5F259F] border border-slate-200">PhonePe</span>
+                            <span className="p-1.5 bg-slate-100 rounded-lg text-[#00BAF2] border border-slate-200">Paytm</span>
+                            <span className="p-1.5 bg-slate-100 rounded-lg text-[#00897B] border border-slate-200">BHIM</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* UPI ID Strip */}
+                      <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 text-[10px] flex justify-between items-center">
+                        <span className="text-slate-500 font-mono truncate max-w-[170px]">{paymentSettings.upiId}</span>
+                        <span className="text-[#C9A96E] font-bold">Verified UPI</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 p-3 bg-white/5 rounded-2xl text-[11px] text-slate-300 space-y-1 border border-white/5">
+                      <p className="font-bold text-white flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Instant Customer Sync
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        Any updates saved here immediately apply to all visit pass checkouts, chatbots, and tariff bookings across the entire site.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

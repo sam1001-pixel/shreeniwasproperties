@@ -18,13 +18,16 @@ import {
   Percent,
   BadgeCheck,
   Info,
-  Clock
+  Clock,
+  QrCode
 } from 'lucide-react';
 import ScheduleVisitModal from './schedule-visit-modal';
+import SecureQrPaymentModal from './secure-qr-payment-modal';
 
 export default function PricingTariffSection({ showHeader = true }: { showHeader?: boolean }) {
   const [activeTab, setActiveTab] = useState<'visits' | 'brokerage'>('visits');
   const [selectedPackageForSchedule, setSelectedPackageForSchedule] = useState<any>(null);
+  const [payingPackage, setPayingPackage] = useState<{ name: string; amount: number; purpose: string } | null>(null);
 
   const phoneNumber = '+91 6376117833';
   const whatsappBase = 'https://wa.me/916376117833';
@@ -222,6 +225,21 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
                     </p>
 
                     <div className="space-y-1.5">
+                      {pkg.price !== 'FREE' && (
+                        <button
+                          type="button"
+                          onClick={() => setPayingPackage({
+                            name: `${pkg.name} (${pkg.price})`,
+                            amount: pkg.id === 'standard' ? 500 : 999,
+                            purpose: `${pkg.name} Pass Booking`
+                          })}
+                          className="w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 bg-[#0A1628] hover:bg-[#132238] text-[#C9A96E] transition-all cursor-pointer shadow-xs border border-[#C9A96E]/30"
+                        >
+                          <QrCode className="w-3.5 h-3.5 text-[#C9A96E]" />
+                          <span>Pay {pkg.price} via UPI / QR Code</span>
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={() => setSelectedPackageForSchedule(pkg)}
@@ -527,6 +545,15 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
         propertyTitle={selectedPackageForSchedule ? `${selectedPackageForSchedule.name} (${selectedPackageForSchedule.price})` : "Site Visit"}
         propertyLocation="Rajasthan Premier Properties"
         propertyPrice={selectedPackageForSchedule?.price}
+      />
+
+      {/* Direct UPI QR Payment Modal */}
+      <SecureQrPaymentModal
+        isOpen={!!payingPackage}
+        onClose={() => setPayingPackage(null)}
+        propertyName={payingPackage?.name}
+        amount={payingPackage?.amount}
+        purpose={payingPackage?.purpose}
       />
     </section>
   );

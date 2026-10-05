@@ -6,10 +6,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { 
   MapPin, Building2, ShieldCheck, Zap, BedDouble, Bath, Square, 
   ArrowRight, MessageSquare, ChevronRight, Crown, Phone, Sparkles,
-  TrendingUp, CheckCircle2, Search, ArrowLeft
+  TrendingUp, CheckCircle2, Search, ArrowLeft, Share2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SavePropertyButton from '@/components/shared/save-property-button';
+import PropertyShareModal, { ShareableProperty } from '@/components/shared/property-share-modal';
 
 interface CityInfo {
   name: string;
@@ -261,6 +262,7 @@ export default function CityLocationPage() {
   const [properties, setProperties] = useState<any[]>([]);
   const [selectedLocality, setSelectedLocality] = useState<string>('All');
   const [selectedPurpose, setSelectedPurpose] = useState<string>('All');
+  const [sharingProperty, setSharingProperty] = useState<ShareableProperty | null>(null);
 
   const loadProperties = () => {
     let allProps = [...BASE_MOCK_PROPERTIES];
@@ -517,14 +519,34 @@ export default function CityLocationPage() {
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
-                      <a 
-                        href={`https://wa.me/916376117833?text=Hi,%20I'm%20interested%20in%20${encodeURIComponent(property.title)}%20in%20${encodeURIComponent(cityData.name)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
-                      </a>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSharingProperty({
+                            id: property.id,
+                            slug: property.slug,
+                            title: property.title,
+                            price: property.price,
+                            location: property.location,
+                            type: property.type,
+                            bhk: property.bhk,
+                            image: property.image,
+                          })}
+                          className="p-1.5 text-slate-500 hover:text-[#0A1628] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                          title="Share Property on Apps"
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </button>
+
+                        <a 
+                          href={`https://wa.me/916376117833?text=Hi,%20I'm%20interested%20in%20${encodeURIComponent(property.title)}%20in%20${encodeURIComponent(cityData.name)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
+                        </a>
+                      </div>
 
                       <Link 
                         href={`/properties/${property.slug}`}
@@ -596,6 +618,12 @@ export default function CityLocationPage() {
           </div>
         </div>
 
+        {/* Direct Property Share Modal */}
+        <PropertyShareModal
+          isOpen={!!sharingProperty}
+          onClose={() => setSharingProperty(null)}
+          property={sharingProperty}
+        />
       </div>
     </div>
   );

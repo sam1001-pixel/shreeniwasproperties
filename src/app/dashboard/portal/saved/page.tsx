@@ -23,11 +23,13 @@ import {
 } from 'lucide-react';
 import { getSavedProperties, removeSavedProperty, SavedProperty } from '@/lib/saved-properties';
 import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
+import PropertyShareModal, { ShareableProperty } from '@/components/shared/property-share-modal';
 
 export default function SavedPropertiesPage() {
   const [savedList, setSavedList] = useState<SavedProperty[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>('All');
   const [selectedPropertyForVisit, setSelectedPropertyForVisit] = useState<SavedProperty | null>(null);
+  const [sharingProperty, setSharingProperty] = useState<ShareableProperty | null>(null);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -318,6 +320,23 @@ export default function SavedPropertiesPage() {
                           <Crown className="w-3.5 h-3.5" />
                           <span>Book VIP Visit ₹499</span>
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setSharingProperty({
+                            id: property.id,
+                            slug: property.slug,
+                            title: property.title,
+                            price: property.price,
+                            location: property.location,
+                            type: property.type,
+                            bhk: property.bhk,
+                            image: property.image,
+                          })}
+                          className="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
+                          title="Share on WhatsApp, Telegram & Apps"
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                        </button>
                         <a
                           href={`https://wa.me/916376117833?text=Hi%20Shreeniwas%20Properties,%20I%20have%20shortlisted%20${encodeURIComponent(property.title)}%20(${encodeURIComponent(property.price)})%20in%20${encodeURIComponent(property.location)}.%20Please%20share%20verified%20documents.`}
                           target="_blank"
@@ -355,6 +374,13 @@ export default function SavedPropertiesPage() {
           propertyPrice={selectedPropertyForVisit.price}
         />
       )}
+
+      {/* Direct Property Share Modal */}
+      <PropertyShareModal
+        isOpen={!!sharingProperty}
+        onClose={() => setSharingProperty(null)}
+        property={sharingProperty}
+      />
     </div>
   );
 }
