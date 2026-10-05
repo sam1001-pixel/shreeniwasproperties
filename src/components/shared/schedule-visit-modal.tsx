@@ -279,7 +279,7 @@ export default function ScheduleVisitModal({
                         required
                         value={visitorName}
                         onChange={(e) => setVisitorName(e.target.value)}
-                        placeholder="e.g. Vikramaditya Singh"
+                        placeholder="Enter full name"
                         className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white transition-all text-[#0A1628]"
                       />
                     </div>
@@ -296,7 +296,7 @@ export default function ScheduleVisitModal({
                         required
                         value={visitorPhone}
                         onChange={(e) => setVisitorPhone(e.target.value)}
-                        placeholder="+91 98765 43210"
+                        placeholder="Enter 10-digit mobile number"
                         className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white transition-all text-[#0A1628]"
                       />
                     </div>

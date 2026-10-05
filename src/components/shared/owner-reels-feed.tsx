@@ -150,7 +150,7 @@ export default function OwnerReelsFeed() {
               <Video className="w-3.5 h-3.5" /> Shorts
             </a>
             <a 
-              href="https://wa.me/919876543210" 
+              href="https://wa.me/916376117833" 
               target="_blank" 
               rel="noreferrer" 
               className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow"

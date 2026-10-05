@@ -133,7 +133,7 @@ export default function ContactPage() {
                         type="text" required
                         value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
                         className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
-                        placeholder="Rahul Sharma"
+                        placeholder="Enter your full name"
                       />
                     </div>
                     <div className="space-y-2">
@@ -142,7 +142,7 @@ export default function ContactPage() {
                         type="email" required
                         value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
                         className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
-                        placeholder="rahul@domain.com"
+                        placeholder="Enter your email address"
                       />
                     </div>
                   </div>
@@ -154,7 +154,7 @@ export default function ContactPage() {
                         type="tel" required
                         value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
                         className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#C9A96E] focus:ring-1 focus:ring-[#C9A96E] outline-none transition"
-                        placeholder="+91 98765 43210"
+                        placeholder="Enter 10-digit mobile number"
                       />
                     </div>
                     <div className="space-y-2">

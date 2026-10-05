@@ -165,7 +165,7 @@ export default function NewProjectsSection() {
     // Redirect to WhatsApp consultation
     setTimeout(() => {
       const msg = encodeURIComponent(`Hello Shreeniwas Properties, I am interested in ${brochureModalProject.name} by ${brochureModalProject.builder} (RERA: ${brochureModalProject.reraNumber}). Please send me the official PDF brochure and payment plan.`);
-      window.open(`https://wa.me/919876543210?text=${msg}`, '_blank');
+      window.open(`https://wa.me/916376117833?text=${msg}`, '_blank');
       setBrochureModalProject(null);
       setLeadSent(false);
       setLeadPhone('');
@@ -401,7 +401,7 @@ export default function NewProjectsSection() {
                     required
                     value={leadName}
                     onChange={(e) => setLeadName(e.target.value)}
-                    placeholder="e.g. Vikramaditya Rathore"
+                    placeholder="Enter your full name"
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
@@ -412,7 +412,7 @@ export default function NewProjectsSection() {
                     required
                     value={leadPhone}
                     onChange={(e) => setLeadPhone(e.target.value)}
-                    placeholder="e.g. +91 98765 43210"
+                    placeholder="Enter 10-digit mobile number"
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>

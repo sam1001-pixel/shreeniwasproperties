@@ -571,7 +571,7 @@ export default function MarketingPage() {
                 "logo": "https://shreeniwasproperties-pi.vercel.app/logo.png",
                 "image": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800",
                 "description": "Rajasthan's premier real estate marketplace for luxury villas, modern apartments, commercial properties, and land.",
-                "telephone": "+91-98290-00000",
+                "telephone": "+91 6376117833",
                 "email": "contact@shreeniwasproperties.com",
                 "priceRange": "₹₹₹",
                 "address": {

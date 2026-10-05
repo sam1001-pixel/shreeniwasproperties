@@ -582,7 +582,7 @@ export default function PropertyDetailPage() {
                 </button>
 
                 <div className="mt-4 pt-4 border-t border-white/10 flex gap-2">
-                  <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors">
+                  <a href="https://wa.me/916376117833" target="_blank" rel="noreferrer" className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors">
                     <MessageSquare className="w-4 h-4" /> WhatsApp
                   </a>
                 </div>
@@ -610,7 +610,7 @@ export default function PropertyDetailPage() {
             <span className="text-lg font-bold text-[#0A1628] leading-none">{property.price}</span>
           </div>
           <div className="flex gap-2 flex-1 justify-end">
-            <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="flex-1 max-w-[130px] py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5">
+            <a href="https://wa.me/916376117833" target="_blank" rel="noreferrer" className="flex-1 max-w-[130px] py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5">
               <MessageSquare className="w-3.5 h-3.5"/> WhatsApp
             </a>
             <button onClick={() => setIsBookModalOpen(true)} className="flex-1 max-w-[150px] py-2.5 bg-[#0A1628] text-[#C9A96E] rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-[#C9A96E]/30">

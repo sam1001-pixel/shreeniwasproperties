@@ -86,7 +86,7 @@ export default function LoginPage() {
           name: data.user.user_metadata?.full_name || validatedEmail.split('@')[0],
           email: data.user.email || validatedEmail,
           role: role === "seeker" ? "Property Seeker" : "Property Owner",
-          phone: data.user.user_metadata?.phone || "+91 98765 43210",
+          phone: data.user.user_metadata?.phone || "",
           city: "Jaipur, Rajasthan",
           savedCount: 5,
           visitCount: 2,
@@ -129,7 +129,7 @@ export default function LoginPage() {
         name: matchingUser.name || validatedEmail.split('@')[0],
         email: matchingUser.email,
         role: matchingUser.role || (role === "seeker" ? "Property Seeker" : "Property Owner"),
-        phone: matchingUser.phone || "+91 98765 43210",
+        phone: matchingUser.phone || "",
         city: matchingUser.preferredCity || "Jaipur, Rajasthan",
         avatar: matchingUser.avatar || "",
         savedCount: 3,
@@ -241,7 +241,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[#0A1628] placeholder-slate-400 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white transition-all"
-                  placeholder="name@example.com"
+                  placeholder="Enter your email address"
                 />
               </div>
             </div>

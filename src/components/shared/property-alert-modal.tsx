@@ -119,7 +119,7 @@ export function PropertyAlertModal() {
                       value={contact}
                       onChange={(e) => setContact(e.target.value)}
                       required
-                      placeholder="e.g. +91 9876543210 or email@example.com"
+                      placeholder="Enter your mobile number or email"
                       className="w-full p-4 sm:p-3 text-base sm:text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C9A96E]/50 focus:border-[#C9A96E] transition-all"
                     />
                   </div>

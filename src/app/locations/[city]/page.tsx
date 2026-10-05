@@ -518,7 +518,7 @@ export default function CityLocationPage() {
 
                     <div className="flex items-center justify-between pt-1">
                       <a 
-                        href={`https://wa.me/919876543210?text=Hi,%20I'm%20interested%20in%20${encodeURIComponent(property.title)}%20in%20${encodeURIComponent(cityData.name)}`}
+                        href={`https://wa.me/916376117833?text=Hi,%20I'm%20interested%20in%20${encodeURIComponent(property.title)}%20in%20${encodeURIComponent(cityData.name)}`}
                         target="_blank"
                         rel="noreferrer"
                         className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"

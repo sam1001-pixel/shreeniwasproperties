@@ -18,7 +18,7 @@ const MOCK_VIP_VISITS = [
     property: "The Royal Heritage Residency",
     location: "Vaishali Nagar, Jaipur",
     date: "Oct 15, 2024 (11:00 AM)",
-    agent: "Rajesh Rathore (+91 9876543210)",
+    agent: "Shreeniwas Advisor (+91 6376117833)",
     fee: "₹499 Paid",
     status: "Confirmed & Scheduled"
   },
@@ -27,7 +27,7 @@ const MOCK_VIP_VISITS = [
     property: "Lakeview Palace Heights",
     location: "Fatehpura, Udaipur",
     date: "Oct 18, 2024 (3:30 PM)",
-    agent: "Ananya Sharma (+91 8765432109)",
+    agent: "Shreeniwas Senior Executive (+91 6376117833)",
     fee: "₹499 Paid",
     status: "Cab Pickup Assigned"
   }
