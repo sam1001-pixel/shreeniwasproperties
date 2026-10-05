@@ -100,8 +100,13 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       const saved = localStorage.getItem('shreeniwas_platform_settings');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Seamlessly migrate legacy Jaipur Hawa Mahal image to Jodhpur Royal Palace
-        if (parsed.heroBgUrl === 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop') {
+        // Seamlessly migrate legacy Jaipur or external unsplash placeholder image to Jodhpur Royal Palace
+        if (
+          !parsed.heroBgUrl ||
+          parsed.heroBgUrl.includes('47145ed94245') ||
+          parsed.heroBgUrl.includes('hawa-mahal') ||
+          parsed.heroBgUrl.includes('unsplash.com')
+        ) {
           parsed.heroBgUrl = '/hero/jodhpur-hero-royal.jpg';
           localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
         }

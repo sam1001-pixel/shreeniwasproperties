@@ -59,6 +59,7 @@ export function Navbar() {
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { settings } = useSiteSettings();
+  const [logoError, setLogoError] = useState(false);
 
   // Scroll detection & storage synchronization
   useEffect(() => {
@@ -168,11 +169,12 @@ export function Navbar() {
             aria-label={`${settings.siteTitle || 'Shreeniwas Properties'} Home`}
           >
             <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#0A1628] to-[#162744] flex items-center justify-center border border-[#C9A96E]/50 group-hover:border-[#C9A96E] transition-all shrink-0 shadow-md p-1 group-hover:scale-105">
-              {settings.logoUrl ? (
+              {settings?.logoUrl && !logoError ? (
                 <img 
                   src={settings.logoUrl} 
                   alt={settings.siteTitle || 'Shreeniwas Properties'} 
                   className="w-full h-full object-contain rounded-md sm:rounded-lg" 
+                  onError={() => setLogoError(true)}
                 />
               ) : (
                 <Building2 className="w-4 h-4 sm:w-6 sm:h-6 text-[#C9A96E]" />

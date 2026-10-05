@@ -45,6 +45,7 @@ import OwnerReelsFeed from "@/components/shared/owner-reels-feed";
 import NewProjectsSection from "@/components/shared/new-projects-section";
 import PricingTariffSection from "@/components/shared/pricing-tariff-section";
 import SavePropertyButton from "@/components/shared/save-property-button";
+import { useSiteSettings } from "@/lib/settings/site-settings-context";
 
 // Featured Properties
 const FEATURED_PROPERTIES = [
@@ -322,7 +323,15 @@ export default function MarketingPage() {
   const [isJourneyPaused, setIsJourneyPaused] = useState(false);
   const [isTestimonialPaused, setIsTestimonialPaused] = useState(false);
 
+  const { settings } = useSiteSettings();
   const [heroBg, setHeroBg] = useState('/hero/jodhpur-hero-royal.jpg');
+
+  // Keep heroBg in sync with global settings context
+  useEffect(() => {
+    if (settings?.heroBgUrl) {
+      setHeroBg(settings.heroBgUrl);
+    }
+  }, [settings?.heroBgUrl]);
 
   const loadLiveData = () => {
     try {
@@ -330,8 +339,12 @@ export default function MarketingPage() {
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings);
         if (parsed.heroBgUrl) {
-          // Auto-migrate legacy Jaipur Hawa Mahal link to Jodhpur Royal Palace
-          if (parsed.heroBgUrl === 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop') {
+          // Auto-migrate legacy Jaipur or external unsplash link to Jodhpur Royal Palace
+          if (
+            parsed.heroBgUrl.includes('47145ed94245') ||
+            parsed.heroBgUrl.includes('hawa-mahal') ||
+            parsed.heroBgUrl.includes('unsplash.com')
+          ) {
             parsed.heroBgUrl = '/hero/jodhpur-hero-royal.jpg';
             localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
             setHeroBg('/hero/jodhpur-hero-royal.jpg');
@@ -622,14 +635,14 @@ export default function MarketingPage() {
             src={heroBg} 
             alt="Royal Jodhpur Heritage Palace with Mehrangarh Fort View - Shreeniwas Properties" 
             fill 
-            className="object-cover object-center scale-[1.01] transition-transform duration-1000 ease-out"
+            className="object-cover object-[center_20%] sm:object-center scale-[1.01] transition-transform duration-1000 ease-out"
             priority
             quality={90}
             sizes="100vw"
           />
-          {/* UI/UX Pro Max Multi-Layer Contrast Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A1628]/95 via-[#0A1628]/80 to-[#0A1628]/20 lg:to-transparent"></div>
-          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#0A1628]/80 to-transparent pointer-events-none"></div>
+          {/* UI/UX Pro Max Multi-Layer Contrast Overlays (Mobile optimized contrast so royal Jodhpur palace is vividly visible) */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0A1628]/70 via-[#0A1628]/40 to-[#0A1628]/80 sm:bg-gradient-to-r sm:from-[#0A1628]/95 sm:via-[#0A1628]/80 sm:to-transparent"></div>
+          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#0A1628]/60 to-transparent pointer-events-none"></div>
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0A1628] via-[#0A1628]/60 to-transparent pointer-events-none"></div>
         </div>
 
@@ -661,6 +674,36 @@ export default function MarketingPage() {
             >
               Explore verified rentals, luxury villas, commercial spaces & plots in Jaipur, Jodhpur, Udaipur, Kota & more.
             </motion.p>
+
+            {/* Mobile Visual Landmark Card: Showcases the Authentic Jodhpur Royal Palace directly on mobile screens */}
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="block sm:hidden mb-5"
+            >
+              <div className="relative w-full h-44 rounded-2xl overflow-hidden border border-[#C9A96E]/50 shadow-2xl">
+                <Image
+                  src={heroBg}
+                  alt="Royal Jodhpur Heritage Palace with Mehrangarh Fort View"
+                  fill
+                  className="object-cover object-center"
+                  priority
+                  sizes="100vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/95 via-transparent to-black/30 pointer-events-none" />
+                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0A1628]/85 backdrop-blur-md border border-[#C9A96E]/40 text-white text-[10px] font-semibold">
+                  <MapPin className="w-3 h-3 text-[#C9A96E]" />
+                  <span>Jodhpur HQ • Royal Heritage Palace</span>
+                </div>
+                <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
+                  <span className="text-xs font-serif font-bold text-white drop-shadow">Mehrangarh Vista Architecture</span>
+                  <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-[#C9A96E] text-[#0A1628] shadow">
+                    RERA Verified
+                  </span>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
           <motion.div 

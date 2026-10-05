@@ -7,6 +7,7 @@ import {
   MapPin, Phone, ShieldCheck, ChevronRight, RefreshCw, Calendar
 } from 'lucide-react';
 import SecureQrPaymentModal from './secure-qr-payment-modal';
+import { useSiteSettings } from '@/lib/settings/site-settings-context';
 
 interface ChatMessage {
   id: string;
@@ -37,26 +38,15 @@ const INITIAL_BOT_MESSAGE: ChatMessage = {
 };
 
 export default function AiConciergeChatbot() {
+  const { settings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_BOT_MESSAGE]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [botPfp, setBotPfp] = useState('https://images.unsplash.com/photo-1599661559886-41b80c541b00?auto=format&fit=crop&q=80&w=400');
+  const [imageFailed, setImageFailed] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem('shreeniwas_platform_settings');
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
-        if (parsed.logoUrl) {
-          setBotPfp(parsed.logoUrl);
-        }
-      }
-    } catch (e) {}
-  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -165,31 +155,46 @@ export default function AiConciergeChatbot() {
 
   return (
     <>
-      {/* Floating Toggle Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating Toggle Button (Ultra High Visibility on Mobile & Desktop) */}
+      <div className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-[999] pointer-events-auto pb-[env(safe-area-inset-bottom,0px)]">
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#0A1628] text-[#C9A96E] flex items-center justify-center shadow-2xl border-2 border-[#C9A96E] cursor-pointer group"
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.94 }}
+          className="flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-full bg-[#0A1628] text-white shadow-[0_10px_35px_rgba(10,22,40,0.45)] border-2 border-[#C9A96E] hover:border-white transition-all cursor-pointer group active:scale-95"
           aria-label="Toggle AI Real Estate Assistant"
         >
-          {/* Outer Pulse Glow */}
-          <span className="absolute -inset-1 rounded-full bg-[#C9A96E]/20 animate-ping pointer-events-none"></span>
+          {/* Inner Badge Icon */}
+          <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#C9A96E] to-[#B38F52] text-[#0A1628] flex items-center justify-center font-bold shrink-0 shadow">
+            {isOpen ? (
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-[#0A1628]" />
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#0A1628]" />
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0A1628] animate-pulse" />
+              </>
+            )}
+          </div>
 
-          {isOpen ? (
-            <X className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-          ) : (
-            <div className="relative flex items-center justify-center">
-              <img
-                src={botPfp}
-                alt="Shreeniwas AI"
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-[#C9A96E] shadow"
-              />
-              {hasUnread && (
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-[#0A1628] animate-bounce"></span>
+          {/* Text Labels for Clear Mobile/Desktop Discoverability */}
+          <div className="flex flex-col text-left leading-tight">
+            <div className="flex items-center gap-1">
+              <span className="text-xs sm:text-sm font-bold text-white font-sans">
+                {isOpen ? 'Close Concierge' : 'AI Concierge'}
+              </span>
+              {!isOpen && (
+                <span className="px-1.5 py-0.2 bg-[#C9A96E]/20 text-[#C9A96E] text-[9px] font-extrabold uppercase rounded border border-[#C9A96E]/30">
+                  Live
+                </span>
               )}
             </div>
+            <span className="text-[10px] text-slate-300 font-medium">
+              {isOpen ? 'Tap to minimize' : 'Ask Rajasthan Properties'}
+            </span>
+          </div>
+
+          {hasUnread && !isOpen && (
+            <span className="w-2.5 h-2.5 bg-rose-500 rounded-full animate-bounce shrink-0" />
           )}
         </motion.button>
       </div>
@@ -201,26 +206,36 @@ export default function AiConciergeChatbot() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[540px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden text-[#0A1628]"
+            className="fixed bottom-20 sm:bottom-24 right-3 sm:right-6 z-[999] w-[calc(100vw-1.5rem)] sm:w-[410px] max-w-[420px] h-[calc(100dvh-130px)] sm:h-[550px] max-h-[580px] bg-white rounded-3xl shadow-[0_20px_60px_rgba(10,22,40,0.35)] border border-slate-200 flex flex-col overflow-hidden text-[#0A1628]"
           >
             {/* Chat Header */}
-            <div className="bg-[#0A1628] text-white p-4 flex items-center justify-between border-b border-[#C9A96E]/30">
+            <div className="bg-[#0A1628] text-white p-4 flex items-center justify-between border-b border-[#C9A96E]/30 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 overflow-hidden relative shrink-0">
-                  <img src={botPfp} alt="Shreeniwas AI Concierge" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0A1628]"></span>
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0A1628] to-[#1A2E4C] border border-[#C9A96E]/50 flex items-center justify-center relative shrink-0 shadow-sm overflow-hidden">
+                  {settings?.logoUrl && !imageFailed ? (
+                    <img 
+                      src={settings.logoUrl} 
+                      alt="Shreeniwas AI Concierge" 
+                      className="w-full h-full object-contain p-1" 
+                      onError={() => setImageFailed(true)}
+                    />
+                  ) : (
+                    <Bot className="w-5 h-5 text-[#C9A96E]" />
+                  )}
+                  <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0A1628]"></span>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-sm font-serif font-bold text-white">Shreeniwas AI</h3>
                     <span className="px-1.5 py-0.5 bg-[#C9A96E]/20 text-[#C9A96E] text-[9px] font-bold rounded uppercase">Concierge</span>
                   </div>
-                  <p className="text-[10px] text-slate-400">Online • Answering Rajasthan Property Queries</p>
+                  <p className="text-[10px] text-slate-400">Online • Verified Rajasthan Advisory</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+                aria-label="Close Chat"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -236,11 +251,9 @@ export default function AiConciergeChatbot() {
                         <User className="w-4 h-4" />
                       </div>
                     ) : (
-                      <img
-                        src={botPfp}
-                        alt="Shreeniwas AI"
-                        className="w-7 h-7 rounded-full object-cover border border-[#C9A96E] flex-shrink-0 shadow-sm"
-                      />
+                      <div className="w-7 h-7 rounded-full bg-[#0A1628] border border-[#C9A96E]/60 text-[#C9A96E] flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <Bot className="w-4 h-4 text-[#C9A96E]" />
+                      </div>
                     )}
 
                     <div className={`p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
