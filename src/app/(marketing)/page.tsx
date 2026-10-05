@@ -321,7 +321,7 @@ export default function MarketingPage() {
   const [isJourneyPaused, setIsJourneyPaused] = useState(false);
   const [isTestimonialPaused, setIsTestimonialPaused] = useState(false);
 
-  const [heroBg, setHeroBg] = useState('https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop');
+  const [heroBg, setHeroBg] = useState('/hero/jodhpur-hero-royal.jpg');
 
   const loadLiveData = () => {
     try {
@@ -329,7 +329,14 @@ export default function MarketingPage() {
       if (savedSettings) {
         const parsed = JSON.parse(savedSettings);
         if (parsed.heroBgUrl) {
-          setHeroBg(parsed.heroBgUrl);
+          // Auto-migrate legacy Jaipur Hawa Mahal link to Jodhpur Royal Palace
+          if (parsed.heroBgUrl === 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop') {
+            parsed.heroBgUrl = '/hero/jodhpur-hero-royal.jpg';
+            localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
+            setHeroBg('/hero/jodhpur-hero-royal.jpg');
+          } else {
+            setHeroBg(parsed.heroBgUrl);
+          }
         }
       }
 
@@ -612,12 +619,17 @@ export default function MarketingPage() {
         <div className="absolute inset-0 z-0">
           <Image 
             src={heroBg} 
-            alt="Rajasthan Royal Architecture" 
+            alt="Royal Jodhpur Heritage Palace with Mehrangarh Fort View - Shreeniwas Properties" 
             fill 
-            className="object-cover object-center"
+            className="object-cover object-center scale-[1.01] transition-transform duration-1000 ease-out"
             priority
+            quality={90}
+            sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A1628]/95 via-[#0A1628]/80 to-transparent"></div>
+          {/* UI/UX Pro Max Multi-Layer Contrast Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A1628]/95 via-[#0A1628]/80 to-[#0A1628]/20 lg:to-transparent"></div>
+          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#0A1628]/80 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0A1628] via-[#0A1628]/60 to-transparent pointer-events-none"></div>
         </div>
 
         <div className="relative z-10 container mx-auto max-w-6xl">

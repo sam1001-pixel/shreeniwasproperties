@@ -207,7 +207,7 @@ export default function AdminDashboard() {
     siteTitle: 'Shreeniwas Properties',
     tagline: 'Exclusive Real Estate & Rental Network in Rajasthan',
     logoUrl: '',
-    heroBgUrl: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop',
+    heroBgUrl: '/hero/jodhpur-hero-royal.jpg',
     contactEmail: 'contact@shreeniwasproperties.com',
     supportPhone: '+91 6376117833',
     headOffice: '15 Royal Avenue, C-Scheme, Jaipur, Rajasthan 302001',
@@ -2121,13 +2121,63 @@ export default function AdminDashboard() {
                         </button>
                       </div>
                     </div>
-                    <input
-                      type="text"
-                      value={siteSettings.heroBgUrl || ''}
-                      onChange={(e) => setSiteSettings({ ...siteSettings, heroBgUrl: e.target.value })}
-                      placeholder="https://images.unsplash.com/... or upload Rajasthan royal background image"
-                      className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    />
+                    <div className="flex gap-3 items-center">
+                      <div className="relative w-16 h-12 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex-shrink-0 shadow-inner">
+                        {siteSettings.heroBgUrl ? (
+                          <img 
+                            src={siteSettings.heroBgUrl} 
+                            alt="Hero preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400 font-bold">No Img</div>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={siteSettings.heroBgUrl || ''}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, heroBgUrl: e.target.value })}
+                        placeholder="https://... or /hero/... image path"
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+                    {/* Quick Jodhpur Presets */}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Jodhpur Presets:</span>
+                      <button
+                        type="button"
+                        onClick={() => setSiteSettings(prev => ({ ...prev, heroBgUrl: '/hero/jodhpur-hero-royal.jpg' }))}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${
+                          siteSettings.heroBgUrl === '/hero/jodhpur-hero-royal.jpg'
+                            ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E]'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                        }`}
+                      >
+                        🏰 Royal Heritage Palace (Active)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSiteSettings(prev => ({ ...prev, heroBgUrl: '/hero/jodhpur-hero-villa.jpg' }))}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${
+                          siteSettings.heroBgUrl === '/hero/jodhpur-hero-villa.jpg'
+                            ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E]'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                        }`}
+                      >
+                        🏊 Modern Luxury Villa
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSiteSettings(prev => ({ ...prev, heroBgUrl: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=2070' }))}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all ${
+                          siteSettings.heroBgUrl?.includes('photo-1542314831-068cd1dbfeeb')
+                            ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E]'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                        }`}
+                      >
+                        🌄 Mehrangarh Vista (Unsplash)
+                      </button>
+                    </div>
                     <p className="text-[10px] text-slate-400 mt-1">Rajasthan heritage fort/palace background image displayed on main landing page hero.</p>
                   </div>
 

@@ -24,7 +24,7 @@ export const DEFAULT_SITE_SETTINGS: GlobalSiteSettings = {
   siteTitle: siteConfig.name,
   tagline: 'Exclusive Real Estate & Rental Network in Rajasthan',
   logoUrl: '',
-  heroBgUrl: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop',
+  heroBgUrl: '/hero/jodhpur-hero-royal.jpg',
   contactEmail: siteConfig.contact.email,
   supportPhone: siteConfig.contact.phone,
   headOffice: siteConfig.contact.address,
@@ -60,6 +60,11 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       const saved = localStorage.getItem('shreeniwas_platform_settings');
       if (saved) {
         const parsed = JSON.parse(saved);
+        // Seamlessly migrate legacy Jaipur Hawa Mahal image to Jodhpur Royal Palace
+        if (parsed.heroBgUrl === 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=2070&auto=format&fit=crop') {
+          parsed.heroBgUrl = '/hero/jodhpur-hero-royal.jpg';
+          localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
+        }
         setSettings((prev) => ({
           ...prev,
           ...parsed,
