@@ -158,38 +158,6 @@ export function Navbar() {
             : 'bg-white/90 backdrop-blur-md border-b border-slate-100/80 py-1.5 sm:py-2.5'
         )}
       >
-        {/* Top Mini Brand Utility Bar (High-end Royal Micro-Strip) */}
-        <div className="hidden xl:block border-b border-slate-100/90 pb-1.5 mb-1 text-[11px] text-slate-500 font-medium">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <div className="flex items-center gap-5">
-              <span className="inline-flex items-center gap-1.5 text-slate-600 font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#C9A96E]" />
-                <span>Rajasthan RERA Verified Portfolio • 0% Brokerage Deals</span>
-              </span>
-              <span className="text-slate-300">•</span>
-              <span className="text-slate-500">
-                Hubs: Jaipur, Jodhpur (HQ), Udaipur, Kota, Ajmer
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <a 
-                href={`tel:${displayPhone.replace(/\s+/g, '')}`}
-                className="inline-flex items-center gap-1.5 text-slate-700 hover:text-[#C9A96E] font-semibold transition-colors"
-              >
-                <Phone className="w-3 h-3 text-[#C9A96E]" />
-                <span>VIP Desk: {displayPhone}</span>
-              </a>
-              <span className="text-slate-300">•</span>
-              <Link 
-                href="/tariff" 
-                className="hover:text-[#C9A96E] transition-colors font-medium text-slate-600"
-              >
-                Transparent Tariffs & Visit Passes
-              </Link>
-            </div>
-          </div>
-        </div>
-
         {/* Main Navbar Bar */}
         <div className="h-14 sm:h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           
