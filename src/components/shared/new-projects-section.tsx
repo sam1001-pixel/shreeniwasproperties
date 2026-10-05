@@ -103,7 +103,6 @@ export default function NewProjectsSection() {
   const [leadName, setLeadName] = useState('');
   const [leadSent, setLeadSent] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     try {
@@ -137,26 +136,6 @@ export default function NewProjectsSection() {
   const filteredProjects = selectedCity === 'All' 
     ? projects 
     : projects.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
-
-  // Infinite left-to-right smooth auto-scroll effect
-  useEffect(() => {
-    let animId: number;
-    const scrollStep = () => {
-      if (scrollContainerRef.current && !isPaused) {
-        const container = scrollContainerRef.current;
-        // When scrolled halfway across duplicated items, loop seamlessly
-        if (container.scrollLeft >= container.scrollWidth / 2) {
-          container.scrollLeft = 0;
-        } else {
-          container.scrollLeft += 0.8;
-        }
-      }
-      animId = requestAnimationFrame(scrollStep);
-    };
-
-    animId = requestAnimationFrame(scrollStep);
-    return () => cancelAnimationFrame(animId);
-  }, [isPaused, filteredProjects]);
 
   const handleBrochureDownload = (e: React.FormEvent) => {
     e.preventDefault();
@@ -371,22 +350,16 @@ export default function NewProjectsSection() {
           </div>
         </div>
 
-        {/* Auto-Scrollable Left to Right Compact Carousel Track */}
-        <div 
-          className="relative overflow-hidden"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={() => setIsPaused(true)}
-          onTouchEnd={() => setIsPaused(false)}
-        >
+        {/* Auto-Scrollable Left to Right Compact Carousel Track (Smooth & Fast like Featured Properties) */}
+        <div className="relative overflow-hidden w-full">
           <div 
             ref={scrollContainerRef}
-            className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"
+            className="flex gap-4 sm:gap-5 animate-marquee-smooth pause-on-hover py-2"
           >
-            {/* First sequence of items */}
-            {filteredProjects.map((proj) => renderCard(proj, `first-${proj.id}`))}
-            {/* Duplicate sequence for seamless loop */}
-            {filteredProjects.map((proj) => renderCard(proj, `second-${proj.id}`))}
+            {/* Tripled sequence for continuous, ultra-smooth seamless looping */}
+            {[...filteredProjects, ...filteredProjects, ...filteredProjects].map((proj, idx) => 
+              renderCard(proj, `proj-${proj.id}-${idx}`)
+            )}
           </div>
         </div>
       </div>
