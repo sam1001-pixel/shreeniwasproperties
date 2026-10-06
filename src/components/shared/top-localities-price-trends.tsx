@@ -251,19 +251,6 @@ export default function TopLocalitiesPriceTrends({
             ))}
           </div>
         </div>
-
-        {/* Live Sync Status Footer */}
-        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Live Price Sync Active: Data updated automatically with real transactions & RERA registries.</span>
-          </div>
-          {lastRefreshedTime && (
-            <span className="text-[10px] text-slate-400">
-              Last synced at {lastRefreshedTime} IST
-            </span>
-          )}
-        </div>
       </div>
     </section>
   );
