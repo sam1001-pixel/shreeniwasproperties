@@ -207,9 +207,9 @@ export default function AdminDashboard() {
 
   // Expanded Platform & Social Settings State
   const [siteSettings, setSiteSettings] = useState({
-    siteTitle: 'Shreeniwas Properties',
+    siteTitle: 'Shreeniwas Rentals',
     tagline: 'Exclusive Real Estate & Rental Network in Rajasthan',
-    logoUrl: '',
+    logoUrl: '/logo/shreeniwas-logo-dark.png',
     heroBgUrl: '/hero/jodhpur-hero-royal.jpg',
     contactEmail: 'contact@shreeniwasproperties.com',
     supportPhone: '+91 6376117833',
@@ -282,7 +282,15 @@ export default function AdminDashboard() {
 
     // Load Platform Settings
     const savedSettings = localStorage.getItem('shreeniwas_platform_settings');
-    if (savedSettings) { try { setSiteSettings(JSON.parse(savedSettings)); } catch (e) {} }
+    if (savedSettings) { 
+      try { 
+        const parsed = JSON.parse(savedSettings); 
+        if (!parsed.logoUrl) {
+          parsed.logoUrl = '/logo/shreeniwas-logo-dark.png';
+        }
+        setSiteSettings(parsed); 
+      } catch (e) {} 
+    }
 
     // Load Media Gallery
     const savedGallery = localStorage.getItem('shreeniwas_media_gallery');
