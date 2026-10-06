@@ -160,7 +160,7 @@ export function Navbar() {
         )}
       >
         {/* Main Navbar Bar */}
-        <div className="h-14 sm:h-16 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="h-16 sm:h-20 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* 1. Brand Logo */}
           <Link 
@@ -168,11 +168,11 @@ export function Navbar() {
             className="flex items-center gap-2 group min-w-0 shrink focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F09032] rounded-xl"
             aria-label={`${settings.siteTitle || 'Shreeniwas Rentals Jodhpur'} Home`}
           >
-            <div className="h-9 sm:h-11 flex items-center justify-center shrink-0 transition-transform group-hover:scale-102">
+            <div className="h-12 sm:h-16 flex items-center justify-center shrink-0 transition-transform group-hover:scale-102">
               <img 
                 src="/logo/shreeniwas-logo-transparent.png" 
                 alt="Shreeniwas Rentals Jodhpur" 
-                className="h-8 sm:h-10 w-auto max-w-[190px] sm:max-w-[260px] object-contain" 
+                className="h-10 sm:h-13 md:h-14 w-auto max-w-[210px] sm:max-w-[280px] md:max-w-[320px] object-contain drop-shadow-[0_1px_2px_rgba(10,22,40,0.06)]" 
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/logo/shreeniwas-logo-icon.png';
                 }}
@@ -533,11 +533,11 @@ export function Navbar() {
             >
               {/* Drawer Header */}
               <div className="p-5 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#112A50]/95 backdrop-blur-md z-10">
-                <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
+                <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-0.5">
                   <img 
                     src="/logo/shreeniwas-logo-dark.png" 
                     alt="Shreeniwas Rentals Jodhpur" 
-                    className="h-8 w-auto object-contain"
+                    className="h-10 sm:h-12 w-auto max-w-[220px] object-contain"
                   />
                 </Link>
                 <button

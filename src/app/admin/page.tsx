@@ -893,7 +893,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {siteSettings.logoUrl ? (
-              <img src={siteSettings.logoUrl} alt="Logo" className="h-9 w-auto rounded-lg object-contain" />
+              <img src={siteSettings.logoUrl} alt="Logo" className="h-11 sm:h-12 w-auto rounded-lg object-contain" />
             ) : (
               <div className="w-9 h-9 rounded-xl bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center text-[#C9A96E]">
                 <Crown className="w-5 h-5" />

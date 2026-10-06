@@ -324,20 +324,20 @@ export default function AiConciergeChatbot() {
           onClick={() => setIsOpen(!isOpen)}
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
-          className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#112A50] border-2 border-[#F09032] shadow-[0_10px_35px_rgba(17,42,80,0.5)] flex items-center justify-center p-2.5 transition-all cursor-pointer group active:scale-95"
+          className="relative w-15 h-15 sm:w-18 sm:h-18 rounded-full bg-[#112A50] border-2 sm:border-[2.5px] border-[#F09032] shadow-[0_12px_36px_rgba(17,42,80,0.55)] flex items-center justify-center p-2 sm:p-2.5 transition-all cursor-pointer group active:scale-95"
           aria-label={isOpen ? "Close AI Concierge" : "Open Shreeniwas AI Concierge"}
           title="Shreeniwas AI Concierge (GPS & 1st Free Visit)"
         >
           {/* Ambient Glow Ring */}
-          <span className="absolute -inset-1 rounded-full bg-[#F09032]/25 blur-sm -z-10 group-hover:bg-[#F09032]/40 transition-all animate-pulse" />
+          <span className="absolute -inset-1 rounded-full bg-[#F09032]/25 blur-sm -z-10 group-hover:bg-[#F09032]/45 transition-all animate-pulse" />
 
           {isOpen ? (
-            <X className="w-6 h-6 text-white" />
+            <X className="w-7 h-7 text-white" />
           ) : (
             <img 
               src="/logo/shreeniwas-logo-icon.png" 
               alt="Shreeniwas Logo" 
-              className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform" 
+              className="w-full h-full object-contain drop-shadow-md group-hover:scale-105 transition-transform" 
             />
           )}
 
@@ -365,7 +365,7 @@ export default function AiConciergeChatbot() {
             {/* Chat Header */}
             <div className="bg-[#112A50] text-white p-4 flex items-center justify-between border-b border-[#F09032]/30 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-white border border-[#F09032]/50 flex items-center justify-center relative shrink-0 shadow-sm overflow-hidden p-1">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white border border-[#F09032]/60 flex items-center justify-center relative shrink-0 shadow-sm overflow-hidden p-1">
                   <img 
                     src="/logo/shreeniwas-logo-icon.png" 
                     alt="Shreeniwas AI Concierge" 
@@ -400,7 +400,7 @@ export default function AiConciergeChatbot() {
                         <User className="w-4 h-4" />
                       </div>
                     ) : (
-                      <div className="w-7 h-7 rounded-full bg-[#112A50] border border-[#F09032]/60 text-[#F09032] flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden p-0.5">
+                      <div className="w-8 h-8 rounded-full bg-[#112A50] border border-[#F09032]/60 text-[#F09032] flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden p-0.5">
                         <img src="/logo/shreeniwas-logo-icon.png" alt="Bot" className="w-full h-full object-contain" />
                       </div>
                     )}

@@ -25,11 +25,11 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Column 1: Brand & Social */}
           <div className="space-y-6">
-            <Link href="/" className="inline-flex items-center gap-2 py-1">
+            <Link href="/" className="inline-flex items-center gap-2 py-1 group">
               <img 
                 src="/logo/shreeniwas-logo-dark.png" 
                 alt={settings.siteTitle || 'Shreeniwas Rentals Jodhpur'} 
-                className="h-9 sm:h-10 w-auto object-contain"
+                className="h-12 sm:h-14 md:h-16 w-auto max-w-[280px] object-contain transition-transform group-hover:scale-[1.02]"
               />
             </Link>
             <p className="text-white/70 text-sm leading-relaxed">
