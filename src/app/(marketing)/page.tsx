@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -34,7 +34,8 @@ import {
   FileCheck,
   Quote,
   Clock,
-  BookOpen
+  BookOpen,
+  X
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -53,6 +54,7 @@ import { useSiteSettings } from "@/lib/settings/site-settings-context";
 const FEATURED_PROPERTIES = [
   {
     id: 1,
+    slug: "royal-heritage-residency-jaipur",
     title: "The Royal Heritage Residency",
     location: "Vaishali Nagar, Jaipur",
     city: "Jaipur",
@@ -61,6 +63,7 @@ const FEATURED_PROPERTIES = [
     sqft: 3200,
     bhk: "4 BHK",
     type: "Luxury Villa",
+    category: "Luxury Villas",
     status: "Ready to Move",
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop&sig=1",
     reraApproved: true,
@@ -69,6 +72,7 @@ const FEATURED_PROPERTIES = [
   },
   {
     id: 2,
+    slug: "lakeview-palace-heights-udaipur",
     title: "Lakeview Palace Heights",
     location: "Fatehpura, Udaipur",
     city: "Udaipur",
@@ -77,6 +81,7 @@ const FEATURED_PROPERTIES = [
     sqft: 2200,
     bhk: "3 BHK",
     type: "Penthouse Apartment",
+    category: "Apartments",
     status: "Under Construction",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop&sig=2",
     reraApproved: true,
@@ -85,6 +90,7 @@ const FEATURED_PROPERTIES = [
   },
   {
     id: 3,
+    slug: "sun-city-heritage-haveli-jodhpur",
     title: "Sun City Heritage Haveli",
     location: "Ratanada, Jodhpur",
     city: "Jodhpur",
@@ -93,6 +99,7 @@ const FEATURED_PROPERTIES = [
     sqft: 4500,
     bhk: "5+ BHK",
     type: "Heritage Haveli",
+    category: "Havelis",
     status: "Ready to Move",
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop&sig=3",
     reraApproved: true,
@@ -101,6 +108,7 @@ const FEATURED_PROPERTIES = [
   },
   {
     id: 4,
+    slug: "shreeniwas-prime-enclave-jaipur",
     title: "Shreeniwas Prime Enclave",
     location: "Mansarovar, Jaipur",
     city: "Jaipur",
@@ -109,6 +117,7 @@ const FEATURED_PROPERTIES = [
     sqft: 1500,
     bhk: "3 BHK",
     type: "Modern Apartment",
+    category: "Apartments",
     status: "Ready to Move",
     image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800&auto=format&fit=crop&sig=4",
     reraApproved: true,
@@ -117,6 +126,7 @@ const FEATURED_PROPERTIES = [
   },
   {
     id: 5,
+    slug: "pink-city-commercial-plaza-jaipur",
     title: "Pink City Commercial Plaza",
     location: "C-Scheme, Jaipur",
     city: "Jaipur",
@@ -125,6 +135,7 @@ const FEATURED_PROPERTIES = [
     sqft: 1500,
     bhk: "Office Space",
     type: "Commercial",
+    category: "Commercial",
     status: "Ready to Move",
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop&sig=5",
     reraApproved: true,
@@ -133,6 +144,7 @@ const FEATURED_PROPERTIES = [
   },
   {
     id: 6,
+    slug: "lake-city-royal-residency-udaipur",
     title: "Lake City Royal Residency",
     location: "Shobhagpura, Udaipur",
     city: "Udaipur",
@@ -141,8 +153,45 @@ const FEATURED_PROPERTIES = [
     sqft: 1350,
     bhk: "2 BHK",
     type: "Apartment",
+    category: "Apartments",
     status: "Ready to Move",
     image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800&auto=format&fit=crop&sig=6",
+    reraApproved: true,
+    verified: true,
+    zeroBrokerage: true
+  },
+  {
+    id: 7,
+    slug: "royal-palms-luxury-villa-jodhpur",
+    title: "Royal Palms Luxury Villa",
+    location: "Sardarpura, Jodhpur",
+    city: "Jodhpur",
+    price: "₹4.1 Cr",
+    pricePerSqft: "₹11,080/sq.ft",
+    sqft: 3700,
+    bhk: "4 BHK",
+    type: "Luxury Villa",
+    category: "Luxury Villas",
+    status: "Ready to Move",
+    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=800&auto=format&fit=crop&sig=7",
+    reraApproved: true,
+    verified: true,
+    zeroBrokerage: true
+  },
+  {
+    id: 8,
+    slug: "marwar-courtyard-heritage-haveli-jodhpur",
+    title: "Marwar Courtyard Heritage Haveli",
+    location: "Old City, Jodhpur",
+    city: "Jodhpur",
+    price: "₹6.8 Cr",
+    pricePerSqft: "₹13,600/sq.ft",
+    sqft: 5000,
+    bhk: "6 BHK",
+    type: "Heritage Haveli",
+    category: "Havelis",
+    status: "Ready to Move",
+    image: "https://images.unsplash.com/photo-1582407947304-fd86f028f716?q=80&w=800&auto=format&fit=crop&sig=8",
     reraApproved: true,
     verified: true,
     zeroBrokerage: true
@@ -310,6 +359,7 @@ const EMICalculator = () => {
 
 export default function MarketingPage() {
   const [propFilter, setPropFilter] = useState('All');
+  const [featuredSearchQuery, setFeaturedSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<number[]>([]);
   const [compareItems, setCompareItems] = useState<PropertyCompareItem[]>([]);
 
@@ -318,12 +368,67 @@ export default function MarketingPage() {
   const [testimonialsList, setTestimonialsList] = useState<any[]>(TESTIMONIALS);
 
   const featuredScrollRef = useRef<HTMLDivElement>(null);
+  const featuredTrackRef = useRef<HTMLDivElement>(null);
   const journeyScrollRef = useRef<HTMLDivElement>(null);
   const testimonialScrollRef = useRef<HTMLDivElement>(null);
 
   const [isFeaturedPaused, setIsFeaturedPaused] = useState(false);
   const [isJourneyPaused, setIsJourneyPaused] = useState(false);
   const [isTestimonialPaused, setIsTestimonialPaused] = useState(false);
+
+  // Filtered properties based on Category Tabs and Live Search
+  const filteredProperties = useMemo(() => {
+    return propertiesList.filter((prop) => {
+      // 1. Tab / Category Filter
+      let matchesTab = true;
+      if (propFilter === 'Luxury Villas') {
+        matchesTab = prop.type?.toLowerCase().includes('villa') || prop.category === 'Luxury Villas';
+      } else if (propFilter === 'Apartments') {
+        matchesTab = prop.type?.toLowerCase().includes('apartment') || prop.type?.toLowerCase().includes('penthouse') || prop.category === 'Apartments';
+      } else if (propFilter === 'Commercial') {
+        matchesTab = prop.type?.toLowerCase().includes('commercial') || prop.category === 'Commercial';
+      } else if (propFilter === 'Havelis') {
+        matchesTab = prop.type?.toLowerCase().includes('haveli') || prop.category === 'Havelis';
+      }
+
+      // 2. Search Query Filter
+      let matchesSearch = true;
+      if (featuredSearchQuery.trim()) {
+        const q = featuredSearchQuery.trim().toLowerCase();
+        matchesSearch = Boolean(
+          (prop.title && prop.title.toLowerCase().includes(q)) ||
+          (prop.location && prop.location.toLowerCase().includes(q)) ||
+          (prop.city && prop.city.toLowerCase().includes(q)) ||
+          (prop.type && prop.type.toLowerCase().includes(q)) ||
+          (prop.bhk && prop.bhk.toLowerCase().includes(q)) ||
+          (prop.price && prop.price.toLowerCase().includes(q))
+        );
+      }
+
+      return matchesTab && matchesSearch;
+    });
+  }, [propertiesList, propFilter, featuredSearchQuery]);
+
+  // Dynamic counts for each category tab
+  const categoryCounts = useMemo(() => {
+    return {
+      'All': propertiesList.length,
+      'Luxury Villas': propertiesList.filter(p => p.type?.toLowerCase().includes('villa') || p.category === 'Luxury Villas').length,
+      'Apartments': propertiesList.filter(p => p.type?.toLowerCase().includes('apartment') || p.type?.toLowerCase().includes('penthouse') || p.category === 'Apartments').length,
+      'Commercial': propertiesList.filter(p => p.type?.toLowerCase().includes('commercial') || p.category === 'Commercial').length,
+      'Havelis': propertiesList.filter(p => p.type?.toLowerCase().includes('haveli') || p.category === 'Havelis').length,
+    };
+  }, [propertiesList]);
+
+  const scrollFeatured = (direction: 'left' | 'right') => {
+    if (featuredTrackRef.current) {
+      const scrollAmount = 340;
+      featuredTrackRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const { settings } = useSiteSettings();
   const [heroBg, setHeroBg] = useState('/hero/jodhpur-hero-royal.jpg');
@@ -762,134 +867,254 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 4. Featured Rajasthan Properties Collection (Unique Scrollable Carousel) */}
-      <section className="py-10 sm:py-12 px-4 bg-white border-b border-slate-100">
+      {/* 4. Featured Rajasthan Properties Collection (Interactive Search & Category Filters) */}
+      <section className="py-10 sm:py-14 px-4 bg-white border-b border-slate-100" id="featured-properties">
         <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          {/* Section Header */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
             <div>
-              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#C9A96E]/10 border border-[#C9A96E]/30 text-[#C9A96E] font-bold text-[10px] uppercase tracking-wider mb-1">
-                <Sparkles className="w-3 h-3" /> Handpicked Collection
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#112A50]/5 border border-[#F09032]/30 text-[#112A50] font-bold text-[11px] uppercase tracking-wider mb-1.5 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#F09032]" /> Handpicked Collection
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F09032]"></span>
+                <span className="text-[#F09032] font-black">{filteredProperties.length} Properties</span>
               </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-[#0A1628]">Featured Rajasthan Properties</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-[#0A1628]">
+                Featured Rajasthan Properties
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Verified luxury homes, historic havelis & premium commercial spaces across Rajasthan
+              </p>
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-              <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
-                {['All', 'Luxury Villas', 'Apartments', 'Commercial', 'Havelis'].map(tab => (
+            {/* Quick Live Search Bar + Arrow Controls */}
+            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                }}
+                className="relative flex items-center flex-1 sm:w-72"
+              >
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                <input
+                  type="text"
+                  value={featuredSearchQuery}
+                  onChange={(e) => setFeaturedSearchQuery(e.target.value)}
+                  placeholder="Search locality, city, title..."
+                  className="w-full pl-9 pr-20 py-2 text-xs bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#F09032] focus:bg-white focus:border-transparent transition-all placeholder:text-slate-400 shadow-2xs"
+                />
+                {featuredSearchQuery ? (
                   <button
-                    key={tab}
-                    onClick={() => setPropFilter(tab)}
-                    className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors ${
-                      propFilter === tab 
-                        ? 'bg-[#0A1628] text-[#C9A96E] border border-[#C9A96E]/40' 
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
+                    type="button"
+                    onClick={() => setFeaturedSearchQuery('')}
+                    className="absolute right-16 text-slate-400 hover:text-slate-600 p-1"
+                    aria-label="Clear search"
                   >
-                    {tab}
+                    <X className="w-3.5 h-3.5" />
                   </button>
-                ))}
+                ) : null}
+                <button
+                  type="submit"
+                  className="absolute right-1 px-3 py-1 bg-[#112A50] hover:bg-[#0A1628] text-white text-[11px] font-bold rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1 active:scale-95"
+                >
+                  Search
+                </button>
+              </form>
+
+              {/* Manual Left/Right Navigation Arrows */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => scrollFeatured('left')}
+                  className="p-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                  aria-label="Previous properties"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollFeatured('right')}
+                  className="p-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                  aria-label="Next properties"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
+
+              {/* Explore All In Search Button */}
+              <Link 
+                href={`/properties?tab=buy${propFilter !== 'All' ? `&type=${encodeURIComponent(propFilter)}` : ''}${featuredSearchQuery ? `&q=${encodeURIComponent(featuredSearchQuery)}` : ''}`}
+                className="inline-flex"
+              >
+                <button className="px-3.5 py-2 bg-[#F09032] hover:bg-[#d87c22] text-[#112A50] font-black text-xs rounded-full transition-all shadow-sm flex items-center gap-1 whitespace-nowrap cursor-pointer active:scale-95">
+                  View All <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </Link>
             </div>
           </div>
 
-          {/* Reels-Style Continuous Marquee Auto-Scroll Track */}
-          <div className="overflow-hidden relative w-full">
-            <div className="flex gap-4 sm:gap-5 animate-marquee-slow pause-on-hover py-2">
-              {[...propertiesList, ...propertiesList, ...propertiesList].map((prop, idx) => {
-                const isCompared = compareItems.some(i => i.id === prop.id);
-                return (
-                  <div 
-                    key={`${prop.id}-${idx}`} 
-                    className="w-72 sm:w-80 flex-shrink-0 bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
-                  >
-                  <div>
-                    <div className="p-2">
-                      <div className="relative aspect-[16/10] rounded-xl overflow-hidden">
-                        <Image 
-                          src={prop.image} 
-                          alt={prop.title} 
-                          fill 
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-
-                        {/* Property Badges Overlay */}
-                        <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
-                          {prop.reraApproved && (
-                            <span className="bg-white/95 backdrop-blur text-[#0A1628] text-[9px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1 border border-emerald-500/20">
-                              <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" /> RERA
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Compare & Heart Buttons */}
-                        <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                          <button 
-                            onClick={() => toggleCompare(prop)}
-                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold backdrop-blur transition-all flex items-center gap-1 ${
-                              isCompared 
-                                ? 'bg-[#C9A96E] text-[#0A1628] shadow' 
-                                : 'bg-white/90 text-slate-700 hover:bg-white'
-                            }`}
-                          >
-                            <Scale className="w-2.5 h-2.5" />
-                            {isCompared ? 'Compared' : 'Compare'}
-                          </button>
-                          <SavePropertyButton property={prop} />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 pt-1">
-                      <div className="flex items-center justify-between text-[10px] text-[#C9A96E] font-bold mb-0.5">
-                        <span>{prop.type}</span>
-                        <span className="text-slate-400 font-normal">{prop.city}</span>
-                      </div>
-                      <h3 className="text-sm font-serif font-bold text-[#0A1628] mb-1 line-clamp-1 group-hover:text-[#C9A96E] transition-colors">
-                        {prop.title}
-                      </h3>
-                      <p className="text-[11px] text-slate-500 flex items-center gap-1 mb-2.5">
-                        <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" /> {prop.location}
-                      </p>
-
-                      {/* Key Spec Matrix */}
-                      <div className="grid grid-cols-3 gap-1 bg-slate-50 p-1.5 rounded-lg text-center mb-2 text-[10px]">
-                        <div>
-                          <span className="text-[8px] text-slate-400 block uppercase">Area</span>
-                          <span className="font-bold text-[#0A1628]">{prop.sqft} sqft</span>
-                        </div>
-                        <div className="border-x border-slate-200">
-                          <span className="text-[8px] text-slate-400 block uppercase">BHK</span>
-                          <span className="font-bold text-[#0A1628]">{prop.bhk}</span>
-                        </div>
-                        <div>
-                          <span className="text-[8px] text-slate-400 block uppercase">Rate</span>
-                          <span className="font-bold text-emerald-700">{prop.pricePerSqft}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card Bottom Price & Action */}
-                  <div className="p-3.5 pt-0">
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                      <div>
-                        <span className="text-[9px] text-slate-400 block">Total Price</span>
-                        <span className="text-base font-bold text-[#0A1628]">{prop.price}</span>
-                      </div>
-                      <Link href={`/properties/${prop.id}`}>
-                        <button className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#0A1628] hover:bg-[#0A1628]/90 px-3 py-1.5 rounded-lg transition-all shadow-sm cursor-pointer">
-                          Details <ArrowRight className="w-3 h-3 text-[#C9A96E]" />
-                        </button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+          {/* Category Filter Tab Buttons */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar border-b border-slate-100">
+            {['All', 'Luxury Villas', 'Apartments', 'Commercial', 'Havelis'].map(tab => {
+              const count = categoryCounts[tab as keyof typeof categoryCounts] || 0;
+              const isActive = propFilter === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setPropFilter(tab)}
+                  className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                    isActive 
+                      ? 'bg-[#112A50] text-[#F09032] border-2 border-[#F09032] shadow-md scale-102' 
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200/80 border border-slate-200/60'
+                  }`}
+                >
+                  <span>{tab}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                    isActive ? 'bg-[#F09032] text-[#112A50]' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
               );
             })}
           </div>
+
+          {/* Cards Track or Empty State */}
+          {filteredProperties.length === 0 ? (
+            <div className="py-14 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-6">
+              <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 mx-auto flex items-center justify-center mb-3">
+                <Search className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-serif font-bold text-[#0A1628] mb-1">
+                No Properties Found
+              </h3>
+              <p className="text-xs text-slate-500 mb-4 max-w-sm mx-auto">
+                No featured listings match "{featuredSearchQuery || propFilter}". Try searching with a different term or reset your search.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setPropFilter('All');
+                  setFeaturedSearchQuery('');
+                }}
+                className="px-4 py-2 bg-[#112A50] hover:bg-[#0A1628] text-[#F09032] text-xs font-bold rounded-xl shadow transition-all cursor-pointer"
+              >
+                Reset Search & Filters
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-hidden relative w-full">
+              {/* Scroll Track with ref for arrow buttons & continuous marquee when All */}
+              <div 
+                ref={featuredTrackRef}
+                className={`flex gap-4 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth py-2 ${
+                  filteredProperties.length >= 3 ? 'animate-marquee-slow pause-on-hover' : ''
+                }`}
+              >
+                {(filteredProperties.length >= 4 
+                  ? [...filteredProperties, ...filteredProperties] 
+                  : [...filteredProperties, ...filteredProperties, ...filteredProperties]
+                ).map((prop, idx) => {
+                  const isCompared = compareItems.some(i => i.id === prop.id);
+                  return (
+                    <div 
+                      key={`${prop.id}-${idx}`} 
+                      className="w-72 sm:w-80 flex-shrink-0 bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                    >
+                      <div>
+                        <div className="p-2">
+                          <div className="relative aspect-[16/10] rounded-xl overflow-hidden">
+                            <Image 
+                              src={prop.image} 
+                              alt={prop.title} 
+                              fill 
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+
+                            {/* Property Badges Overlay */}
+                            <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                              {prop.reraApproved && (
+                                <span className="bg-white/95 backdrop-blur text-[#0A1628] text-[9px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1 border border-emerald-500/20">
+                                  <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" /> RERA
+                                </span>
+                              )}
+                              {prop.zeroBrokerage && (
+                                <span className="bg-[#112A50]/90 backdrop-blur text-[#F09032] text-[9px] font-black px-2 py-0.5 rounded-full shadow">
+                                  0% Brokerage
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Compare & Heart Buttons */}
+                            <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                              <button 
+                                onClick={() => toggleCompare(prop)}
+                                className={`px-2 py-0.5 rounded-full text-[9px] font-bold backdrop-blur transition-all flex items-center gap-1 ${
+                                  isCompared 
+                                    ? 'bg-[#C9A96E] text-[#0A1628] shadow' 
+                                    : 'bg-white/90 text-slate-700 hover:bg-white'
+                                }`}
+                              >
+                                <Scale className="w-2.5 h-2.5" />
+                                {isCompared ? 'Compared' : 'Compare'}
+                              </button>
+                              <SavePropertyButton property={prop} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3.5 pt-1">
+                          <div className="flex items-center justify-between text-[10px] text-[#F09032] font-bold mb-0.5">
+                            <span>{prop.type}</span>
+                            <span className="text-slate-400 font-normal">{prop.city}</span>
+                          </div>
+                          <h3 className="text-sm font-serif font-bold text-[#0A1628] mb-1 line-clamp-1 group-hover:text-[#F09032] transition-colors">
+                            {prop.title}
+                          </h3>
+                          <p className="text-[11px] text-slate-500 flex items-center gap-1 mb-2.5">
+                            <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" /> {prop.location}
+                          </p>
+
+                          {/* Key Spec Matrix */}
+                          <div className="grid grid-cols-3 gap-1 bg-slate-50 p-1.5 rounded-lg text-center mb-2 text-[10px]">
+                            <div>
+                              <span className="text-[8px] text-slate-400 block uppercase">Area</span>
+                              <span className="font-bold text-[#0A1628]">{prop.sqft} sqft</span>
+                            </div>
+                            <div className="border-x border-slate-200">
+                              <span className="text-[8px] text-slate-400 block uppercase">BHK</span>
+                              <span className="font-bold text-[#0A1628]">{prop.bhk}</span>
+                            </div>
+                            <div>
+                              <span className="text-[8px] text-slate-400 block uppercase">Rate</span>
+                              <span className="font-bold text-emerald-700">{prop.pricePerSqft}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Bottom Price & Action */}
+                      <div className="p-3.5 pt-0">
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                          <div>
+                            <span className="text-[9px] text-slate-400 block">Total Price</span>
+                            <span className="text-base font-bold text-[#0A1628]">{prop.price}</span>
+                          </div>
+                          <Link href={`/properties/${prop.slug || prop.id}`}>
+                            <button className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#112A50] hover:bg-[#0A1628] px-3.5 py-1.5 rounded-lg transition-all shadow-sm cursor-pointer active:scale-95">
+                              Details <ArrowRight className="w-3 h-3 text-[#F09032]" />
+                            </button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    </section>
+      </section>
 
       {/* 5. Premier Builder Projects & Townships Section */}
       <NewProjectsSection />

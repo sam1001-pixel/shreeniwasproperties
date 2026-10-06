@@ -140,10 +140,202 @@ const BASE_MOCK_PROPERTIES: Record<string, any> = {
       { name: 'Mehrangarh Fort', distance: '5.0 km', icon: Navigation },
       { name: 'AIIMS Jodhpur', distance: '4.8 km', icon: Stethoscope },
     ],
+  },
+  'shreeniwas-prime-enclave-jaipur': {
+    id: 4,
+    slug: 'shreeniwas-prime-enclave-jaipur',
+    title: 'Shreeniwas Prime Enclave',
+    location: 'Mansarovar, Jaipur',
+    city: 'Jaipur',
+    price: '₹85 Lakh',
+    pricePerSqft: '₹5,666/sq.ft',
+    status: 'Ready to Move',
+    type: 'Modern Apartment',
+    bhk: '3 BHK',
+    area: '1,500 sq.ft',
+    carpetArea: '1,320 sq.ft',
+    baths: 3,
+    balconies: 2,
+    furnishing: 'Semi-Furnished',
+    floor: '6th Floor of 12',
+    parking: '1 Covered Slot',
+    facing: 'North-East',
+    age: 'Ready to Move',
+    available: 'Immediate',
+    reraApproved: true,
+    zeroBrokerage: true,
+    description: 'A contemporary 3 BHK apartment in the thriving locality of Mansarovar, Jaipur. Features cross-ventilation, Italian-style tiles, branded fittings, and access to an exclusive community clubhouse and rooftop yoga zone.',
+    amenities: [
+      { name: 'Clubhouse', icon: Building2 },
+      { name: 'Children Play Area', icon: Trees },
+      { name: '24x7 Security', icon: ShieldCheck },
+      { name: 'Power Backup', icon: Zap },
+      { name: 'Covered Parking', icon: Car },
+    ],
+    nearbyHighlights: [
+      { name: 'Mansarovar Metro Station', distance: '1.2 km', icon: Navigation },
+      { name: 'Jaipur International Airport', distance: '8.5 km', icon: Plane },
+      { name: 'Apex Hospital', distance: '1.8 km', icon: Stethoscope },
+    ],
     images: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
+    ]
+  },
+  'pink-city-commercial-plaza-jaipur': {
+    id: 5,
+    slug: 'pink-city-commercial-plaza-jaipur',
+    title: 'Pink City Commercial Plaza',
+    location: 'C-Scheme, Jaipur',
+    city: 'Jaipur',
+    price: '₹2.1 Cr',
+    pricePerSqft: '₹14,000/sq.ft',
+    status: 'Ready to Move',
+    type: 'Commercial',
+    bhk: 'Office Space',
+    area: '1,500 sq.ft',
+    carpetArea: '1,400 sq.ft',
+    baths: 2,
+    balconies: 1,
+    furnishing: 'Bare Shell / Fitted',
+    floor: '4th Floor Commercial Complex',
+    parking: '3 Reserved Slots',
+    facing: 'Main Road Frontage',
+    age: 'New Construction',
+    available: 'Immediate',
+    reraApproved: true,
+    zeroBrokerage: false,
+    description: 'Grade-A premium commercial office suite in prestigious C-Scheme, Jaipur. Equipped with high-speed elevators, centralized HVAC, round-the-clock facility management, and glass facade frontage ideal for corporate headquarters or legal consultancies.',
+    amenities: [
+      { name: 'Central Air Conditioning', icon: Zap },
+      { name: 'High-Speed Elevators', icon: Building2 },
+      { name: 'Triple Tier Security', icon: ShieldCheck },
+      { name: 'Valet Parking', icon: Car },
+    ],
+    nearbyHighlights: [
+      { name: 'MI Road Business Hub', distance: '0.8 km', icon: Navigation },
+      { name: 'Jaipur Junction', distance: '3.0 km', icon: Train },
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800',
+    ]
+  },
+  'lake-city-royal-residency-udaipur': {
+    id: 6,
+    slug: 'lake-city-royal-residency-udaipur',
+    title: 'Lake City Royal Residency',
+    location: 'Shobhagpura, Udaipur',
+    city: 'Udaipur',
+    price: '₹65 Lakh',
+    pricePerSqft: '₹4,814/sq.ft',
+    status: 'Ready to Move',
+    type: 'Apartment',
+    bhk: '2 BHK',
+    area: '1,350 sq.ft',
+    carpetArea: '1,180 sq.ft',
+    baths: 2,
+    balconies: 2,
+    furnishing: 'Semi-Furnished',
+    floor: '3rd Floor of 7',
+    parking: '1 Covered Slot',
+    facing: 'East Facing',
+    age: 'Ready to Move',
+    available: 'Immediate',
+    reraApproved: true,
+    zeroBrokerage: true,
+    description: 'Charming 2 BHK residence in prime Shobhagpura, Udaipur. Peaceful residential neighborhood, landscaped gardens, water treatment plant, and rapid connectivity to Sukher and the university campus.',
+    amenities: [
+      { name: 'Gated Security', icon: ShieldCheck },
+      { name: 'Community Garden', icon: Trees },
+      { name: 'Covered Parking', icon: Car },
+      { name: 'Power Backup', icon: Zap },
+    ],
+    nearbyHighlights: [
+      { name: 'Sukher Circle', distance: '1.5 km', icon: Navigation },
+      { name: 'Fateh Sagar Lake', distance: '4.2 km', icon: Trees },
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=1200',
       'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800',
+    ]
+  },
+  'royal-palms-luxury-villa-jodhpur': {
+    id: 7,
+    slug: 'royal-palms-luxury-villa-jodhpur',
+    title: 'Royal Palms Luxury Villa',
+    location: 'Sardarpura, Jodhpur',
+    city: 'Jodhpur',
+    price: '₹4.1 Cr',
+    pricePerSqft: '₹11,080/sq.ft',
+    status: 'Ready to Move',
+    type: 'Luxury Villa',
+    bhk: '4 BHK',
+    area: '3,700 sq.ft',
+    carpetArea: '3,300 sq.ft',
+    baths: 4,
+    balconies: 3,
+    furnishing: 'Fully Furnished',
+    floor: 'Independent G+2 Villa',
+    parking: '2 Covered Slots',
+    facing: 'North-East (Vastu Compliant)',
+    age: '0-1 Years',
+    available: 'Immediate',
+    reraApproved: true,
+    zeroBrokerage: true,
+    description: 'Palatial 4 BHK luxury villa situated in prestigious Sardarpura, Jodhpur. Designed with Jodhpur red stone accents, private lawn, modular chef kitchen, home theatre lounge, and private rooftop deck.',
+    amenities: [
+      { name: 'Private Garden Lawn', icon: Trees },
+      { name: 'Home Automation', icon: Zap },
+      { name: '24x7 Security', icon: ShieldCheck },
+      { name: 'Covered Parking', icon: Car },
+    ],
+    nearbyHighlights: [
+      { name: 'Jodhpur Junction', distance: '2.5 km', icon: Train },
+      { name: 'AIIMS Jodhpur', distance: '3.8 km', icon: Stethoscope },
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
+    ]
+  },
+  'marwar-courtyard-heritage-haveli-jodhpur': {
+    id: 8,
+    slug: 'marwar-courtyard-heritage-haveli-jodhpur',
+    title: 'Marwar Courtyard Heritage Haveli',
+    location: 'Old City, Jodhpur',
+    city: 'Jodhpur',
+    price: '₹6.8 Cr',
+    pricePerSqft: '₹13,600/sq.ft',
+    status: 'Ready to Move',
+    type: 'Heritage Haveli',
+    bhk: '6 BHK',
+    area: '5,000 sq.ft',
+    carpetArea: '4,600 sq.ft',
+    baths: 6,
+    balconies: 5,
+    furnishing: 'Heritage Restored Furnishing',
+    floor: 'Heritage Courtyard Mansion',
+    parking: '3 Covered Slots',
+    facing: 'East Facing',
+    age: 'Historically Restored',
+    available: 'Immediate',
+    reraApproved: true,
+    zeroBrokerage: true,
+    description: 'Majestic 6 BHK restored Marwari haveli offering undisturbed views of Mehrangarh Fort. Features hand-carved stone arches, central open courtyard, frescoed ceilings, and heritage brass fittings throughout.',
+    amenities: [
+      { name: 'Heritage Courtyard', icon: Trees },
+      { name: 'Fort View Terrace', icon: Building2 },
+      { name: '24x7 Smart CCTV', icon: ShieldCheck },
+      { name: 'Complete Power Backup', icon: Zap },
+    ],
+    nearbyHighlights: [
+      { name: 'Mehrangarh Fort', distance: '1.2 km', icon: Navigation },
+      { name: 'Clock Tower Market', distance: '0.6 km', icon: Trees },
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1582407947304-fd86f028f716?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
     ]
   }
 };
@@ -161,10 +353,25 @@ export default function PropertyDetailPage() {
   const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
-    // 1. Check built-in mock properties
+    // 1. Check built-in mock properties by direct key
     if (slug && BASE_MOCK_PROPERTIES[slug]) {
       setProperty(BASE_MOCK_PROPERTIES[slug]);
       return;
+    }
+
+    // 2. Check built-in mock properties by ID or slug match
+    if (slug) {
+      const directMatch = Object.entries(BASE_MOCK_PROPERTIES).find(([key, p]: [string, any]) => 
+        key.toLowerCase() === slug.toLowerCase() ||
+        p.id?.toString() === slug.toString() ||
+        p.slug === slug ||
+        p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(slug.toLowerCase()) ||
+        slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
+      );
+      if (directMatch) {
+        setProperty(directMatch[1]);
+        return;
+      }
     }
 
     // 2. Check admin-created properties in localStorage
