@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Calendar, Clock, Sunrise, Sun, Sunset, 
   Crown, Check, CheckCircle2, Phone, User, 
-  MessageSquare, ShieldCheck, MapPin, Sparkles, ArrowRight, QrCode
+  MessageSquare, ShieldCheck, MapPin, Sparkles, ArrowRight, QrCode,
+  Lock, LogIn, Gift, AlertCircle
 } from 'lucide-react';
+import Link from 'next/link';
 import SecureQrPaymentModal from './secure-qr-payment-modal';
 
 export type TimeSlotId = '9am-12' | '12-3pm' | '5-7pm';
@@ -81,6 +83,49 @@ export default function ScheduleVisitModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
+  // Authentication & Visit Tier State
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [completedVisitsCount, setCompletedVisitsCount] = useState<number>(0);
+
+  // Check login status & visit history on open
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    try {
+      const sessionRaw = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
+      if (sessionRaw) {
+        const parsed = JSON.parse(sessionRaw);
+        if (parsed && (parsed.loggedIn || parsed.email)) {
+          setIsLoggedIn(true);
+          setCurrentUser(parsed);
+          if (parsed.name) setVisitorName(parsed.name);
+          if (parsed.phone) setVisitorPhone(parsed.phone);
+
+          // Calculate past visits for this specific user
+          const existingInqsRaw = localStorage.getItem('shreeniwas_inquiries');
+          const existingInqs = existingInqsRaw ? JSON.parse(existingInqsRaw) : [];
+          const userVisits = Array.isArray(existingInqs) 
+            ? existingInqs.filter((i: any) => 
+                (i.email && i.email === parsed.email) || 
+                (i.phone && i.phone === parsed.phone) ||
+                (i.type && i.type.includes('Visit'))
+              )
+            : [];
+          setCompletedVisitsCount(userVisits.length);
+          return;
+        }
+      }
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+    } catch (e) {
+      setIsLoggedIn(false);
+    }
+  }, [isOpen]);
+
+  const isFirstVisitFree = completedVisitsCount === 0;
+  const visitFeeAmount = isFirstVisitFree ? 0 : 499;
+
   const selectedSlot = VISIT_TIME_SLOTS.find(s => s.id === selectedSlotId) || VISIT_TIME_SLOTS[0];
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -93,11 +138,13 @@ export default function ScheduleVisitModal({
       id: `VISIT-${Date.now().toString().slice(-4)}`,
       user: visitorName.trim(),
       phone: visitorPhone.trim(),
-      email: "vip.visit@shreeniwas.com",
+      email: currentUser?.email || "vip.visit@shreeniwas.com",
       property: propertyTitle,
-      type: "VIP Site Visit Booking",
-      status: "Confirmed & Scheduled",
-      query: `Scheduled VIP Site Visit on ${visitDate} during ${selectedSlot.label} (${selectedSlot.timeRange}). ₹499 fee refundable.`,
+      type: isFirstVisitFree ? "1st Complimentary Free Visit" : "Paid VIP Site Visit (₹499)",
+      status: isFirstVisitFree ? "Confirmed (Free 1st Visit)" : "Confirmed & Scheduled (₹499 Paid)",
+      query: isFirstVisitFree
+        ? `Scheduled 1st FREE Complimentary Visit on ${visitDate} during ${selectedSlot.label} (${selectedSlot.timeRange}).`
+        : `Scheduled Paid VIP Site Visit on ${visitDate} during ${selectedSlot.label} (${selectedSlot.timeRange}). ₹499 fee refundable.`,
       visitDate,
       visitTimeSlot: selectedSlot.timeRange,
       slotLabel: selectedSlot.label,
@@ -169,16 +216,20 @@ export default function ScheduleVisitModal({
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#C9A96E]/20 flex items-center justify-center border border-[#C9A96E]/40 text-[#C9A96E] shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-[#F09032]/20 flex items-center justify-center border border-[#F09032]/40 text-[#F09032] shrink-0">
                 <Crown className="w-5 h-5" />
               </div>
               <div className="pr-8">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#C9A96E]">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#F09032]">
                     VIP Site Inspection
                   </span>
-                  <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">
-                    100% Refundable
+                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
+                    isFirstVisitFree
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-[#F09032]/20 text-[#F09032] border border-[#F09032]/30'
+                  }`}>
+                    {isFirstVisitFree ? '1st Visit FREE (₹0)' : 'Next Visit: ₹499 Pass'}
                   </span>
                 </div>
                 <h2 id="schedule-modal-title" className="text-lg sm:text-xl font-serif font-bold text-white mt-0.5 leading-snug">
@@ -192,13 +243,13 @@ export default function ScheduleVisitModal({
               <div className="truncate pr-3">
                 <p className="font-semibold text-white truncate">{propertyTitle}</p>
                 <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                  <MapPin className="w-3 h-3 text-[#C9A96E] shrink-0" /> {propertyLocation}
+                  <MapPin className="w-3 h-3 text-[#F09032] shrink-0" /> {propertyLocation}
                 </p>
               </div>
               {propertyPrice && (
                 <div className="text-right shrink-0">
                   <span className="text-[10px] uppercase text-slate-400 block font-bold">Price</span>
-                  <span className="font-serif font-bold text-[#C9A96E] text-sm">{propertyPrice}</span>
+                  <span className="font-serif font-bold text-[#F09032] text-sm">{propertyPrice}</span>
                 </div>
               )}
             </div>
@@ -206,7 +257,48 @@ export default function ScheduleVisitModal({
 
           {/* Modal Content */}
           <div className="p-5 sm:p-7">
-            {isSuccess ? (
+            {!isLoggedIn ? (
+              /* LOGIN REQUIRED PROMPT - UI/UX PRO MAX PATTERN */
+              <div className="text-center py-4 space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-[#112A50]/10 border border-[#F09032]/30 text-[#112A50] flex items-center justify-center mx-auto shadow-sm">
+                  <Lock className="w-7 h-7 text-[#F09032]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif font-bold text-[#112A50]">Login Required to Book Visit</h3>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                    To schedule accompanied site inspections and claim your <strong className="text-emerald-600 font-bold">1st Free Visit</strong>, please sign in to your verified account.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/70 text-left text-xs space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-amber-900">
+                    <Gift className="w-4 h-4 text-[#F09032]" />
+                    <span>Member Exclusive Visit Policy:</span>
+                  </div>
+                  <ul className="text-[11px] text-amber-800 space-y-1 list-disc list-inside">
+                    <li><strong className="text-emerald-700">1st Site Visit:</strong> 100% Complimentary & Free (₹0)</li>
+                    <li><strong className="text-slate-900">Next Visits:</strong> ₹499 VIP Pass (Dedicated AC Cab & Advisor)</li>
+                  </ul>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                  <Link
+                    href={`/login?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/properties')}`}
+                    className="flex-1 py-3 bg-[#F09032] hover:bg-[#E07E20] text-[#112A50] font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Login to Book (1st Free)</span>
+                  </Link>
+
+                  <Link
+                    href={`/register?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/properties')}`}
+                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    Create Free Account
+                  </Link>
+                </div>
+              </div>
+            ) : isSuccess ? (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -248,14 +340,20 @@ export default function ScheduleVisitModal({
                 </div>
 
                 <div className="pt-2 space-y-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setShowPaymentModal(true)}
-                    className="w-full py-3.5 bg-[#0A1628] hover:bg-[#132238] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md border border-[#C9A96E]/40 cursor-pointer"
-                  >
-                    <QrCode className="w-4 h-4 text-[#C9A96E]" />
-                    <span>Pay ₹499 VIP Pass via UPI QR / Direct Pay</span>
-                  </button>
+                  {isFirstVisitFree ? (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-xs text-emerald-800 font-medium">
+                      🎉 <strong>1st Visit Free Applied!</strong> No payment required. Your property inspection has been reserved at ₹0.
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowPaymentModal(true)}
+                      className="w-full py-3.5 bg-[#0A1628] hover:bg-[#132238] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md border border-[#C9A96E]/40 cursor-pointer"
+                    >
+                      <QrCode className="w-4 h-4 text-[#C9A96E]" />
+                      <span>Pay ₹499 VIP Pass via UPI QR / Direct Pay</span>
+                    </button>
+                  )}
 
                   <a
                     href={`https://wa.me/916376117833?text=${whatsappMessage}`}
@@ -407,14 +505,29 @@ export default function ScheduleVisitModal({
                   </div>
                 </div>
 
-                {/* VIP Perks Micro Banner */}
-                <div className="p-3 rounded-xl bg-[#0A1628]/5 border border-[#C9A96E]/20 text-[11px] text-slate-600 space-y-1">
-                  <div className="flex items-center justify-between font-bold text-[#0A1628]">
-                    <span>VIP Service Package Included</span>
-                    <span className="text-[#C9A96E] bg-[#0A1628] px-2 py-0.5 rounded text-[10px]">₹499 Deposit</span>
+                {/* VIP Perks / Visit Tier Micro Banner */}
+                <div className={`p-3.5 rounded-2xl border text-[11px] space-y-1.5 ${
+                  isFirstVisitFree
+                    ? 'bg-emerald-50/80 border-emerald-200/80 text-emerald-950'
+                    : 'bg-[#0A1628]/5 border-[#C9A96E]/20 text-slate-700'
+                }`}>
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className={`w-3.5 h-3.5 ${isFirstVisitFree ? 'text-emerald-600' : 'text-[#C9A96E]'}`} />
+                      {isFirstVisitFree ? '1st Site Visit Complimentary' : 'VIP Service Package (Subsequent Visit)'}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                      isFirstVisitFree 
+                        ? 'bg-emerald-600 text-white' 
+                        : 'text-[#C9A96E] bg-[#0A1628]'
+                    }`}>
+                      {isFirstVisitFree ? '₹0 Free Pass' : '₹499 Deposit'}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-slate-500 leading-tight">
-                    Includes dedicated AC cab pickup, RERA property document audit, and 1-on-1 walkthrough. 100% refundable against booking.
+                  <p className="text-[10px] leading-tight text-slate-600">
+                    {isFirstVisitFree
+                      ? 'Welcome to Shreeniwas! Your first accompanied inspection with dedicated AC cab and senior advisor is 100% complimentary.'
+                      : 'Includes dedicated AC cab pickup, RERA property document audit, and 1-on-1 walkthrough. 100% refundable against booking.'}
                   </p>
                 </div>
 
@@ -422,15 +535,29 @@ export default function ScheduleVisitModal({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3.5 sm:py-4 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] font-extrabold text-sm rounded-xl transition-all shadow-xl shadow-[#0A1628]/20 flex items-center justify-center gap-2 cursor-pointer border border-[#C9A96E]/40 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70"
+                  className={`w-full py-3.5 sm:py-4 font-extrabold text-sm rounded-xl transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer border hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 ${
+                    isFirstVisitFree
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-emerald-700/20'
+                      : 'bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] border-[#C9A96E]/40 shadow-[#0A1628]/20'
+                  }`}
                 >
                   {isSubmitting ? (
-                    <div className="w-5 h-5 border-2 border-[#C9A96E]/30 border-t-[#C9A96E] rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <Crown className="w-4 h-4 text-[#C9A96E]" />
-                      <span>Confirm {selectedSlot.label} Visit</span>
-                      <ArrowRight className="w-4 h-4" />
+                      {isFirstVisitFree ? (
+                        <>
+                          <Gift className="w-4 h-4 text-white" />
+                          <span>Claim Free 1st Site Visit (₹0)</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      ) : (
+                        <>
+                          <Crown className="w-4 h-4 text-[#C9A96E]" />
+                          <span>Confirm {selectedSlot.label} Visit (₹499)</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
                     </>
                   )}
                 </button>
