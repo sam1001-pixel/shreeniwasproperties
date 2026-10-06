@@ -1,8 +1,8 @@
 export const siteConfig = {
-  name: "Shreeniwas Properties",
-  description: "Premium real estate services across Rajasthan. Find your perfect property — rentals, sales, and commercial spaces in Jaipur, Jodhpur, Udaipur, and all major cities.",
+  name: "Shreeniwas Rentals Jodhpur",
+  description: "Verified rentals, luxury villas, and authentic residential properties in Jodhpur and Rajasthan. Direct owner & verified brokerage with transparent pricing.",
   url: "https://shreeniwasproperties.com",
-  ogImage: "/images/og-default.jpg",
+  ogImage: "/logo/shreeniwas-logo.png",
   links: {
     whatsapp: "https://wa.me/916376117833?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20am%20interested%20in%20a%20property%20consultation",
     instagram: "https://instagram.com/shreeniwasproperties",

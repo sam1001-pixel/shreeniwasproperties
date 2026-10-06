@@ -161,18 +161,19 @@ export default function AiConciergeChatbot() {
           onClick={() => setIsOpen(!isOpen)}
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.94 }}
-          className="flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-full bg-[#0A1628] text-white shadow-[0_10px_35px_rgba(10,22,40,0.45)] border-2 border-[#C9A96E] hover:border-white transition-all cursor-pointer group active:scale-95"
+          className="flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-full bg-[#112A50] text-white shadow-[0_10px_35px_rgba(17,42,80,0.45)] border-2 border-[#F09032] hover:border-white transition-all cursor-pointer group active:scale-95"
           aria-label="Toggle AI Real Estate Assistant"
         >
           {/* Inner Badge Icon */}
-          <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#C9A96E] to-[#B38F52] text-[#0A1628] flex items-center justify-center font-bold shrink-0 shadow">
+          <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#F09032] text-[#112A50] flex items-center justify-center font-bold shrink-0 shadow overflow-hidden">
             {isOpen ? (
-              <X className="w-4 h-4 sm:w-5 sm:h-5 text-[#0A1628]" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-[#112A50]" />
             ) : (
-              <>
-                <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#0A1628]" />
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0A1628] animate-pulse" />
-              </>
+              <img 
+                src="/logo/shreeniwas-logo-icon.png" 
+                alt="Shreeniwas Logo" 
+                className="w-full h-full object-cover" 
+              />
             )}
           </div>
 
@@ -183,18 +184,18 @@ export default function AiConciergeChatbot() {
                 {isOpen ? 'Close Concierge' : 'AI Concierge'}
               </span>
               {!isOpen && (
-                <span className="px-1.5 py-0.2 bg-[#C9A96E]/20 text-[#C9A96E] text-[9px] font-extrabold uppercase rounded border border-[#C9A96E]/30">
+                <span className="px-1.5 py-0.2 bg-[#F09032]/20 text-[#F09032] text-[9px] font-extrabold uppercase rounded border border-[#F09032]/30">
                   Live
                 </span>
               )}
             </div>
             <span className="text-[10px] text-slate-300 font-medium">
-              {isOpen ? 'Tap to minimize' : 'Ask Rajasthan Properties'}
+              {isOpen ? 'Tap to minimize' : 'Ask Jodhpur Rentals & Advisory'}
             </span>
           </div>
 
           {hasUnread && !isOpen && (
-            <span className="w-2.5 h-2.5 bg-rose-500 rounded-full animate-bounce shrink-0" />
+            <span className="w-2.5 h-2.5 bg-[#F09032] rounded-full animate-bounce shrink-0" />
           )}
         </motion.button>
       </div>
@@ -206,30 +207,25 @@ export default function AiConciergeChatbot() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-20 sm:bottom-24 right-3 sm:right-6 z-[999] w-[calc(100vw-1.5rem)] sm:w-[410px] max-w-[420px] h-[calc(100dvh-130px)] sm:h-[550px] max-h-[580px] bg-white rounded-3xl shadow-[0_20px_60px_rgba(10,22,40,0.35)] border border-slate-200 flex flex-col overflow-hidden text-[#0A1628]"
+            className="fixed bottom-20 sm:bottom-24 right-3 sm:right-6 z-[999] w-[calc(100vw-1.5rem)] sm:w-[410px] max-w-[420px] h-[calc(100dvh-130px)] sm:h-[550px] max-h-[580px] bg-white rounded-3xl shadow-[0_20px_60px_rgba(17,42,80,0.35)] border border-slate-200 flex flex-col overflow-hidden text-[#112A50]"
           >
             {/* Chat Header */}
-            <div className="bg-[#0A1628] text-white p-4 flex items-center justify-between border-b border-[#C9A96E]/30 shrink-0">
+            <div className="bg-[#112A50] text-white p-4 flex items-center justify-between border-b border-[#F09032]/30 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0A1628] to-[#1A2E4C] border border-[#C9A96E]/50 flex items-center justify-center relative shrink-0 shadow-sm overflow-hidden">
-                  {settings?.logoUrl && !imageFailed ? (
-                    <img 
-                      src={settings.logoUrl} 
-                      alt="Shreeniwas AI Concierge" 
-                      className="w-full h-full object-contain p-1" 
-                      onError={() => setImageFailed(true)}
-                    />
-                  ) : (
-                    <Bot className="w-5 h-5 text-[#C9A96E]" />
-                  )}
-                  <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0A1628]"></span>
+                <div className="w-10 h-10 rounded-2xl bg-white border border-[#F09032]/50 flex items-center justify-center relative shrink-0 shadow-sm overflow-hidden p-1">
+                  <img 
+                    src="/logo/shreeniwas-logo-icon.png" 
+                    alt="Shreeniwas AI Concierge" 
+                    className="w-full h-full object-contain" 
+                  />
+                  <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#112A50]"></span>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-sm font-serif font-bold text-white">Shreeniwas AI</h3>
-                    <span className="px-1.5 py-0.5 bg-[#C9A96E]/20 text-[#C9A96E] text-[9px] font-bold rounded uppercase">Concierge</span>
+                    <span className="px-1.5 py-0.5 bg-[#F09032]/20 text-[#F09032] text-[9px] font-bold rounded uppercase">Concierge</span>
                   </div>
-                  <p className="text-[10px] text-slate-400">Online • Verified Rajasthan Advisory</p>
+                  <p className="text-[10px] text-slate-300">Online • Verified Jodhpur Advisory</p>
                 </div>
               </div>
               <button
@@ -247,19 +243,19 @@ export default function AiConciergeChatbot() {
                 <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                   <div className={`flex items-start gap-2 max-w-[85%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                     {msg.sender === 'user' ? (
-                      <div className="w-7 h-7 rounded-full bg-[#0A1628] text-[#C9A96E] flex items-center justify-center flex-shrink-0 text-xs font-bold">
+                      <div className="w-7 h-7 rounded-full bg-[#112A50] text-[#F09032] flex items-center justify-center flex-shrink-0 text-xs font-bold">
                         <User className="w-4 h-4" />
                       </div>
                     ) : (
-                      <div className="w-7 h-7 rounded-full bg-[#0A1628] border border-[#C9A96E]/60 text-[#C9A96E] flex items-center justify-center flex-shrink-0 shadow-sm">
-                        <Bot className="w-4 h-4 text-[#C9A96E]" />
+                      <div className="w-7 h-7 rounded-full bg-[#112A50] border border-[#F09032]/60 text-[#F09032] flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden p-0.5">
+                        <img src="/logo/shreeniwas-logo-icon.png" alt="Bot" className="w-full h-full object-contain" />
                       </div>
                     )}
 
                     <div className={`p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                       msg.sender === 'user'
-                        ? 'bg-[#0A1628] text-white rounded-tr-none shadow-md'
-                        : 'bg-white text-[#0A1628] border border-slate-200 rounded-tl-none shadow-sm'
+                        ? 'bg-[#112A50] text-white rounded-tr-none shadow-md'
+                        : 'bg-white text-[#112A50] border border-slate-200 rounded-tl-none shadow-sm'
                     }`}>
                       <p>{msg.text}</p>
 
@@ -267,9 +263,9 @@ export default function AiConciergeChatbot() {
                       {msg.propertyCard && (
                         <div className="mt-3 bg-slate-50 rounded-xl p-2.5 border border-slate-200 text-left">
                           <img src={msg.propertyCard.image} alt={msg.propertyCard.title} className="w-full h-24 object-cover rounded-lg mb-2" />
-                          <h5 className="font-bold text-xs text-[#0A1628]">{msg.propertyCard.title}</h5>
+                          <h5 className="font-bold text-xs text-[#112A50]">{msg.propertyCard.title}</h5>
                           <p className="text-[10px] text-slate-500">{msg.propertyCard.location}</p>
-                          <p className="text-xs font-extrabold text-[#C9A96E] mt-1">{msg.propertyCard.price}</p>
+                          <p className="text-xs font-extrabold text-[#F09032] mt-1">{msg.propertyCard.price}</p>
                         </div>
                       )}
                     </div>
@@ -284,10 +280,10 @@ export default function AiConciergeChatbot() {
                         <button
                           key={idx}
                           onClick={() => handleOptionClick(opt)}
-                          className="w-full text-left px-3 py-2 bg-white hover:bg-[#0A1628] text-[#0A1628] hover:text-[#C9A96E] font-semibold text-xs rounded-xl border border-slate-200 transition-all shadow-sm flex items-center justify-between group cursor-pointer"
+                          className="w-full text-left px-3 py-2 bg-white hover:bg-[#112A50] text-[#112A50] hover:text-[#F09032] font-semibold text-xs rounded-xl border border-slate-200 transition-all shadow-sm flex items-center justify-between group cursor-pointer"
                         >
                           <span>{opt.label}</span>
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#C9A96E]" />
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#F09032]" />
                         </button>
                       ))}
                     </div>
@@ -297,13 +293,13 @@ export default function AiConciergeChatbot() {
 
               {isTyping && (
                 <div className="flex items-center gap-2 text-slate-400 text-xs">
-                  <div className="w-7 h-7 rounded-full bg-[#C9A96E] text-[#0A1628] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-[#F09032] text-[#112A50] flex items-center justify-center font-bold">
                     <Bot className="w-4 h-4" />
                   </div>
                   <div className="p-3 bg-white rounded-2xl border border-slate-200 flex gap-1">
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                    <span className="w-1.5 h-1.5 bg-[#F09032] rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-[#F09032] rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                    <span className="w-1.5 h-1.5 bg-[#F09032] rounded-full animate-bounce [animation-delay:0.4s]"></span>
                   </div>
                 </div>
               )}
@@ -317,11 +313,11 @@ export default function AiConciergeChatbot() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Ask about properties, VIP visits..."
-                className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-[#0A1628] outline-none focus:ring-2 focus:ring-[#C9A96E] placeholder-slate-400"
+                className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-[#112A50] outline-none focus:ring-2 focus:ring-[#F09032] placeholder-slate-400"
               />
               <button
                 type="submit"
-                className="p-2.5 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] rounded-xl shadow transition-all cursor-pointer border border-[#C9A96E]/30"
+                className="p-2.5 bg-[#F09032] hover:bg-[#E07E20] text-[#112A50] font-bold rounded-xl shadow transition-all cursor-pointer border border-[#F09032]/40"
               >
                 <Send className="w-4 h-4" />
               </button>

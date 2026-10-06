@@ -13,6 +13,10 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  --color-brand-navy: #112A50;
+  --color-brand-orange: #F09032;
+  --color-brand-slate: #8C9DAE;
+
   --font-sans: "Inter", sans-serif;
   --font-serif: "Playfair Display", serif;
 
@@ -25,28 +29,28 @@
 @layer base {
   :root {
     --background: #FDFBF7;
-    --foreground: #1A1A2E;
+    --foreground: #112A50;
     --card: #FFFFFF;
-    --card-foreground: #1A1A2E;
+    --card-foreground: #112A50;
     --popover: #FFFFFF;
-    --popover-foreground: #1A1A2E;
-    --primary: #0A1628;
-    --primary-foreground: #FDFBF7;
-    --secondary: #C9A96E;
-    --secondary-foreground: #FDFBF7;
-    --muted: #F1ECE4;
-    --muted-foreground: #737373;
-    --accent: #C9A96E;
-    --accent-foreground: #FDFBF7;
+    --popover-foreground: #112A50;
+    --primary: #112A50;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F09032;
+    --secondary-foreground: #112A50;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    --accent: #F09032;
+    --accent-foreground: #FFFFFF;
     --destructive: #ef4444;
     --destructive-foreground: #FDFBF7;
-    --border: #E5DDD0;
-    --input: #E5DDD0;
-    --ring: #0A1628;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #F09032;
     --radius: 0.5rem;
-    --chart-1: #0A1628;
-    --chart-2: #C9A96E;
-    --chart-3: #4A5568;
+    --chart-1: #112A50;
+    --chart-2: #F09032;
+    --chart-3: #8C9DAE;
     --chart-4: #2D3748;
     --chart-5: #1A202C;
   }
@@ -58,22 +62,22 @@
     --card-foreground: #F5F5F5;
     --popover: #141420;
     --popover-foreground: #F5F5F5;
-    --primary: #0A1628;
+    --primary: #112A50;
     --primary-foreground: #FDFBF7;
-    --secondary: #C9A96E;
-    --secondary-foreground: #FDFBF7;
+    --secondary: #F09032;
+    --secondary-foreground: #FFFFFF;
     --muted: #1E1E2E;
     --muted-foreground: #A1A1AA;
-    --accent: #C9A96E;
+    --accent: #F09032;
     --accent-foreground: #FDFBF7;
     --destructive: #ef4444;
     --destructive-foreground: #FDFBF7;
     --border: #2A2A3A;
     --input: #2A2A3A;
-    --ring: #C9A96E;
-    --chart-1: #C9A96E;
-    --chart-2: #0A1628;
-    --chart-3: #A0AEC0;
+    --ring: #F09032;
+    --chart-1: #F09032;
+    --chart-2: #112A50;
+    --chart-3: #8C9DAE;
     --chart-4: #CBD5E0;
     --chart-5: #E2E8F0;
   }

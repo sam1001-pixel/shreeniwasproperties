@@ -127,13 +127,13 @@ export default function ShreeniwasSearchEngine() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`whitespace-nowrap flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            className={`whitespace-nowrap flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === tab.id 
-                ? 'bg-[#0A1628] text-[#C9A96E] shadow-md border border-[#C9A96E]/30' 
-                : 'text-slate-600 hover:bg-slate-100 hover:text-[#0A1628]'
+                ? 'bg-[#112A50] text-[#F09032] shadow-md border border-[#F09032]/30' 
+                : 'text-slate-600 hover:bg-slate-100 hover:text-[#112A50]'
             }`}
           >
-            <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-[#C9A96E]' : 'text-slate-400'}`} />
+            <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-[#F09032]' : 'text-slate-400'}`} />
             {tab.label}
           </button>
         ))}
@@ -242,7 +242,7 @@ export default function ShreeniwasSearchEngine() {
               type="button"
               onClick={() => setPostedBy(type)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                postedBy === type ? 'bg-[#C9A96E]/20 text-[#0A1628] font-bold border border-[#C9A96E]/40' : 'text-slate-500 hover:text-slate-800'
+                postedBy === type ? 'bg-[#F09032]/20 text-[#112A50] font-bold border border-[#F09032]/40' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               {type === 'all' ? 'All' : type}
@@ -253,16 +253,16 @@ export default function ShreeniwasSearchEngine() {
         {/* Search Submit Button */}
         <button
           onClick={handleSearch}
-          className="w-full sm:w-auto ml-auto px-7 py-3 bg-[#0A1628] hover:bg-[#0A1628]/90 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-[#0A1628]/20 flex items-center justify-center gap-2 cursor-pointer border border-[#C9A96E]/30"
+          className="w-full sm:w-auto ml-auto px-7 py-3 bg-[#F09032] hover:bg-[#E07E20] text-[#112A50] font-extrabold text-sm rounded-xl transition-all shadow-lg shadow-[#F09032]/25 flex items-center justify-center gap-2 cursor-pointer border border-[#F09032]/40 active:scale-[0.98]"
         >
           {activeTab === 'projects' ? (
             <>
-              <Layers className="w-4 h-4 text-[#C9A96E]" />
+              <Layers className="w-4 h-4 text-[#112A50]" />
               Explore Builder Projects
             </>
           ) : (
             <>
-              <Search className="w-4 h-4 text-[#C9A96E]" />
+              <Search className="w-4 h-4 text-[#112A50]" />
               Search Properties
             </>
           )}

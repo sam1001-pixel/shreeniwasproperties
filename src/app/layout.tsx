@@ -21,26 +21,31 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Shreeniwas Properties | Premium Real Estate in Rajasthan',
-    template: `%s | Shreeniwas Properties`,
+    default: 'Shreeniwas Rentals Jodhpur | Verified Rentals & Properties in Rajasthan',
+    template: `%s | Shreeniwas Rentals Jodhpur`,
   },
-  description: siteConfig?.description || 'Premium Real Estate services across Rajasthan. Luxury villas, havelis, flats & commercial spaces in Jaipur, Udaipur, Jodhpur.',
+  description: siteConfig?.description || 'Verified rentals, luxury villas, havelis, flats & commercial spaces in Jodhpur and Rajasthan.',
   keywords: [
-    'Real Estate Rajasthan', 'Properties in Jaipur', 'Luxury Villas Jaipur', 
-    'Flats in Udaipur', 'Heritage Haveli Jodhpur', 'RERA Approved Properties', 
-    'Buy Property Rajasthan', 'Rent House Jaipur', 'Commercial Property Rajasthan'
+    'Rentals in Jodhpur', 'Shreeniwas Rentals', 'Properties in Jodhpur', 'Luxury Villas Jodhpur', 
+    'Flats in Jodhpur', 'Heritage Haveli Jodhpur', 'RERA Approved Properties', 
+    'Rent House Jodhpur', 'Commercial Property Rajasthan'
   ],
-  authors: [{ name: 'Shreeniwas Properties' }],
-  creator: 'Shreeniwas Properties',
+  authors: [{ name: 'Shreeniwas Rentals Jodhpur' }],
+  creator: 'Shreeniwas Rentals Jodhpur',
   metadataBase: new URL('https://shreeniwasproperties-pi.vercel.app'),
   alternates: {
     canonical: '/',
   },
+  icons: {
+    icon: '/logo/shreeniwas-logo-icon.png',
+    shortcut: '/logo/shreeniwas-logo-icon.png',
+    apple: '/logo/shreeniwas-logo-icon.png',
+  },
   openGraph: {
-    title: 'Shreeniwas Properties | Premium Real Estate in Rajasthan',
-    description: 'Find verified luxury villas, penthouses, commercial spaces, and land across Rajasthan with transparent pricing.',
+    title: 'Shreeniwas Rentals Jodhpur | Verified Rentals & Properties',
+    description: 'Find verified luxury villas, rentals, commercial spaces, and heritage properties across Jodhpur and Rajasthan.',
     url: 'https://shreeniwasproperties-pi.vercel.app',
-    siteName: 'Shreeniwas Properties',
+    siteName: 'Shreeniwas Rentals Jodhpur',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=1200&auto=format&fit=crop',

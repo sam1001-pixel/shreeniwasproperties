@@ -58,9 +58,9 @@ export interface GlobalSiteSettings {
 }
 
 export const DEFAULT_SITE_SETTINGS: GlobalSiteSettings = {
-  siteTitle: siteConfig.name,
-  tagline: 'Exclusive Real Estate & Rental Network in Rajasthan',
-  logoUrl: '',
+  siteTitle: 'Shreeniwas Rentals',
+  tagline: 'Verified Rentals, Luxury Villas & Properties in Jodhpur',
+  logoUrl: '/logo/shreeniwas-logo-transparent.png',
   heroBgUrl: '/hero/jodhpur-hero-royal.jpg',
   contactEmail: siteConfig.contact.email,
   supportPhone: siteConfig.contact.phone,
@@ -108,6 +108,18 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
           parsed.heroBgUrl.includes('unsplash.com')
         ) {
           parsed.heroBgUrl = '/hero/jodhpur-hero-royal.jpg';
+          localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
+        }
+
+        // Set official logoUrl if not configured or using legacy placeholder
+        if (!parsed.logoUrl || parsed.logoUrl.includes('unsplash.com') || parsed.logoUrl === '') {
+          parsed.logoUrl = '/logo/shreeniwas-logo-transparent.png';
+          localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
+        }
+
+        // Sync site title to Shreeniwas Rentals
+        if (parsed.siteTitle === 'Shreeniwas Properties') {
+          parsed.siteTitle = 'Shreeniwas Rentals';
           localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
         }
 

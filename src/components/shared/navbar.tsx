@@ -165,35 +165,18 @@ export function Navbar() {
           {/* 1. Brand Logo */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 sm:gap-2.5 group min-w-0 shrink focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E] rounded-xl"
-            aria-label={`${settings.siteTitle || 'Shreeniwas Properties'} Home`}
+            className="flex items-center gap-2 group min-w-0 shrink focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F09032] rounded-xl"
+            aria-label={`${settings.siteTitle || 'Shreeniwas Rentals Jodhpur'} Home`}
           >
-            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#0A1628] to-[#162744] flex items-center justify-center border border-[#C9A96E]/50 group-hover:border-[#C9A96E] transition-all shrink-0 shadow-md p-1 group-hover:scale-105">
-              {settings?.logoUrl && !logoError ? (
-                <img 
-                  src={settings.logoUrl} 
-                  alt={settings.siteTitle || 'Shreeniwas Properties'} 
-                  className="w-full h-full object-contain rounded-md sm:rounded-lg" 
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <Building2 className="w-4 h-4 sm:w-6 sm:h-6 text-[#C9A96E]" />
-              )}
-            </div>
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-baseline gap-1 truncate">
-                <span className="text-base sm:text-xl font-serif font-bold text-[#C9A96E] tracking-tight shrink-0">
-                  {titleFirst}
-                </span>
-                <span className="text-base sm:text-xl font-bold text-[#0A1628] tracking-tight truncate">
-                  {titleRest}
-                </span>
-              </div>
-              <span className="hidden sm:flex text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-500 font-semibold -mt-1 items-center gap-1">
-                <span>Rajasthan Real Estate</span>
-                <span className="w-1 h-1 rounded-full bg-[#C9A96E] inline-block" />
-                <span className="text-[#C9A96E] font-bold">Verified</span>
-              </span>
+            <div className="h-9 sm:h-11 flex items-center justify-center shrink-0 transition-transform group-hover:scale-102">
+              <img 
+                src="/logo/shreeniwas-logo-transparent.png" 
+                alt="Shreeniwas Rentals Jodhpur" 
+                className="h-8 sm:h-10 w-auto max-w-[190px] sm:max-w-[260px] object-contain" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/logo/shreeniwas-logo-icon.png';
+                }}
+              />
             </div>
           </Link>
 
@@ -505,7 +488,7 @@ export function Navbar() {
             {/* Post Property CTA Button */}
             <Link
               href="/dashboard/landlord/properties/new"
-              className="hidden md:inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#C9A96E] to-[#b59760] hover:brightness-105 active:scale-95 px-3.5 py-2 text-xs font-extrabold text-[#0A1628] shadow-sm transition-all hover:shadow-md cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E]"
+              className="hidden md:inline-flex items-center gap-1.5 rounded-xl bg-[#F09032] hover:bg-[#E07E20] active:scale-95 px-3.5 py-2 text-xs font-extrabold text-[#112A50] shadow-sm transition-all hover:shadow-md cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F09032]"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Post Listing</span>
@@ -514,7 +497,7 @@ export function Navbar() {
             {/* Mobile Hamburger Button */}
             <button
               type="button"
-              className="lg:hidden p-2 text-[#0A1628] rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E] cursor-pointer"
+              className="lg:hidden p-2 text-[#112A50] rounded-xl hover:bg-slate-100 active:bg-slate-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F09032] cursor-pointer"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open Mobile Menu"
             >
@@ -544,21 +527,19 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed inset-y-0 right-0 w-full max-w-sm bg-[#0A1628] text-white shadow-2xl flex flex-col h-full overflow-y-auto"
+              className="fixed inset-y-0 right-0 w-full max-w-sm bg-[#112A50] text-white shadow-2xl flex flex-col h-full overflow-y-auto"
               role="dialog"
               aria-modal="true"
             >
               {/* Drawer Header */}
-              <div className="p-5 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#0A1628]/95 backdrop-blur-md z-10">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#C9A96E]/20 border border-[#C9A96E]/40 flex items-center justify-center">
-                    <Building2 className="w-4 h-4 text-[#C9A96E]" />
-                  </div>
-                  <div>
-                    <span className="font-serif font-bold text-[#C9A96E] text-base">{titleFirst}</span>
-                    <span className="font-bold text-white text-base ml-1">{titleRest}</span>
-                  </div>
-                </div>
+              <div className="p-5 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#112A50]/95 backdrop-blur-md z-10">
+                <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
+                  <img 
+                    src="/logo/shreeniwas-logo-dark.png" 
+                    alt="Shreeniwas Rentals Jodhpur" 
+                    className="h-8 w-auto object-contain"
+                  />
+                </Link>
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
