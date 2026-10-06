@@ -359,7 +359,6 @@ const EMICalculator = () => {
 
 export default function MarketingPage() {
   const [propFilter, setPropFilter] = useState('All');
-  const [featuredSearchQuery, setFeaturedSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<number[]>([]);
   const [compareItems, setCompareItems] = useState<PropertyCompareItem[]>([]);
 
@@ -376,40 +375,27 @@ export default function MarketingPage() {
   const [isJourneyPaused, setIsJourneyPaused] = useState(false);
   const [isTestimonialPaused, setIsTestimonialPaused] = useState(false);
 
-  // Filtered properties based on Category Tabs and Live Search
+  // Filtered properties based strictly on selected Category Option
   const filteredProperties = useMemo(() => {
     return propertiesList.filter((prop) => {
-      // 1. Tab / Category Filter
-      let matchesTab = true;
+      if (propFilter === 'All') return true;
       if (propFilter === 'Luxury Villas') {
-        matchesTab = prop.type?.toLowerCase().includes('villa') || prop.category === 'Luxury Villas';
-      } else if (propFilter === 'Apartments') {
-        matchesTab = prop.type?.toLowerCase().includes('apartment') || prop.type?.toLowerCase().includes('penthouse') || prop.category === 'Apartments';
-      } else if (propFilter === 'Commercial') {
-        matchesTab = prop.type?.toLowerCase().includes('commercial') || prop.category === 'Commercial';
-      } else if (propFilter === 'Havelis') {
-        matchesTab = prop.type?.toLowerCase().includes('haveli') || prop.category === 'Havelis';
+        return prop.type?.toLowerCase().includes('villa') || prop.category === 'Luxury Villas';
       }
-
-      // 2. Search Query Filter
-      let matchesSearch = true;
-      if (featuredSearchQuery.trim()) {
-        const q = featuredSearchQuery.trim().toLowerCase();
-        matchesSearch = Boolean(
-          (prop.title && prop.title.toLowerCase().includes(q)) ||
-          (prop.location && prop.location.toLowerCase().includes(q)) ||
-          (prop.city && prop.city.toLowerCase().includes(q)) ||
-          (prop.type && prop.type.toLowerCase().includes(q)) ||
-          (prop.bhk && prop.bhk.toLowerCase().includes(q)) ||
-          (prop.price && prop.price.toLowerCase().includes(q))
-        );
+      if (propFilter === 'Apartments') {
+        return prop.type?.toLowerCase().includes('apartment') || prop.type?.toLowerCase().includes('penthouse') || prop.category === 'Apartments';
       }
-
-      return matchesTab && matchesSearch;
+      if (propFilter === 'Commercial') {
+        return prop.type?.toLowerCase().includes('commercial') || prop.category === 'Commercial';
+      }
+      if (propFilter === 'Havelis') {
+        return prop.type?.toLowerCase().includes('haveli') || prop.category === 'Havelis';
+      }
+      return true;
     });
-  }, [propertiesList, propFilter, featuredSearchQuery]);
+  }, [propertiesList, propFilter]);
 
-  // Dynamic counts for each category tab
+  // Dynamic counts for each category option
   const categoryCounts = useMemo(() => {
     return {
       'All': propertiesList.length,
@@ -886,40 +872,8 @@ export default function MarketingPage() {
               </p>
             </div>
 
-            {/* Quick Live Search Bar + Arrow Controls */}
-            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                }}
-                className="relative flex items-center flex-1 sm:w-72"
-              >
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
-                <input
-                  type="text"
-                  value={featuredSearchQuery}
-                  onChange={(e) => setFeaturedSearchQuery(e.target.value)}
-                  placeholder="Search locality, city, title..."
-                  className="w-full pl-9 pr-20 py-2 text-xs bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#F09032] focus:bg-white focus:border-transparent transition-all placeholder:text-slate-400 shadow-2xs"
-                />
-                {featuredSearchQuery ? (
-                  <button
-                    type="button"
-                    onClick={() => setFeaturedSearchQuery('')}
-                    className="absolute right-16 text-slate-400 hover:text-slate-600 p-1"
-                    aria-label="Clear search"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                ) : null}
-                <button
-                  type="submit"
-                  className="absolute right-1 px-3 py-1 bg-[#112A50] hover:bg-[#0A1628] text-white text-[11px] font-bold rounded-full transition-all cursor-pointer shadow-sm flex items-center gap-1 active:scale-95"
-                >
-                  Search
-                </button>
-              </form>
-
+            {/* Navigation Arrows & View All Link */}
+            <div className="flex items-center gap-2.5">
               {/* Manual Left/Right Navigation Arrows */}
               <div className="flex items-center gap-1">
                 <button
@@ -940,9 +894,9 @@ export default function MarketingPage() {
                 </button>
               </div>
 
-              {/* Explore All In Search Button */}
+              {/* Explore All In Section Link */}
               <Link 
-                href={`/properties?tab=buy${propFilter !== 'All' ? `&type=${encodeURIComponent(propFilter)}` : ''}${featuredSearchQuery ? `&q=${encodeURIComponent(featuredSearchQuery)}` : ''}`}
+                href={`/properties?tab=buy${propFilter !== 'All' ? `&type=${encodeURIComponent(propFilter)}` : ''}`}
                 className="inline-flex"
               >
                 <button className="px-3.5 py-2 bg-[#F09032] hover:bg-[#d87c22] text-[#112A50] font-black text-xs rounded-full transition-all shadow-sm flex items-center gap-1 whitespace-nowrap cursor-pointer active:scale-95">
@@ -952,7 +906,7 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          {/* Category Filter Tab Buttons */}
+          {/* Category Filter Tab Buttons (Only Options) */}
           <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar border-b border-slate-100">
             {['All', 'Luxury Villas', 'Apartments', 'Commercial', 'Havelis'].map(tab => {
               const count = categoryCounts[tab as keyof typeof categoryCounts] || 0;
@@ -983,23 +937,20 @@ export default function MarketingPage() {
           {filteredProperties.length === 0 ? (
             <div className="py-14 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-6">
               <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 mx-auto flex items-center justify-center mb-3">
-                <Search className="w-6 h-6" />
+                <Sparkles className="w-6 h-6 text-amber-600" />
               </div>
               <h3 className="text-base font-serif font-bold text-[#0A1628] mb-1">
-                No Properties Found
+                No Properties in {propFilter}
               </h3>
               <p className="text-xs text-slate-500 mb-4 max-w-sm mx-auto">
-                No featured listings match "{featuredSearchQuery || propFilter}". Try searching with a different term or reset your search.
+                No featured listings are currently listed under {propFilter}. Check back soon or view all properties.
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  setPropFilter('All');
-                  setFeaturedSearchQuery('');
-                }}
+                onClick={() => setPropFilter('All')}
                 className="px-4 py-2 bg-[#112A50] hover:bg-[#0A1628] text-[#F09032] text-xs font-bold rounded-xl shadow transition-all cursor-pointer"
               >
-                Reset Search & Filters
+                View All Categories
               </button>
             </div>
           ) : (
