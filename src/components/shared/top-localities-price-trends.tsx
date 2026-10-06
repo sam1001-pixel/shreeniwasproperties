@@ -184,71 +184,72 @@ export default function TopLocalitiesPriceTrends({
           })}
         </div>
 
-        {/* Grid of Dynamic Price Trend Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          <AnimatePresence mode="popLayout">
-            {localities.map((loc, idx) => (
-              <motion.div
+        {/* Smooth Auto-Scroll Track (Left to Right Marquee with Compact Widgets) */}
+        <div className="relative w-full overflow-hidden py-1">
+          {/* Subtle Side Fade Gradients for Premium Finish */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+          <div className="animate-marquee-ltr pause-on-hover gap-3 sm:gap-3.5 py-1">
+            {/* Render 4 sets of localities for seamless continuous infinite loop */}
+            {[...localities, ...localities, ...localities, ...localities].map((loc, idx) => (
+              <div
                 key={`${loc.name}-${loc.city}-${idx}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2, delay: idx * 0.03 }}
-                className="bg-[#FDFBF7] p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 hover:border-[#F09032] transition-all hover:shadow-md group flex flex-col justify-between"
+                className="w-[190px] sm:w-[210px] shrink-0 bg-[#FDFBF7] p-3 sm:p-3.5 rounded-xl border border-slate-200/90 hover:border-[#F09032] transition-all hover:shadow-md group flex flex-col justify-between select-none"
               >
                 <div>
                   {/* Locality Header */}
-                  <div className="flex items-start justify-between gap-1 mb-1.5">
-                    <h3 className="text-xs sm:text-sm font-bold text-[#0A1628] group-hover:text-[#112A50] transition-colors truncate">
+                  <div className="flex items-start justify-between gap-1 mb-1">
+                    <h3 className="text-xs sm:text-[13px] font-bold text-[#0A1628] group-hover:text-[#112A50] transition-colors truncate">
                       {loc.name}
                     </h3>
-                    <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 shrink-0 flex items-center gap-0.5">
+                    <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 shrink-0 flex items-center gap-0.5">
                       <TrendingUp className="w-2.5 h-2.5" />
                       {loc.growth}
                     </span>
                   </div>
 
-                  <p className="text-[10px] text-slate-500 font-medium mb-2 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-[#F09032] shrink-0" />
+                  <p className="text-[10px] text-slate-500 font-medium mb-1.5 flex items-center gap-1 truncate">
+                    <MapPin className="w-2.5 h-2.5 text-[#F09032] shrink-0" />
                     <span>{loc.city} • {loc.type}</span>
                   </p>
                 </div>
 
                 {/* Pricing & Metric Body */}
-                <div className="border-t border-slate-200/70 pt-2.5 mt-2">
+                <div className="border-t border-slate-200/70 pt-2 mt-1">
                   <div className="flex items-baseline justify-between">
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">
+                      <span className="text-[8px] uppercase font-bold text-slate-400 block leading-none mb-0.5">
                         Avg Index
                       </span>
-                      <span className="font-serif font-extrabold text-[#0A1628] text-sm sm:text-base">
+                      <span className="font-serif font-extrabold text-[#0A1628] text-xs sm:text-sm">
                         {loc.avgPrice}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-sans ml-0.5">/sq.ft</span>
+                      <span className="text-[9px] text-slate-500 font-sans ml-0.5">/sq.ft</span>
                     </div>
 
                     {loc.rentalYield && (
-                      <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60">
+                      <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1 py-0.5 rounded border border-blue-200/60 shrink-0">
                         {loc.rentalYield}
                       </span>
                     )}
                   </div>
 
                   {/* Property Count & Deep link */}
-                  <div className="mt-2 pt-2 border-t border-slate-200/50 flex items-center justify-between text-[10px]">
-                    <span className="text-slate-500 font-medium">{loc.count}</span>
+                  <div className="mt-1.5 pt-1.5 border-t border-slate-200/50 flex items-center justify-between text-[10px]">
+                    <span className="text-slate-400 text-[9px] font-medium truncate">{loc.count}</span>
                     <Link
                       href={`/properties?city=${encodeURIComponent(loc.city)}&locality=${encodeURIComponent(loc.name)}`}
-                      className="text-[#112A50] font-bold hover:text-[#F09032] flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform"
+                      className="text-[#112A50] text-[10px] font-bold hover:text-[#F09032] flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform shrink-0"
                     >
                       <span>Listings</span>
-                      <ChevronRight className="w-3 h-3" />
+                      <ChevronRight className="w-2.5 h-2.5" />
                     </Link>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </AnimatePresence>
+          </div>
         </div>
 
         {/* Live Sync Status Footer */}

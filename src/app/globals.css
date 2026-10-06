@@ -224,10 +224,15 @@
   animation: marquee 42s linear infinite;
 }
 
-.animate-marquee-reverse {
+@keyframes marquee-ltr {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-marquee-ltr {
   display: flex;
   width: max-content;
-  animation: marquee-reverse 30s linear infinite;
+  animation: marquee-ltr 32s linear infinite;
 }
 
 .pause-on-hover:hover,
