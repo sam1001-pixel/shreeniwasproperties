@@ -406,16 +406,6 @@ export default function MarketingPage() {
     };
   }, [propertiesList]);
 
-  const scrollFeatured = (direction: 'left' | 'right') => {
-    if (featuredTrackRef.current) {
-      const scrollAmount = 340;
-      featuredTrackRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   const { settings } = useSiteSettings();
   const [heroBg, setHeroBg] = useState('/hero/jodhpur-hero-royal.jpg');
 
@@ -812,7 +802,7 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 2. Top Localities & Price Trends Section (Dynamic with GPS & Auto-Updating Data) */}
+      {/* 2. Top Localities & Price Trends Section */}
       <TopLocalitiesPriceTrends />
 
       {/* 3. Explore Properties by Budget Section (Compact Grid) */}
@@ -872,35 +862,14 @@ export default function MarketingPage() {
               </p>
             </div>
 
-            {/* Navigation Arrows & View All Link */}
-            <div className="flex items-center gap-2.5">
-              {/* Manual Left/Right Navigation Arrows */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => scrollFeatured('left')}
-                  className="p-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
-                  aria-label="Previous properties"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollFeatured('right')}
-                  className="p-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
-                  aria-label="Next properties"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Explore All In Section Link */}
+            {/* View All Link */}
+            <div className="flex items-center">
               <Link 
                 href={`/properties?tab=buy${propFilter !== 'All' ? `&type=${encodeURIComponent(propFilter)}` : ''}`}
                 className="inline-flex"
               >
-                <button className="px-3.5 py-2 bg-[#F09032] hover:bg-[#d87c22] text-[#112A50] font-black text-xs rounded-full transition-all shadow-sm flex items-center gap-1 whitespace-nowrap cursor-pointer active:scale-95">
-                  View All <ArrowRight className="w-3.5 h-3.5" />
+                <button className="px-4 py-2 bg-[#F09032] hover:bg-[#d87c22] text-[#112A50] font-black text-xs rounded-full transition-all shadow-sm flex items-center gap-1.5 whitespace-nowrap cursor-pointer active:scale-95">
+                  View All Properties <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </Link>
             </div>

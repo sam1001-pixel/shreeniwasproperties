@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  TrendingUp, MapPin, LocateFixed, Loader2, ArrowRight, 
+  TrendingUp, MapPin, ArrowRight, 
   Sparkles, ShieldCheck, ChevronRight, RefreshCw, Building2,
   Percent, ArrowUpRight
 } from 'lucide-react';
@@ -28,8 +28,6 @@ export default function TopLocalitiesPriceTrends({
 }: TopLocalitiesPriceTrendsProps) {
   const [currentCity, setCurrentCity] = useState<string>('Jodhpur');
   const [localities, setLocalities] = useState<LocalityPriceTrend[]>([]);
-  const [isDetectingGps, setIsDetectingGps] = useState(false);
-  const [distanceKm, setDistanceKm] = useState<number | null>(null);
   const [lastRefreshedTime, setLastRefreshedTime] = useState<string>('');
 
   // Update locality trends based on city
@@ -53,9 +51,6 @@ export default function TopLocalitiesPriceTrends({
         detectUserCityViaGPS().then((res) => {
           if (res.success && res.cityName) {
             refreshCityTrends(res.cityName);
-            if (typeof res.distanceKm === 'number') {
-              setDistanceKm(res.distanceKm);
-            }
           }
         });
       }
@@ -82,22 +77,6 @@ export default function TopLocalitiesPriceTrends({
     };
   }, [initialCity]);
 
-  // Handle explicit manual GPS detection click
-  const handleGPSDetect = async () => {
-    setIsDetectingGps(true);
-    try {
-      const res = await detectUserCityViaGPS();
-      if (res.success && res.cityName) {
-        refreshCityTrends(res.cityName);
-        setDistanceKm(res.distanceKm ?? 0);
-      }
-    } catch (err) {
-      console.warn('GPS location detection error:', err);
-    } finally {
-      setIsDetectingGps(false);
-    }
-  };
-
   // City Tab Switcher Options
   const majorCities = ["Jodhpur", "Jaipur", "Udaipur", "Kota", "Ajmer", "Bikaner"];
 
@@ -122,33 +101,12 @@ export default function TopLocalitiesPriceTrends({
             </div>
 
             <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-              Real-time capital appreciation rates and sq.ft index automatically synced with live property listings and your GPS location.
+              Real-time capital appreciation rates and sq.ft index automatically synced with live property transactions and market registries.
             </p>
           </div>
 
-          {/* GPS Quick Action & Navigation Controls */}
+          {/* Navigation Controls */}
           <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto justify-between md:justify-end">
-            <button
-              onClick={handleGPSDetect}
-              disabled={isDetectingGps}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-[#112A50] text-slate-700 hover:text-white border border-slate-200 hover:border-[#F09032] text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-60"
-              title="Detect closest Rajasthan city based on your physical location"
-            >
-              {isDetectingGps ? (
-                <>
-                  <Loader2 className="w-4 h-4 text-[#F09032] animate-spin" />
-                  <span>Locating via GPS...</span>
-                </>
-              ) : (
-                <>
-                  <LocateFixed className="w-4 h-4 text-[#F09032]" />
-                  <span>
-                    {distanceKm !== null ? `Near GPS: ${currentCity} (${distanceKm} km)` : 'Auto-Sync via GPS'}
-                  </span>
-                </>
-              )}
-            </button>
-
             <Link href={`/locations/${currentCity.toLowerCase()}`}>
               <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0A1628] hover:bg-[#112A50] text-[#F09032] text-xs font-bold transition-all shadow-xs cursor-pointer border border-[#F09032]/30">
                 Explore {currentCity} <ArrowRight className="w-3.5 h-3.5" />
