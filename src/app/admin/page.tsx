@@ -8,11 +8,12 @@ import {
   MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound,
   Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck, UserPlus,
   Video, Star, Share2, Camera, ThumbsUp, IndianRupee, Layers, ExternalLink, Download, ShieldCheck,
-  QrCode, Smartphone, RefreshCw
+  QrCode, Smartphone, RefreshCw, FileSpreadsheet
 } from 'lucide-react';
 import Link from 'next/link';
 import { DEFAULT_NEW_PROJECTS, NewProjectItem } from '@/components/shared/new-projects-section';
 import { DEFAULT_PAYMENT_SETTINGS, PaymentSettings } from '@/lib/settings/site-settings-context';
+import { exportInquiriesToExcel } from '@/lib/export/excel-export';
 
 // Initial Seed Data (Fallbacks if localStorage is empty)
 // Initial Seed Data (Fallbacks if localStorage is empty)
@@ -2201,10 +2202,39 @@ export default function AdminDashboard() {
           {/* INQUIRIES TAB */}
           {activeTab === 'inquiries' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-serif font-bold text-[#0A1628]">Query & Lead Desk</h3>
-                  <p className="text-xs text-slate-500">Respond directly to visitor property inquiries and VIP visit bookings.</p>
+                  <p className="text-xs text-slate-500">Respond directly to visitor property inquiries, VIP visit bookings, and export query data.</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      if (inquiriesList.length === 0) {
+                        alert('No query data available to download.');
+                        return;
+                      }
+                      try {
+                        exportInquiriesToExcel(inquiriesList, 'Shreeniwas_Client_Queries');
+                      } catch (err: any) {
+                        alert(err?.message || 'Error exporting to Excel');
+                      }
+                    }}
+                    disabled={inquiriesList.length === 0}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                      inquiriesList.length === 0
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20 active:scale-95 cursor-pointer border border-emerald-500'
+                    }`}
+                    title="Download all query and lead data into a formatted Excel (.xlsx) spreadsheet"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>Download Queries (.xlsx)</span>
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-800/40 text-emerald-100">
+                      {inquiriesList.length}
+                    </span>
+                  </button>
                 </div>
               </div>
 

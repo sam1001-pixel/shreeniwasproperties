@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, Eye, Inbox, DollarSign, Plus, Edit, Trash2, Settings, MessageSquare, TrendingUp, CheckCircle, Clock, ExternalLink } from "lucide-react";
+import { Home, Eye, Inbox, DollarSign, Plus, Edit, Trash2, Settings, MessageSquare, TrendingUp, CheckCircle, Clock, ExternalLink, FileSpreadsheet } from "lucide-react";
+import { exportInquiriesToExcel } from '@/lib/export/excel-export';
 
 interface LandlordProperty {
   id: string | number;
@@ -24,6 +25,7 @@ const DEFAULT_LANDLORD_PROPERTIES: LandlordProperty[] = [
 export default function LandlordDashboard() {
   const [properties, setProperties] = useState<LandlordProperty[]>(DEFAULT_LANDLORD_PROPERTIES);
   const [inquiryCount, setInquiryCount] = useState<number>(47);
+  const [rawInquiries, setRawInquiries] = useState<any[]>([]);
 
   const loadLandlordData = () => {
     try {
@@ -48,6 +50,7 @@ export default function LandlordDashboard() {
       if (savedInqs) {
         const parsedInqs = JSON.parse(savedInqs);
         if (Array.isArray(parsedInqs)) {
+          setRawInquiries(parsedInqs);
           setInquiryCount(parsedInqs.length > 0 ? parsedInqs.length : 47);
         }
       }
@@ -117,13 +120,34 @@ export default function LandlordDashboard() {
             <h1 className="text-3xl font-bold font-serif text-[#0A1628]">Owner & Landlord Portal</h1>
             <p className="text-gray-500 text-sm mt-1">Manage your property listings, view inquiry leads, and track performance.</p>
           </div>
-          <Link
-            href="/dashboard/landlord/properties/new"
-            className="inline-flex items-center justify-center gap-2 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] font-semibold px-6 py-3 rounded-xl transition-colors shadow-md"
-          >
-            <Plus className="w-5 h-5" />
-            Add New Property
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => {
+                if (rawInquiries.length === 0) {
+                  alert('No client inquiries logged yet.');
+                  return;
+                }
+                try {
+                  exportInquiriesToExcel(rawInquiries, 'Shreeniwas_Owner_Inquiry_Leads');
+                } catch (err: any) {
+                  alert(err?.message || 'Error exporting to Excel');
+                }
+              }}
+              className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-4 py-3 rounded-xl transition-all shadow-md text-sm active:scale-95 cursor-pointer"
+              title="Download client inquiry leads as Excel (.xlsx)"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Download Query Leads (.xlsx)
+            </button>
+
+            <Link
+              href="/dashboard/landlord/properties/new"
+              className="inline-flex items-center justify-center gap-2 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#F09032] font-bold px-6 py-3 rounded-xl transition-colors shadow-md text-sm"
+            >
+              <Plus className="w-5 h-5" />
+              Add New Property
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid */}
