@@ -45,6 +45,8 @@ import OwnerReelsFeed from "@/components/shared/owner-reels-feed";
 import NewProjectsSection from "@/components/shared/new-projects-section";
 import PricingTariffSection from "@/components/shared/pricing-tariff-section";
 import SavePropertyButton from "@/components/shared/save-property-button";
+import TopLocalitiesPriceTrends from "@/components/shared/top-localities-price-trends";
+import { syncPriceTrendsWithLiveProperties } from "@/lib/location-service";
 import { useSiteSettings } from "@/lib/settings/site-settings-context";
 
 // Featured Properties
@@ -375,7 +377,10 @@ export default function MarketingPage() {
             zeroBrokerage: true
           }));
           setPropertiesList(formattedProps);
+          syncPriceTrendsWithLiveProperties(formattedProps);
         }
+      } else {
+        syncPriceTrendsWithLiveProperties(FEATURED_PROPERTIES);
       }
 
       const savedBlogs = localStorage.getItem('shreeniwas_blog_posts');
@@ -716,41 +721,8 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* 2. Top Localities & Price Trends Section (Compact) */}
-      <section className="py-8 sm:py-10 px-4 bg-white border-b border-slate-100">
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-row justify-between items-center mb-4 gap-2">
-            <div>
-              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider mb-1">
-                <TrendingUp className="w-3 h-3" /> Market Trends
-              </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-[#0A1628]">Top Localities & Price Trends in Rajasthan</h2>
-            </div>
-            <Link href="/properties">
-              <span className="text-xs font-bold text-[#C9A96E] hover:underline flex items-center gap-1 whitespace-nowrap">
-                All Localities <ArrowRight className="w-3.5 h-3.5" />
-              </span>
-            </Link>
-          </div>
-
-          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-3 overflow-x-auto pb-2 no-scrollbar">
-            {LOCALITY_PRICE_TRENDS.map((loc, idx) => (
-              <div key={idx} className="min-w-[150px] sm:min-w-0 bg-[#FDFBF7] p-3 rounded-xl border border-slate-200/80 hover:border-[#C9A96E] transition-all hover:shadow-sm group cursor-pointer flex-shrink-0 sm:flex-shrink">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-[#0A1628] group-hover:text-[#C9A96E] transition-colors truncate">{loc.name}</span>
-                  <span className="text-[9px] font-extrabold px-1 py-0.5 rounded bg-emerald-100 text-emerald-800 ml-1">{loc.growth}</span>
-                </div>
-                <p className="text-[10px] text-slate-500 mb-1.5">{loc.city}</p>
-                <div className="border-t border-slate-200/60 pt-1.5 flex items-baseline justify-between text-xs">
-                  <span className="font-extrabold text-[#0A1628]">{loc.avgPrice}</span>
-                  <span className="text-[9px] text-slate-400">/sq.ft</span>
-                </div>
-                <span className="text-[9px] text-slate-400 mt-0.5 block">{loc.count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 2. Top Localities & Price Trends Section (Dynamic with GPS & Auto-Updating Data) */}
+      <TopLocalitiesPriceTrends />
 
       {/* 3. Explore Properties by Budget Section (Compact Grid) */}
       <section className="py-8 sm:py-10 px-4 bg-slate-50">
