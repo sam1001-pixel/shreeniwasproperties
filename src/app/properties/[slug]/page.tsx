@@ -353,84 +353,99 @@ export default function PropertyDetailPage() {
   const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
-    // 1. Check built-in mock properties by direct key
-    if (slug && BASE_MOCK_PROPERTIES[slug]) {
-      setProperty(BASE_MOCK_PROPERTIES[slug]);
-      return;
-    }
+    const resolveProperty = () => {
+      // 1. Check admin-created/edited properties in localStorage FIRST so updates take effect immediately
+      try {
+        const savedProps = localStorage.getItem('shreeniwas_admin_properties');
+        if (savedProps && slug) {
+          const parsed = JSON.parse(savedProps);
+          const slugClean = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          const match = parsed.find((p: any) => 
+            p.id?.toString().toLowerCase() === slug.toLowerCase() ||
+            p.slug?.toLowerCase() === slug.toLowerCase() ||
+            (p.title && p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === slugClean) ||
+            p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(slugClean) ||
+            slugClean.includes(p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
+          );
 
-    // 2. Check built-in mock properties by ID or slug match
-    if (slug) {
-      const directMatch = Object.entries(BASE_MOCK_PROPERTIES).find(([key, p]: [string, any]) => 
-        key.toLowerCase() === slug.toLowerCase() ||
-        p.id?.toString() === slug.toString() ||
-        p.slug === slug ||
-        p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(slug.toLowerCase()) ||
-        slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
-      );
-      if (directMatch) {
-        setProperty(directMatch[1]);
+          if (match) {
+            setProperty({
+              title: match.title,
+              location: match.location || 'Jaipur, Rajasthan',
+              city: match.location?.split(',')[1]?.trim() || match.city || 'Jaipur',
+              price: match.price || 'Price on Request',
+              pricePerSqft: match.pricePerSqft || '₹8,500/sq.ft',
+              status: match.status || 'Ready to Move',
+              type: match.type || 'Luxury Villa',
+              bhk: match.bedrooms ? `${match.bedrooms} BHK` : '3 BHK',
+              area: match.sqft ? `${match.sqft} sq.ft` : '2,400 sq.ft',
+              carpetArea: match.sqft ? `${Number(match.sqft) * 0.85} sq.ft` : '2,040 sq.ft',
+              baths: match.bathrooms || 3,
+              balconies: 2,
+              furnishing: match.furnishing || 'Semi-Furnished',
+              floor: match.floor || 'Ground + 1',
+              parking: match.parking || '2 Covered Slots',
+              facing: match.facing || 'East (Vastu Compliant)',
+              age: match.age || '0-1 Years',
+              available: 'Immediate',
+              reraApproved: true,
+              zeroBrokerage: true,
+              description: match.description || `Exclusive verified listing on Shreeniwas Properties: ${match.title} situated in prime ${match.location}. Built with royal Rajasthani standards, premium fittings, and serene surroundings.`,
+              amenities: match.amenities && match.amenities.length > 0 ? match.amenities.map((a: string) => ({ name: a, icon: ShieldCheck })) : [
+                { name: '100% Power Backup', icon: Zap },
+                { name: '24x7 Security', icon: ShieldCheck },
+                { name: 'Covered Parking', icon: Car },
+                { name: 'Landscaped Garden', icon: Trees },
+              ],
+              nearbyHighlights: [
+                { name: 'City Center Hub', distance: '2.5 km', icon: Navigation },
+                { name: 'Nearby Airport / Junction', distance: '8.0 km', icon: Plane },
+                { name: 'Top Educational Institution', distance: '1.5 km', icon: School },
+                { name: 'Super Specialty Hospital', distance: '2.0 km', icon: Stethoscope },
+              ],
+              images: match.image ? [match.image] : (match.images && match.images.length > 0 ? match.images : [
+                'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200'
+              ]),
+              googleMapsUrl: match.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${match.title} ${match.location}`)}`
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 2. Check built-in mock properties by direct key
+      if (slug && BASE_MOCK_PROPERTIES[slug]) {
+        setProperty(BASE_MOCK_PROPERTIES[slug]);
         return;
       }
-    }
 
-    // 2. Check admin-created properties in localStorage
-    try {
-      const savedProps = localStorage.getItem('shreeniwas_admin_properties');
-      if (savedProps) {
-        const parsed = JSON.parse(savedProps);
-        const match = parsed.find((p: any) => 
-          p.id?.toString().toLowerCase() === slug.toLowerCase() ||
-          p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(slug.toLowerCase())
+      // 3. Check built-in mock properties by ID or slug match
+      if (slug) {
+        const directMatch = Object.entries(BASE_MOCK_PROPERTIES).find(([key, p]: [string, any]) => 
+          key.toLowerCase() === slug.toLowerCase() ||
+          p.id?.toString() === slug.toString() ||
+          p.slug === slug ||
+          p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(slug.toLowerCase()) ||
+          slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
         );
-
-        if (match) {
-          setProperty({
-            title: match.title,
-            location: match.location || 'Jaipur, Rajasthan',
-            city: match.location?.split(',')[1]?.trim() || 'Jaipur',
-            price: match.price || 'Price on Request',
-            pricePerSqft: '₹8,500/sq.ft',
-            status: match.status || 'Ready to Move',
-            type: match.type || 'Luxury Villa',
-            bhk: match.bedrooms ? `${match.bedrooms} BHK` : '3 BHK',
-            area: match.sqft ? `${match.sqft} sq.ft` : '2,400 sq.ft',
-            carpetArea: match.sqft ? `${Number(match.sqft) * 0.85} sq.ft` : '2,040 sq.ft',
-            baths: match.bathrooms || 3,
-            balconies: 2,
-            furnishing: 'Semi-Furnished',
-            floor: 'Ground + 1',
-            parking: '2 Covered Slots',
-            facing: 'East (Vastu Compliant)',
-            age: '0-1 Years',
-            available: 'Immediate',
-            reraApproved: true,
-            zeroBrokerage: true,
-            description: `Exclusive verified listing on Shreeniwas Properties: ${match.title} situated in prime ${match.location}. Built with royal Rajasthani standards, premium fittings, and serene surroundings.`,
-            amenities: [
-              { name: '100% Power Backup', icon: Zap },
-              { name: '24x7 Security', icon: ShieldCheck },
-              { name: 'Covered Parking', icon: Car },
-              { name: 'Landscaped Garden', icon: Trees },
-            ],
-            nearbyHighlights: [
-              { name: 'City Center Hub', distance: '2.5 km', icon: Navigation },
-              { name: 'Nearby Airport / Junction', distance: '8.0 km', icon: Plane },
-              { name: 'Top Educational Institution', distance: '1.5 km', icon: School },
-              { name: 'Super Specialty Hospital', distance: '2.0 km', icon: Stethoscope },
-            ],
-            images: match.image ? [match.image] : [
-              'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200'
-            ],
-            googleMapsUrl: match.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${match.title} ${match.location}`)}`
-          });
+        if (directMatch) {
+          setProperty(directMatch[1]);
           return;
         }
       }
-    } catch (e) {}
 
-    // 3. Fallback default
-    setProperty(BASE_MOCK_PROPERTIES['royal-heritage-residency-jaipur']);
+      // 4. Fallback default
+      setProperty(BASE_MOCK_PROPERTIES['royal-heritage-residency-jaipur']);
+    };
+
+    resolveProperty();
+
+    window.addEventListener('shreeniwas_data_updated', resolveProperty);
+    window.addEventListener('storage', resolveProperty);
+    return () => {
+      window.removeEventListener('shreeniwas_data_updated', resolveProperty);
+      window.removeEventListener('storage', resolveProperty);
+    };
   }, [slug]);
 
   // Load and sync saved favorite status for this property

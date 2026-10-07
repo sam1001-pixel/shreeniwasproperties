@@ -8,12 +8,18 @@ import {
   MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound,
   Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck, UserPlus,
   Video, Star, Share2, Camera, ThumbsUp, IndianRupee, Layers, ExternalLink, Download, ShieldCheck,
-  QrCode, Smartphone, RefreshCw, FileSpreadsheet
+  QrCode, Smartphone, RefreshCw, FileSpreadsheet, Image as ImageIcon, Copy, Filter, TrendingUp
 } from 'lucide-react';
 import Link from 'next/link';
 import { DEFAULT_NEW_PROJECTS, NewProjectItem } from '@/components/shared/new-projects-section';
 import { DEFAULT_PAYMENT_SETTINGS, PaymentSettings } from '@/lib/settings/site-settings-context';
 import { exportInquiriesToExcel } from '@/lib/export/excel-export';
+import { 
+  RAJASTHAN_LOCALITIES_TRENDS, 
+  LocalityPriceTrend, 
+  syncPriceTrendsWithLiveProperties, 
+  STORAGE_KEY_CUSTOM_PRICE_TRENDS 
+} from '@/lib/location-service';
 
 // Initial Seed Data (Fallbacks if localStorage is empty)
 // Initial Seed Data (Fallbacks if localStorage is empty)
@@ -117,6 +123,30 @@ export default function AdminDashboard() {
   const [showEditMediaModal, setShowEditMediaModal] = useState(false);
   const [editingMedia, setEditingMedia] = useState<any | null>(null);
   const [mediaForm, setMediaForm] = useState({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
+  const [showAddMediaModal, setShowAddMediaModal] = useState(false);
+  const [copiedMediaUrl, setCopiedMediaUrl] = useState('');
+
+  // Localities & Price Trends State (Super Admin)
+  const [trendsCity, setTrendsCity] = useState('Jodhpur');
+  const [allTrends, setAllTrends] = useState<Record<string, LocalityPriceTrend[]>>(RAJASTHAN_LOCALITIES_TRENDS);
+  const [showTrendModal, setShowTrendModal] = useState(false);
+  const [editingTrend, setEditingTrend] = useState<LocalityPriceTrend | null>(null);
+  const [trendForm, setTrendForm] = useState({
+    name: '',
+    city: 'Jodhpur',
+    avgPrice: '₹5,400',
+    avgPriceNum: 5400,
+    growth: '+11.0%',
+    growthNum: 11.0,
+    type: 'Heritage & Villas',
+    count: '140+ Properties',
+    rentalYield: '4.8% Yield'
+  });
+
+  // Advanced Super Admin Filtering States
+  const [propertyFilter, setPropertyFilter] = useState<'all' | 'active' | 'ready' | 'construction' | 'landlord' | 'verified'>('all');
+  const [propertySearch, setPropertySearch] = useState('');
+  const [inquiryFilter, setInquiryFilter] = useState<'all' | 'visits' | 'payments' | 'alerts' | 'messages'>('all');
 
   // Tariff & Visits Management State (Super Admin)
   const [tariffSettings, setTariffSettings] = useState({
@@ -210,7 +240,12 @@ export default function AdminDashboard() {
 
   const notifyDataUpdated = () => {
     if (typeof window !== 'undefined') {
+      // Dispatch in current window
       window.dispatchEvent(new Event('shreeniwas_data_updated'));
+      // Trigger storage event across other open tabs/windows
+      try {
+        localStorage.setItem('shreeniwas_last_sync_timestamp', Date.now().toString());
+      } catch (e) {}
     }
   };
 
@@ -352,6 +387,17 @@ export default function AdminDashboard() {
       } catch (e) {}
     }
 
+    // Load Custom Real Estate Price Trends Overrides
+    const savedTrends = localStorage.getItem(STORAGE_KEY_CUSTOM_PRICE_TRENDS);
+    if (savedTrends) {
+      try {
+        const parsed = JSON.parse(savedTrends);
+        if (parsed && typeof parsed === 'object') {
+          setAllTrends({ ...RAJASTHAN_LOCALITIES_TRENDS, ...parsed });
+        }
+      } catch (e) {}
+    }
+
     setIsLoaded(true);
   }, []);
 
@@ -472,12 +518,23 @@ export default function AdminDashboard() {
       googleMapsUrl: propForm.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${propForm.title} ${propForm.location}`)}`
     };
 
+    const generatedSlug = (editingProperty?.slug || propForm.title)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
     if (editingProperty) {
-      const updated = propertiesList.map(p => p.id === editingProperty.id ? { ...p, ...payload } : p);
+      const updated = propertiesList.map(p => p.id === editingProperty.id ? { ...p, ...payload, slug: p.slug || generatedSlug } : p);
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
     } else {
-      const newProp = { id: `PROP-${Date.now().toString().slice(-4)}`, ...payload };
+      const newId = `PROP-${Date.now().toString().slice(-4)}`;
+      const newProp = { 
+        id: newId, 
+        slug: generatedSlug ? `${generatedSlug}-${newId.toLowerCase()}` : `property-${newId.toLowerCase()}`,
+        ...payload 
+      };
       const updated = [newProp, ...propertiesList];
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
@@ -859,16 +916,185 @@ export default function AdminDashboard() {
     setShowSettingsConfirmModal(true);
   };
 
+  // Super Admin Localities & Real Estate Price Trends Handlers
+  const handleSaveTrend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trendForm.name) return;
+
+    const currentCityTrends = allTrends[trendForm.city] ? [...allTrends[trendForm.city]] : [];
+    let updatedCityTrends: LocalityPriceTrend[];
+
+    const trendPayload: LocalityPriceTrend = {
+      name: trendForm.name.trim(),
+      city: trendForm.city,
+      avgPrice: trendForm.avgPrice.startsWith('₹') ? trendForm.avgPrice : `₹${trendForm.avgPrice}`,
+      avgPriceNum: Number(trendForm.avgPriceNum) || parseInt(trendForm.avgPrice.replace(/[^0-9]/g, '')) || 4500,
+      growth: trendForm.growth.startsWith('+') || trendForm.growth.startsWith('-') ? trendForm.growth : `+${trendForm.growth}`,
+      growthNum: Number(trendForm.growthNum) || parseFloat(trendForm.growth.replace(/[^0-9.-]/g, '')) || 10,
+      type: trendForm.type || 'Residential',
+      count: trendForm.count || '100+ Properties',
+      rentalYield: trendForm.rentalYield || '4.8% Yield',
+      slug: trendForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    };
+
+    if (editingTrend) {
+      updatedCityTrends = currentCityTrends.map(t => t.name === editingTrend.name ? trendPayload : t);
+    } else {
+      updatedCityTrends = [trendPayload, ...currentCityTrends];
+    }
+
+    const updatedAll = {
+      ...allTrends,
+      [trendForm.city]: updatedCityTrends
+    };
+
+    setAllTrends(updatedAll);
+    localStorage.setItem(STORAGE_KEY_CUSTOM_PRICE_TRENDS, JSON.stringify(updatedAll));
+    window.dispatchEvent(new Event('shreeniwas_price_trends_updated'));
+    notifyDataUpdated();
+
+    setShowTrendModal(false);
+    setEditingTrend(null);
+  };
+
+  const handleDeleteTrend = (cityName: string, localityName: string) => {
+    if (!confirm(`Are you sure you want to delete locality "${localityName}" from ${cityName}?`)) return;
+    const currentCityTrends = allTrends[cityName] ? [...allTrends[cityName]] : [];
+    const updatedCityTrends = currentCityTrends.filter(t => t.name !== localityName);
+    const updatedAll = {
+      ...allTrends,
+      [cityName]: updatedCityTrends
+    };
+    setAllTrends(updatedAll);
+    localStorage.setItem(STORAGE_KEY_CUSTOM_PRICE_TRENDS, JSON.stringify(updatedAll));
+    window.dispatchEvent(new Event('shreeniwas_price_trends_updated'));
+    notifyDataUpdated();
+  };
+
+  const handleSyncPriceTrends = () => {
+    syncPriceTrendsWithLiveProperties(propertiesList);
+    const savedTrends = localStorage.getItem(STORAGE_KEY_CUSTOM_PRICE_TRENDS);
+    if (savedTrends) {
+      try {
+        setAllTrends({ ...RAJASTHAN_LOCALITIES_TRENDS, ...JSON.parse(savedTrends) });
+      } catch (e) {}
+    }
+    notifyDataUpdated();
+    alert('Price trends automatically synchronized with active property listings across Rajasthan!');
+  };
+
+  // Property Moderation Toggles (Super Admin)
+  const handleTogglePropertyVerified = (propId: string) => {
+    const updated = propertiesList.map(p => p.id === propId ? { ...p, verified: !p.verified } : p);
+    setPropertiesList(updated);
+    localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+    notifyDataUpdated();
+  };
+
+  const handleTogglePropertyFeatured = (propId: string) => {
+    const updated = propertiesList.map(p => p.id === propId ? { ...p, featured: !p.featured } : p);
+    setPropertiesList(updated);
+    localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+    notifyDataUpdated();
+  };
+
+  const handleTogglePropertyStatus = (propId: string) => {
+    const updated = propertiesList.map(p => {
+      if (p.id === propId) {
+        const nextStatus = p.status === 'Active' ? 'Paused' : 'Active';
+        return { ...p, status: nextStatus };
+      }
+      return p;
+    });
+    setPropertiesList(updated);
+    localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+    notifyDataUpdated();
+  };
+
+  // Payment Verification Handler (Super Admin)
+  const handleVerifyInquiryPayment = (inquiryId: string) => {
+    let verifiedInq: any = null;
+    const updated = inquiriesList.map(inq => {
+      if (inq.id === inquiryId) {
+        verifiedInq = {
+          ...inq,
+          status: 'Payment Verified & Confirmed',
+          reply: 'Payment confirmed & verified by Super Admin. VIP Site Visit Pass is active.'
+        };
+        return verifiedInq;
+      }
+      return inq;
+    });
+    setInquiriesList(updated);
+    localStorage.setItem('shreeniwas_inquiries', JSON.stringify(updated));
+
+    // When super admin confirms payment, sync pass directly to the client's account visit section
+    if (verifiedInq) {
+      try {
+        const clientEmail = verifiedInq.email || '';
+        const clientPhone = verifiedInq.phone || '';
+        const userVisitsKey = clientEmail ? `shreeniwas_vip_visits_${clientEmail}` : null;
+
+        const newVisitEntry = {
+          id: `VISIT-${verifiedInq.utrNumber ? verifiedInq.utrNumber.slice(-4) : verifiedInq.id?.slice(-4) || Date.now().toString().slice(-4)}`,
+          property: verifiedInq.property || 'VIP Rajasthan Property Pass',
+          location: verifiedInq.location || 'Rajasthan, India',
+          date: verifiedInq.visitDate ? `${verifiedInq.visitDate} (${verifiedInq.slotLabel || verifiedInq.visitTimeSlot || 'Confirmed'})` : 'Valid for 30 Days (On-Demand)',
+          agent: 'Shreeniwas Senior Executive (+91 6376117833)',
+          fee: verifiedInq.amount ? `₹${verifiedInq.amount} Verified` : 'Paid & Confirmed',
+          status: 'Confirmed & Scheduled',
+          utrNumber: verifiedInq.utrNumber || '',
+          txnId: verifiedInq.id || '',
+          confirmedAt: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        };
+
+        // 1. If we have client's email, save to their dedicated visits key
+        if (userVisitsKey) {
+          const userVisitsRaw = localStorage.getItem(userVisitsKey);
+          const currentVisits = userVisitsRaw ? JSON.parse(userVisitsRaw) : [];
+          // Avoid duplicate entry if already present
+          const filteredVisits = currentVisits.filter((v: any) => v.utrNumber !== verifiedInq.utrNumber && v.txnId !== verifiedInq.id);
+          localStorage.setItem(userVisitsKey, JSON.stringify([newVisitEntry, ...filteredVisits]));
+        }
+
+        // 2. Also append to global confirmed VIP visits ledger
+        const globalVisitsRaw = localStorage.getItem('shreeniwas_all_vip_visits');
+        const globalVisits = globalVisitsRaw ? JSON.parse(globalVisitsRaw) : [];
+        const filteredGlobal = globalVisits.filter((v: any) => v.utrNumber !== verifiedInq.utrNumber && v.txnId !== verifiedInq.id);
+        localStorage.setItem('shreeniwas_all_vip_visits', JSON.stringify([
+          { ...newVisitEntry, userEmail: clientEmail, userPhone: clientPhone, userName: verifiedInq.user },
+          ...filteredGlobal
+        ]));
+      } catch (err) {
+        console.warn('Failed to sync verified visit to user account:', err);
+      }
+    }
+
+    notifyDataUpdated();
+    alert('Payment Confirmed! VIP Site Visit pass has been sent directly to the client account visit section.');
+  };
+
+  // Universal Media Gallery Asset Picker Helper
+  const openMediaPicker = (callback: (url: string) => void) => {
+    setGalleryTargetCallback(() => (url: string) => {
+      callback(url);
+      setShowGalleryPicker(false);
+    });
+    setShowGalleryPicker(true);
+  };
+
   const navItems = adminRole === 'super' ? [
     { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
     { id: 'projects', label: 'Builder Projects & Townships', icon: Layers },
+    { id: 'trends', label: 'Localities & Price Trends', icon: TrendingUp },
+    { id: 'gallery', label: 'Media Gallery Assets', icon: ImageIcon },
     { id: 'tariffs', label: 'Tariff & Visits Management', icon: IndianRupee },
     { id: 'payments', label: 'Payment Gateway & UPI Setup', icon: QrCode },
     { id: 'reels', label: 'Property Video Reels', icon: Video },
     { id: 'blogs', label: 'Blog & Content', icon: FileText },
     { id: 'reviews', label: 'Buyer & Landlord Reviews', icon: Star },
-    { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
+    { id: 'inquiries', label: 'Query, Bookings & Leads Desk', icon: MessageSquare },
     { id: 'attendance', label: 'Staff Attendance System', icon: Clock },
     { id: 'users', label: 'Users & Admin Management', icon: Users },
     { id: 'settings', label: 'Platform & Social Settings', icon: Settings },
@@ -1114,10 +1340,10 @@ export default function AdminDashboard() {
           {/* PROPERTIES TAB */}
           {activeTab === 'properties' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-serif font-bold text-[#0A1628]">Properties Inventory Manager</h3>
-                  <p className="text-xs text-slate-500">Super Admin Power: Add, edit, update prices, or remove property listings.</p>
+                  <p className="text-xs text-slate-500">Super Admin Power: Moderate listings, toggle verification, feature properties, update prices, or remove.</p>
                 </div>
 
                 {adminRole === 'super' && (
@@ -1159,49 +1385,148 @@ export default function AdminDashboard() {
                 )}
               </div>
 
+              {/* Filters & Search Toolbar */}
+              <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                  {[
+                    { id: 'all', label: `All (${propertiesList.length})` },
+                    { id: 'active', label: `Active (${propertiesList.filter(p => p.status === 'Active' || p.status === 'Ready to Move').length})` },
+                    { id: 'ready', label: `Ready to Move (${propertiesList.filter(p => p.status === 'Ready to Move').length})` },
+                    { id: 'construction', label: `Under Construction (${propertiesList.filter(p => p.status === 'Under Construction').length})` },
+                    { id: 'landlord', label: `Landlord Submissions (${propertiesList.filter(p => typeof p.id === 'number' || String(p.id).startsWith('landlord') || !String(p.id).startsWith('PROP-')).length})` },
+                    { id: 'verified', label: `Verified (${propertiesList.filter(p => p.verified).length})` },
+                  ].map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => setPropertyFilter(filter.id as any)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        propertyFilter === filter.id
+                          ? 'bg-[#0A1628] text-[#C9A96E] shadow-sm'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative min-w-[240px]">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={propertySearch}
+                    onChange={(e) => setPropertySearch(e.target.value)}
+                    placeholder="Search title, location or city..."
+                    className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+              </div>
+
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto no-scrollbar">
-                  <table className="w-full text-left border-collapse min-w-[700px]">
+                  <table className="w-full text-left border-collapse min-w-[850px]">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
-                        <th className="p-4 pl-6">ID</th>
+                        <th className="p-4 pl-6">ID & Source</th>
                         <th className="p-4">Title</th>
                         <th className="p-4">Location</th>
-                        <th className="p-4">Google Maps</th>
                         <th className="p-4">Price</th>
-                        <th className="p-4">Type</th>
                         <th className="p-4">Status</th>
+                        <th className="p-4">Moderation Badges</th>
                         {adminRole === 'super' && <th className="p-4 text-right pr-6">Super Admin Actions</th>}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
-                      {propertiesList.map((prop) => (
+                      {propertiesList
+                        .filter(prop => {
+                          if (propertySearch) {
+                            const q = propertySearch.toLowerCase();
+                            const matchTitle = prop.title?.toLowerCase().includes(q);
+                            const matchLoc = prop.location?.toLowerCase().includes(q);
+                            if (!matchTitle && !matchLoc) return false;
+                          }
+                          if (propertyFilter === 'active') return prop.status === 'Active' || prop.status === 'Ready to Move';
+                          if (propertyFilter === 'ready') return prop.status === 'Ready to Move';
+                          if (propertyFilter === 'construction') return prop.status === 'Under Construction';
+                          if (propertyFilter === 'landlord') return typeof prop.id === 'number' || String(prop.id).startsWith('landlord') || !String(prop.id).startsWith('PROP-');
+                          if (propertyFilter === 'verified') return !!prop.verified;
+                          return true;
+                        })
+                        .map((prop) => (
                         <tr key={prop.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="p-4 pl-6 font-mono font-bold text-slate-500">{prop.id}</td>
-                          <td className="p-4 font-bold text-[#0A1628]">{prop.title}</td>
-                          <td className="p-4 text-slate-600">{prop.location}</td>
-                          <td className="p-4">
-                            {prop.googleMapsUrl ? (
+                          <td className="p-4 pl-6">
+                            <span className="font-mono font-bold text-slate-500 block">{String(prop.id).slice(0, 10)}</span>
+                            {typeof prop.id === 'number' || String(prop.id).startsWith('landlord') || !String(prop.id).startsWith('PROP-') ? (
+                              <span className="inline-block text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 mt-0.5">
+                                Landlord Post
+                              </span>
+                            ) : (
+                              <span className="inline-block text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 mt-0.5">
+                                Admin Inventory
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4 font-bold text-[#0A1628] max-w-[200px]">
+                            <p className="truncate">{prop.title}</p>
+                            <p className="text-[10px] text-slate-400 font-normal">{prop.type || 'Residential'}</p>
+                          </td>
+                          <td className="p-4 text-slate-600 max-w-[180px]">
+                            <p className="truncate">{prop.location}</p>
+                            {prop.googleMapsUrl && (
                               <a
                                 href={prop.googleMapsUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100"
+                                className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 hover:underline mt-0.5"
                               >
-                                <MapPin className="w-3 h-3 text-emerald-600" />
-                                <span>Verified Pin</span>
-                                <ExternalLink className="w-2.5 h-2.5" />
+                                <MapPin className="w-2.5 h-2.5" /> Map Pin
                               </a>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 italic">Auto Search</span>
                             )}
                           </td>
                           <td className="p-4 font-bold text-emerald-700">{prop.price}</td>
-                          <td className="p-4 font-medium text-slate-600">{prop.type}</td>
                           <td className="p-4">
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            <button
+                              onClick={() => handleTogglePropertyStatus(prop.id)}
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                                prop.status === 'Active' || prop.status === 'Ready to Move'
+                                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                              }`}
+                              title="Click to toggle Active / Paused status"
+                            >
                               {prop.status}
-                            </span>
+                            </button>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {/* Verified Toggle */}
+                              <button
+                                onClick={() => handleTogglePropertyVerified(prop.id)}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                  prop.verified
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-slate-100 text-slate-400 hover:text-slate-700'
+                                }`}
+                                title="Click to toggle Verified badge"
+                              >
+                                <CheckCircle2 className="w-3 h-3" />
+                                {prop.verified ? 'Verified' : 'Unverified'}
+                              </button>
+
+                              {/* Featured Toggle */}
+                              <button
+                                onClick={() => handleTogglePropertyFeatured(prop.id)}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                  prop.featured
+                                    ? 'bg-amber-500 text-white'
+                                    : 'bg-slate-100 text-slate-400 hover:text-slate-700'
+                                }`}
+                                title="Click to toggle Featured on Homepage"
+                              >
+                                <Star className="w-3 h-3" />
+                                {prop.featured ? 'Featured' : 'Standard'}
+                              </button>
+                            </div>
                           </td>
                           {adminRole === 'super' && (
                             <td className="p-4 text-right pr-6 space-x-2">
@@ -1384,6 +1709,296 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* LOCALITIES & REAL ESTATE PRICE TRENDS TAB */}
+          {activeTab === 'trends' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1628] text-[#C9A96E] text-xs font-bold uppercase tracking-wider mb-1 border border-[#C9A96E]/30">
+                    <TrendingUp className="w-3.5 h-3.5" /> Market Intelligence & Valuation
+                  </div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Localities & Real Estate Price Trends</h3>
+                  <p className="text-xs text-slate-500">Super Admin Power: Control average price per sq.ft, YoY capital appreciation, property classifications, and sync with live listings.</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleSyncPriceTrends}
+                    className="px-3.5 py-2.5 bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm hover:bg-emerald-100 transition cursor-pointer"
+                    title="Automatically recalculate average price per sq.ft and counts based on all listed properties in inventory"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-emerald-700" /> Auto-Sync with Inventory
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setEditingTrend(null);
+                      setTrendForm({
+                        name: '',
+                        city: trendsCity,
+                        avgPrice: '₹5,500',
+                        avgPriceNum: 5500,
+                        growth: '+10.0%',
+                        growthNum: 10.0,
+                        type: 'Luxury Residential',
+                        count: '50+ Properties',
+                        rentalYield: '4.5% Yield'
+                      });
+                      setShowTrendModal(true);
+                    }}
+                    className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
+                  >
+                    <Plus className="w-4 h-4" /> Add Locality Trend
+                  </button>
+                </div>
+              </div>
+
+              {/* City Selector Bar */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                {['Jodhpur', 'Jaipur', 'Udaipur', 'Kota', 'Ajmer', 'Bikaner', 'Bhilwara', 'Alwar'].map((city) => (
+                  <button
+                    key={city}
+                    onClick={() => setTrendsCity(city)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border ${
+                      trendsCity === city
+                        ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E]/50 shadow-md'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    {city} ({allTrends[city]?.length || 0})
+                  </button>
+                ))}
+              </div>
+
+              {/* Trends Table */}
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[760px]">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
+                        <th className="p-4 pl-6">Locality Name</th>
+                        <th className="p-4">City</th>
+                        <th className="p-4">Avg Price / sq.ft</th>
+                        <th className="p-4">YoY Growth</th>
+                        <th className="p-4">Locality Profile</th>
+                        <th className="p-4">Inventory Size</th>
+                        <th className="p-4">Rental Yield</th>
+                        <th className="p-4 text-right pr-6">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {(!allTrends[trendsCity] || allTrends[trendsCity].length === 0) ? (
+                        <tr>
+                          <td colSpan={8} className="p-8 text-center text-slate-400">
+                            No locality trends registered for {trendsCity}. Click &quot;Add Locality Trend&quot; to configure.
+                          </td>
+                        </tr>
+                      ) : (
+                        allTrends[trendsCity].map((t) => (
+                          <tr key={t.name} className="hover:bg-slate-50 transition-colors">
+                            <td className="p-4 pl-6 font-bold text-[#0A1628]">
+                              {t.name}
+                            </td>
+                            <td className="p-4 text-slate-600 font-semibold">{t.city}</td>
+                            <td className="p-4 font-mono font-bold text-[#A27B36]">{t.avgPrice}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                (t.growthNum ?? 0) >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                              }`}>
+                                {t.growth}
+                              </span>
+                            </td>
+                            <td className="p-4 text-slate-600">{t.type}</td>
+                            <td className="p-4 text-slate-500">{t.count}</td>
+                            <td className="p-4 font-semibold text-slate-700">{t.rentalYield || '4.0% Yield'}</td>
+                            <td className="p-4 text-right pr-6 space-x-2">
+                              <button
+                                onClick={() => {
+                                  setEditingTrend(t);
+                                  setTrendForm({
+                                    name: t.name,
+                                    city: t.city,
+                                    avgPrice: t.avgPrice,
+                                    avgPriceNum: t.avgPriceNum,
+                                    growth: t.growth,
+                                    growthNum: t.growthNum,
+                                    type: t.type,
+                                    count: t.count,
+                                    rentalYield: t.rentalYield || '4.0% Yield'
+                                  });
+                                  setShowTrendModal(true);
+                                }}
+                                className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
+                                title="Edit Locality"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTrend(trendsCity, t.name)}
+                                className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
+                                title="Delete Locality"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MEDIA GALLERY ASSETS TAB */}
+          {activeTab === 'gallery' && adminRole === 'super' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A1628] text-[#C9A96E] text-xs font-bold uppercase tracking-wider mb-1 border border-[#C9A96E]/30">
+                    <ImageIcon className="w-3.5 h-3.5" /> Universal Digital Asset Hub
+                  </div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Media Gallery Assets</h3>
+                  <p className="text-xs text-slate-500">Super Admin Power: Manage centralized images, brand logos, hero graphics, and property photography with 1-click URL copying.</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setNewMediaForm({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
+                      setShowAddMediaModal(true);
+                    }}
+                    className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
+                  >
+                    <Plus className="w-4 h-4" /> Add Asset to Gallery
+                  </button>
+                </div>
+              </div>
+
+              {/* Gallery Filter & Search Toolbar */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full sm:w-auto">
+                  {['All', 'Properties', 'Reels & Videos', 'Logos & Avatars', 'Blogs', 'Townships'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setGalleryCategoryFilter(cat)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                        galleryCategoryFilter === cat
+                          ? 'bg-[#0A1628] text-[#C9A96E] shadow-sm'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative w-full sm:w-64">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    value={gallerySearchQuery}
+                    onChange={(e) => setGallerySearchQuery(e.target.value)}
+                    placeholder="Search media by title..."
+                    className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-[#C9A96E]"
+                  />
+                </div>
+              </div>
+
+              {/* Media Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {mediaGallery
+                  .filter((item) => {
+                    const matchesCategory = galleryCategoryFilter === 'All' || item.category === galleryCategoryFilter;
+                    const matchesSearch = !gallerySearchQuery || item.title?.toLowerCase().includes(gallerySearchQuery.toLowerCase());
+                    return matchesCategory && matchesSearch;
+                  })
+                  .map((item) => (
+                    <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+                      <div className="relative h-44 bg-slate-100 overflow-hidden">
+                        <img
+                          src={item.url}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            (e.target as HTMLElement).setAttribute('src', 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=600');
+                          }}
+                        />
+                        <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0A1628]/80 text-[#C9A96E] backdrop-blur-sm border border-[#C9A96E]/20">
+                          {item.category}
+                        </span>
+                        {item.type === 'video' && (
+                          <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white flex items-center gap-1 shadow">
+                            <Video className="w-2.5 h-2.5" /> Video
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="p-3.5 flex-1 flex flex-col justify-between space-y-2">
+                        <div>
+                          <p className="font-bold text-xs text-[#0A1628] line-clamp-1">{item.title}</p>
+                          <p className="text-[10px] text-slate-400 font-mono mt-0.5">{item.id}</p>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(item.url);
+                              setCopiedMediaUrl(item.id);
+                              setTimeout(() => setCopiedMediaUrl(''), 2000);
+                            }}
+                            className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                              copiedMediaUrl === item.id
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E]'
+                            }`}
+                            title="Copy Direct URL"
+                          >
+                            {copiedMediaUrl === item.id ? (
+                              <>
+                                <CheckCircle2 className="w-3 h-3 text-white" /> Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3" /> Copy URL
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setEditingMedia(item);
+                              setMediaForm({
+                                title: item.title,
+                                category: item.category,
+                                type: item.type || 'image',
+                                url: item.url,
+                                instaUrl: item.instaUrl || ''
+                              });
+                              setShowEditMediaModal(true);
+                            }}
+                            className="p-1.5 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] rounded-lg transition cursor-pointer"
+                            title="Edit Media"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteMedia(item.id)}
+                            className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition cursor-pointer"
+                            title="Delete Media"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -2159,13 +2774,13 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* INQUIRIES TAB */}
+          {/* INQUIRIES, VIP BOOKINGS & UPI TRANSACTIONS TAB */}
           {activeTab === 'inquiries' && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Query & Lead Desk</h3>
-                  <p className="text-xs text-slate-500">Respond directly to visitor property inquiries, VIP visit bookings, and export query data.</p>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Query, Bookings & UPI Transactions Desk</h3>
+                  <p className="text-xs text-slate-500">Respond directly to visitor inquiries, VIP visit bookings, confirm UPI passes with UTR numbers, and export full records.</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -2198,6 +2813,34 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Inquiry Category Filter Bar */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                {[
+                  { id: 'all', label: 'All Queries & Transactions', count: inquiriesList.length },
+                  { id: 'visits', label: 'VIP Site Visits', count: inquiriesList.filter(i => i.type?.toLowerCase().includes('visit') || i.slotLabel || i.visitTimeSlot).length },
+                  { id: 'payments', label: 'UPI Payments & Passes (UTR)', count: inquiriesList.filter(i => i.utrNumber || i.txnId || i.status?.toLowerCase().includes('paid') || i.type?.toLowerCase().includes('payment') || i.type?.toLowerCase().includes('pass')).length },
+                  { id: 'alerts', label: 'Alert Subscribers', count: inquiriesList.filter(i => i.type?.toLowerCase().includes('alert') || i.property?.toLowerCase().includes('subscriber')).length },
+                  { id: 'messages', label: 'General Inquiries', count: inquiriesList.filter(i => !i.utrNumber && !i.slotLabel && !i.type?.toLowerCase().includes('alert')).length }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setInquiryFilter(tab.id as any)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border flex items-center gap-1.5 ${
+                      inquiryFilter === tab.id
+                        ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E]/50 shadow-md'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                      inquiryFilter === tab.id ? 'bg-[#C9A96E]/20 text-[#C9A96E]' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {tab.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
               {inquiriesList.length === 0 ? (
                 <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
                   <MessageSquare className="w-10 h-10 text-[#C9A96E] mx-auto mb-3" />
@@ -2207,44 +2850,106 @@ export default function AdminDashboard() {
               ) : (
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                   <div className="overflow-x-auto no-scrollbar">
-                    <table className="w-full text-left border-collapse min-w-[700px]">
+                    <table className="w-full text-left border-collapse min-w-[760px]">
                       <thead>
                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase">
                           <th className="p-4 pl-6">Client Details</th>
-                          <th className="p-4">Property / Topic</th>
+                          <th className="p-4">Property / Lead Source</th>
                           <th className="p-4">Type</th>
-                          <th className="p-4">Query / Request</th>
-                          <th className="p-4">Status</th>
+                          <th className="p-4">Query / Transaction Details</th>
+                          <th className="p-4">Status & Verification</th>
                           <th className="p-4 text-right pr-6">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-xs">
-                        {inquiriesList.map((inq) => (
+                        {inquiriesList
+                          .filter((inq) => {
+                            if (inquiryFilter === 'visits') {
+                              return inq.type?.toLowerCase().includes('visit') || inq.slotLabel || inq.visitTimeSlot;
+                            }
+                            if (inquiryFilter === 'payments') {
+                              return inq.utrNumber || inq.txnId || inq.status?.toLowerCase().includes('paid') || inq.type?.toLowerCase().includes('payment') || inq.type?.toLowerCase().includes('pass');
+                            }
+                            if (inquiryFilter === 'alerts') {
+                              return inq.type?.toLowerCase().includes('alert') || inq.property?.toLowerCase().includes('subscriber');
+                            }
+                            if (inquiryFilter === 'messages') {
+                              return !inq.utrNumber && !inq.slotLabel && !inq.type?.toLowerCase().includes('alert');
+                            }
+                            return true;
+                          })
+                          .map((inq) => (
                           <tr key={inq.id} className="hover:bg-slate-50 transition-colors">
                             <td className="p-4 pl-6">
                               <p className="font-bold text-[#0A1628]">{inq.user}</p>
                               <p className="text-[10px] text-slate-400">{inq.phone} | {inq.email}</p>
+                              {inq.timestamp && (
+                                <p className="text-[9px] text-slate-400 font-mono mt-0.5">{inq.timestamp}</p>
+                              )}
                             </td>
-                            <td className="p-4 font-medium text-slate-700">{inq.property}</td>
+                            <td className="p-4 font-medium text-slate-700">
+                              <span className="font-semibold text-[#0A1628]">{inq.property}</span>
+                              {inq.amount && (
+                                <span className="block text-[11px] font-bold text-emerald-700">
+                                  ₹{inq.amount}
+                                </span>
+                              )}
+                            </td>
                             <td className="p-4">
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C9A96E]/20 text-[#0A1628]">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                inq.utrNumber ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                                inq.type?.toLowerCase().includes('visit') ? 'bg-blue-100 text-blue-800' :
+                                inq.type?.toLowerCase().includes('alert') ? 'bg-amber-100 text-amber-800' :
+                                'bg-[#C9A96E]/20 text-[#0A1628]'
+                              }`}>
                                 {inq.type}
                               </span>
                             </td>
-                            <td className="p-4 text-slate-600 max-w-[240px]">
+                            <td className="p-4 text-slate-600 max-w-[260px]">
                               <p className="font-medium text-slate-800 line-clamp-2">{inq.query || "No notes"}</p>
                               {(inq.visitTimeSlot || inq.slotLabel) && (
                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#A27B36] bg-[#C9A96E]/15 px-2 py-0.5 rounded-full mt-1 border border-[#C9A96E]/30">
                                   <Clock className="w-2.5 h-2.5" /> Slot: {inq.slotLabel || inq.visitTimeSlot}
                                 </span>
                               )}
+                              {inq.utrNumber && (
+                                <div className="mt-1 flex items-center gap-1.5 p-1.5 bg-emerald-50 rounded-lg border border-emerald-200">
+                                  <span className="text-[9px] font-bold text-emerald-900 uppercase">UTR:</span>
+                                  <span className="font-mono text-[10px] font-bold text-emerald-700">{inq.utrNumber}</span>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(inq.utrNumber);
+                                      alert(`Copied UTR: ${inq.utrNumber}`);
+                                    }}
+                                    className="p-1 hover:bg-emerald-200 rounded text-emerald-800 transition cursor-pointer ml-auto"
+                                    title="Copy UTR"
+                                  >
+                                    <Copy className="w-2.5 h-2.5" />
+                                  </button>
+                                </div>
+                              )}
                             </td>
                             <td className="p-4">
-                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                inq.status?.includes('Paid') || inq.status?.includes('Responded') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                              }`}>
-                                {inq.status}
-                              </span>
+                              <div className="space-y-1">
+                                <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                  inq.status?.includes('Verified') || inq.status?.includes('Paid') || inq.status?.includes('Responded')
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : 'bg-amber-100 text-amber-800'
+                                }`}>
+                                  {inq.status}
+                                </span>
+
+                                {inq.utrNumber && !inq.status?.includes('Verified') && (
+                                  <div>
+                                    <button
+                                      onClick={() => handleVerifyInquiryPayment(inq.id)}
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shadow-sm transition cursor-pointer"
+                                    >
+                                      <CheckCircle2 className="w-2.5 h-2.5" /> Confirm Payment
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             </td>
                             <td className="p-4 text-right pr-6">
                               <button
@@ -2446,6 +3151,46 @@ export default function AdminDashboard() {
               </div>
 
               <form onSubmit={handleSaveSettings} className="space-y-6 max-w-4xl">
+                {/* 0. Live Public Maintenance Mode Control */}
+                <div className={`p-6 rounded-3xl border transition-all ${
+                  siteSettings.maintenanceMode
+                    ? 'bg-rose-50/80 border-rose-300 shadow-sm'
+                    : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+                        siteSettings.maintenanceMode ? 'bg-rose-600 text-white' : 'bg-[#0A1628] text-[#C9A96E]'
+                      }`}>
+                        <ShieldAlert className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-[#0A1628]">Public Maintenance Mode Guard</h4>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            siteSettings.maintenanceMode ? 'bg-rose-600 text-white animate-pulse' : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {siteSettings.maintenanceMode ? 'UNDER MAINTENANCE' : 'PORTAL IS LIVE'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">
+                          When active, all public visitors will see the official Royal Maintenance screen with emergency phone & WhatsApp buttons. Admins can continue operating normally.
+                        </p>
+                      </div>
+                    </div>
+
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={siteSettings.maintenanceMode}
+                        onChange={(e) => setSiteSettings(prev => ({ ...prev, maintenanceMode: e.target.checked }))}
+                        className="sr-only peer"
+                      />
+                      <div className="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                    </label>
+                  </div>
+                </div>
+
                 {/* 1. Branding & Logo Settings */}
                 <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                   <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
@@ -2457,6 +3202,13 @@ export default function AdminDashboard() {
                       <div className="flex justify-between items-center mb-1">
                         <label className="font-bold uppercase text-slate-700">Custom Logo Image</label>
                         <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openMediaPicker((url) => setSiteSettings(prev => ({ ...prev, logoUrl: url })))}
+                            className="text-[#A27B36] hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                          >
+                            <ImageIcon className="w-3 h-3 text-[#C9A96E]" /> From Gallery
+                          </button>
                           <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
                             <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
                             <input
@@ -2475,7 +3227,7 @@ export default function AdminDashboard() {
                         placeholder="https://example.com/logo.png or uploaded image"
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Upload from device or paste image URL.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Pick from Gallery, upload device file, or paste custom URL.</p>
                     </div>
 
                     <div>
@@ -2494,6 +3246,13 @@ export default function AdminDashboard() {
                     <div className="flex justify-between items-center mb-1">
                       <label className="font-bold uppercase text-slate-700 text-xs">Landing Page Hero Background Image</label>
                       <div className="flex items-center gap-2 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => openMediaPicker((url) => setSiteSettings(prev => ({ ...prev, heroBgUrl: url })))}
+                          className="text-[#A27B36] hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <ImageIcon className="w-3 h-3 text-[#C9A96E]" /> From Gallery
+                        </button>
                         <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
                           <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
                           <input
@@ -3136,24 +3895,40 @@ export default function AdminDashboard() {
                       <h5 className="font-bold text-[11px] uppercase tracking-wider text-[#0A1628] flex items-center gap-1.5">
                         <Camera className="w-3.5 h-3.5 text-[#C9A96E]" /> Property Photo Gallery & Cover
                       </h5>
-                      <p className="text-[10px] text-slate-500">Upload multiple photos from your device or paste high-res URLs.</p>
+                      <p className="text-[10px] text-slate-500">Pick from central Media Gallery, upload from device, or paste URLs.</p>
                     </div>
 
-                    <label className="px-3.5 py-1.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl cursor-pointer flex items-center gap-1.5 shadow hover:bg-[#15233c] transition self-start sm:self-auto">
-                      <Camera className="w-3.5 h-3.5" /> Upload Photo from Device
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload(e, (dataUrl) => {
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <button
+                        type="button"
+                        onClick={() => openMediaPicker((url) => {
                           setPropForm(prev => ({
                             ...prev,
-                            image: prev.image || dataUrl,
-                            images: [...prev.images, dataUrl]
+                            image: prev.image || url,
+                            images: [...prev.images, url]
                           }));
                         })}
-                      />
-                    </label>
+                        className="px-3.5 py-1.5 bg-[#C9A96E]/20 text-[#A27B36] border border-[#C9A96E]/40 font-bold text-xs rounded-xl cursor-pointer flex items-center gap-1.5 hover:bg-[#C9A96E]/30 transition"
+                      >
+                        <ImageIcon className="w-3.5 h-3.5 text-[#A27B36]" /> Choose from Gallery
+                      </button>
+
+                      <label className="px-3.5 py-1.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl cursor-pointer flex items-center gap-1.5 shadow hover:bg-[#15233c] transition">
+                        <Camera className="w-3.5 h-3.5" /> Upload Device
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, (dataUrl) => {
+                            setPropForm(prev => ({
+                              ...prev,
+                              image: prev.image || dataUrl,
+                              images: [...prev.images, dataUrl]
+                            }));
+                          })}
+                        />
+                      </label>
+                    </div>
                   </div>
 
                   {/* Primary Cover Image URL */}
@@ -3163,7 +3938,7 @@ export default function AdminDashboard() {
                       type="text"
                       value={propForm.image}
                       onChange={(e) => setPropForm({ ...propForm, image: e.target.value })}
-                      placeholder="https://images.unsplash.com/... or upload from device above"
+                      placeholder="https://images.unsplash.com/... or choose from gallery above"
                       className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                     />
                   </div>
@@ -3365,6 +4140,13 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-center mb-1">
                     <label className="font-bold uppercase text-slate-700">Project Cover Image</label>
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openMediaPicker((url) => setProjectForm(prev => ({ ...prev, coverImage: url })))}
+                        className="text-[#A27B36] hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <ImageIcon className="w-3 h-3 text-[#C9A96E]" /> From Gallery
+                      </button>
                       <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
                         <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
                         <input
@@ -3467,6 +4249,13 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-center mb-1">
                     <label className="font-bold uppercase text-slate-700">Video Reel / Thumbnail Asset</label>
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openMediaPicker((url) => setReelForm(prev => ({ ...prev, embedUrl: url })))}
+                        className="text-[#A27B36] hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <ImageIcon className="w-3 h-3 text-[#C9A96E]" /> From Gallery
+                      </button>
                       <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
                         <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
                         <input
@@ -3589,6 +4378,13 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-center mb-1">
                     <label className="font-bold uppercase text-slate-700">Reviewer Avatar Image</label>
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openMediaPicker((url) => setReviewForm(prev => ({ ...prev, avatar: url })))}
+                        className="text-[#A27B36] hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <ImageIcon className="w-3 h-3 text-[#C9A96E]" /> From Gallery
+                      </button>
                       <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
                         <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
                         <input
@@ -3646,6 +4442,13 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-center mb-1">
                     <label className="font-bold uppercase text-slate-700">Article Cover Image</label>
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openMediaPicker((url) => setBlogForm(prev => ({ ...prev, image: url })))}
+                        className="text-[#A27B36] hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <ImageIcon className="w-3 h-3 text-[#C9A96E]" /> From Gallery
+                      </button>
                       <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
                         <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
                         <input
@@ -3770,6 +4573,420 @@ export default function AdminDashboard() {
                   <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Create Admin</button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Trend Modal (Add / Edit Locality Trend) */}
+      <AnimatePresence>
+        {showTrendModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-[#C9A96E]" />
+                  <h4 className="font-serif font-bold text-lg">{editingTrend ? `Edit Locality Trend (${trendForm.city})` : `Add Locality Trend (${trendForm.city})`}</h4>
+                </div>
+                <button onClick={() => setShowTrendModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleSaveTrend} className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Locality Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={trendForm.name}
+                      onChange={(e) => setTrendForm({ ...trendForm, name: e.target.value })}
+                      placeholder="e.g. Shastri Nagar"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">City</label>
+                    <select
+                      value={trendForm.city}
+                      onChange={(e) => setTrendForm({ ...trendForm, city: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      {['Jodhpur', 'Jaipur', 'Udaipur', 'Kota', 'Ajmer', 'Bikaner', 'Bhilwara', 'Alwar'].map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Avg Price / sq.ft</label>
+                    <input
+                      type="text"
+                      required
+                      value={trendForm.avgPrice}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const num = parseInt(val.replace(/[^0-9]/g, '')) || 0;
+                        setTrendForm({ ...trendForm, avgPrice: val, avgPriceNum: num });
+                      }}
+                      placeholder="e.g. ₹5,800"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">YoY Appreciation Rate</label>
+                    <input
+                      type="text"
+                      required
+                      value={trendForm.growth}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const num = parseFloat(val.replace(/[^0-9.-]/g, '')) || 0;
+                        setTrendForm({ ...trendForm, growth: val, growthNum: num });
+                      }}
+                      placeholder="e.g. +12.5%"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Locality Profile</label>
+                    <input
+                      type="text"
+                      required
+                      value={trendForm.type}
+                      onChange={(e) => setTrendForm({ ...trendForm, type: e.target.value })}
+                      placeholder="e.g. Premium Hub"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Live Inventory Label</label>
+                    <input
+                      type="text"
+                      required
+                      value={trendForm.count}
+                      onChange={(e) => setTrendForm({ ...trendForm, count: e.target.value })}
+                      placeholder="e.g. 80+ Properties"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Rental Yield</label>
+                    <input
+                      type="text"
+                      value={trendForm.rentalYield}
+                      onChange={(e) => setTrendForm({ ...trendForm, rentalYield: e.target.value })}
+                      placeholder="e.g. 4.5% Yield"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button type="button" onClick={() => setShowTrendModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Save Locality Trend</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Media Modal */}
+      <AnimatePresence>
+        {showAddMediaModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-[#C9A96E]" />
+                  <h4 className="font-serif font-bold text-lg">Add Asset to Media Gallery</h4>
+                </div>
+                <button onClick={() => setShowAddMediaModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleAddMedia} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Asset Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMediaForm.title}
+                    onChange={(e) => setNewMediaForm({ ...newMediaForm, title: e.target.value })}
+                    placeholder="e.g. Luxury Penthouse Living Room"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Category</label>
+                    <select
+                      value={newMediaForm.category}
+                      onChange={(e) => setNewMediaForm({ ...newMediaForm, category: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="Properties">Properties</option>
+                      <option value="Townships">Townships</option>
+                      <option value="Reels & Videos">Reels & Videos</option>
+                      <option value="Logos & Avatars">Logos & Avatars</option>
+                      <option value="Blogs">Blogs</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Asset Type</label>
+                    <select
+                      value={newMediaForm.type}
+                      onChange={(e) => setNewMediaForm({ ...newMediaForm, type: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="image">Image (Photo / JPG / PNG)</option>
+                      <option value="video">Video (MP4 / Stream)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold uppercase text-slate-700">Direct Media URL / Upload</label>
+                    <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                      <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, (dataUrl) => setNewMediaForm(prev => ({ ...prev, url: dataUrl })))}
+                      />
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={newMediaForm.url}
+                    onChange={(e) => setNewMediaForm({ ...newMediaForm, url: e.target.value })}
+                    placeholder="https://... image or video URL or upload from device"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                {newMediaForm.url && (
+                  <div className="h-32 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                    <img src={newMediaForm.url} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button type="button" onClick={() => setShowAddMediaModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Save Asset</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Media Modal */}
+      <AnimatePresence>
+        {showEditMediaModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-[#C9A96E]" />
+                  <h4 className="font-serif font-bold text-lg">Edit Media Asset</h4>
+                </div>
+                <button onClick={() => setShowEditMediaModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+              </div>
+
+              <form onSubmit={handleSaveEditMedia} className="space-y-3 text-xs">
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Asset Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={mediaForm.title}
+                    onChange={(e) => setMediaForm({ ...mediaForm, title: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Category</label>
+                    <select
+                      value={mediaForm.category}
+                      onChange={(e) => setMediaForm({ ...mediaForm, category: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="Properties">Properties</option>
+                      <option value="Townships">Townships</option>
+                      <option value="Reels & Videos">Reels & Videos</option>
+                      <option value="Logos & Avatars">Logos & Avatars</option>
+                      <option value="Blogs">Blogs</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Asset Type</label>
+                    <select
+                      value={mediaForm.type}
+                      onChange={(e) => setMediaForm({ ...mediaForm, type: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    >
+                      <option value="image">Image</option>
+                      <option value="video">Video</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="font-bold uppercase text-slate-700">Direct Media URL</label>
+                    <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+                      <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, (dataUrl) => setMediaForm(prev => ({ ...prev, url: dataUrl })))}
+                      />
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={mediaForm.url}
+                    onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                {mediaForm.url && (
+                  <div className="h-32 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                    <img src={mediaForm.url} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button type="button" onClick={() => setShowEditMediaModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
+                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Update Asset</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Universal Media Gallery Asset Picker Modal */}
+      <AnimatePresence>
+        {showGalleryPicker && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl text-[#0A1628] space-y-4 max-h-[90vh] flex flex-col">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#0A1628] text-[#C9A96E] flex items-center justify-center">
+                    <ImageIcon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-lg">Universal Media Gallery Picker</h4>
+                    <p className="text-xs text-slate-500">Select any pre-configured image or photo to insert instantly.</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowGalleryPicker(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-6 h-6" /></button>
+              </div>
+
+              {/* Gallery Filter & Search in Picker */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full sm:w-auto">
+                  {['All', 'Properties', 'Reels & Videos', 'Logos & Avatars', 'Blogs', 'Townships'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setGalleryCategoryFilter(cat)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                        galleryCategoryFilter === cat
+                          ? 'bg-[#0A1628] text-[#C9A96E] shadow-sm'
+                          : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative w-full sm:w-60">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    value={gallerySearchQuery}
+                    onChange={(e) => setGallerySearchQuery(e.target.value)}
+                    placeholder="Search asset..."
+                    className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-[#C9A96E]"
+                  />
+                </div>
+              </div>
+
+              {/* Scrollable Asset Cards */}
+              <div className="flex-1 overflow-y-auto pr-1">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {mediaGallery
+                    .filter((item) => {
+                      const matchesCategory = galleryCategoryFilter === 'All' || item.category === galleryCategoryFilter;
+                      const matchesSearch = !gallerySearchQuery || item.title?.toLowerCase().includes(gallerySearchQuery.toLowerCase());
+                      return matchesCategory && matchesSearch;
+                    })
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          if (galleryTargetCallback) {
+                            galleryTargetCallback(item.url, item);
+                          }
+                        }}
+                        className="group relative bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden cursor-pointer hover:border-[#C9A96E] hover:shadow-lg transition-all flex flex-col"
+                      >
+                        <div className="relative h-32 bg-slate-100 overflow-hidden">
+                          <img
+                            src={item.url}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLElement).setAttribute('src', 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=400');
+                            }}
+                          />
+                          <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#0A1628]/80 text-[#C9A96E]">
+                            {item.category}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-white">
+                          <p className="font-bold text-xs text-[#0A1628] truncate">{item.title}</p>
+                          <p className="text-[10px] text-[#A27B36] font-semibold mt-0.5 flex items-center justify-between">
+                            <span>Click to Select</span>
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowGalleryPicker(false)}
+                  className="px-5 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200 cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

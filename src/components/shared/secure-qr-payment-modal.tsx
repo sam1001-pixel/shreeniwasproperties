@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, QrCode, ShieldCheck, CheckCircle2, Copy, Check, 
   Smartphone, IndianRupee, ArrowRight, Download, Share2, 
-  Building, ExternalLink, Sparkles, AlertCircle, RefreshCw
+  Building, ExternalLink, Sparkles, AlertCircle, RefreshCw, Clock
 } from 'lucide-react';
 import { useSiteSettings } from '@/lib/settings/site-settings-context';
 
@@ -180,6 +180,45 @@ export default function SecureQrPaymentModal({
       setPaymentTxnId(generatedTxn);
       setIsVerifying(false);
       setStep('receipt');
+
+      // Automatically persist payment transaction into central admin lead desk with Pending status
+      try {
+        let userEmail = 'direct.pay@upi';
+        let userName = 'Direct UPI Customer';
+        let userPhone = '';
+
+        const sessionRaw = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
+        if (sessionRaw) {
+          const parsed = JSON.parse(sessionRaw);
+          if (parsed.email) userEmail = parsed.email;
+          if (parsed.name) userName = parsed.name;
+          if (parsed.phone) userPhone = parsed.phone;
+        }
+
+        const existingRaw = localStorage.getItem('shreeniwas_inquiries');
+        const existing = existingRaw ? JSON.parse(existingRaw) : [];
+        const paymentRecord = {
+          id: generatedTxn,
+          user: userName,
+          email: userEmail,
+          phone: userPhone || `UTR-${utrNumber.trim().slice(-4)}`,
+          property: propertyName || purpose || 'VIP Platform Pass',
+          type: 'UPI Payment (UTR Submitted)',
+          amount: amount,
+          utrNumber: utrNumber.trim(),
+          status: 'Payment Under Verification',
+          query: `UPI payment of ₹${amount} submitted for "${propertyName || purpose}". UTR: ${utrNumber.trim()}. Awaiting Super Admin bank confirmation before issuing visit pass.`,
+          reply: '',
+          date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+          isPayment: true
+        };
+
+        localStorage.setItem('shreeniwas_inquiries', JSON.stringify([paymentRecord, ...existing]));
+        window.dispatchEvent(new Event('shreeniwas_data_updated'));
+      } catch (err) {
+        console.warn('Failed to record payment transaction in inquiries:', err);
+      }
+
       if (onPaymentSuccess) {
         onPaymentSuccess(utrNumber.trim());
       }
@@ -529,42 +568,54 @@ export default function SecureQrPaymentModal({
             </form>
           )}
 
-          {/* Body Step 3: Receipt */}
+          {/* Body Step 3: Submission Confirmation (Waiting for Super Admin verification) */}
           {step === 'receipt' && (
             <div className="p-5 sm:p-7 space-y-5 text-center">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
-                <CheckCircle2 className="w-10 h-10" />
+              <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-inner border border-amber-300">
+                <Clock className="w-9 h-9" />
               </div>
 
               <div>
-                <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest block">
-                  Payment Confirmed & Verified
+                <span className="text-xs font-bold text-amber-700 uppercase tracking-widest block">
+                  UTR Reference Submitted
                 </span>
-                <h3 className="text-2xl font-serif font-bold text-[#0A1628] mt-1">Official Receipt Generated</h3>
+                <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#0A1628] mt-1">Pending Admin Confirmation</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  Your UTR reference has been sent to our accounts desk. Once Super Admin verifies the bank credit, your verified pass & receipt will be deposited into your account&apos;s <strong>Visits</strong> section.
+                </p>
               </div>
 
-              {/* Printable Receipt Card */}
+              {/* Status Acknowledgement Slip */}
               <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 text-left space-y-2.5 font-mono text-xs">
                 <div className="flex justify-between border-b border-slate-200 pb-2">
-                  <span className="text-slate-500">Transaction ID:</span>
-                  <span className="font-bold text-[#0A1628]">{paymentTxnId}</span>
+                  <span className="text-slate-500 font-sans">Payment Status:</span>
+                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Pending Verification
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-200 pb-2">
-                  <span className="text-slate-500">UTR Reference:</span>
+                  <span className="text-slate-500 font-sans">UTR Reference:</span>
                   <span className="font-bold text-[#0A1628]">{utrNumber}</span>
                 </div>
                 <div className="flex justify-between border-b border-slate-200 pb-2">
-                  <span className="text-slate-500">Amount Paid:</span>
+                  <span className="text-slate-500 font-sans">Amount Submitted:</span>
                   <span className="font-bold text-emerald-700">₹{amount}.00</span>
                 </div>
                 <div className="flex justify-between border-b border-slate-200 pb-2">
-                  <span className="text-slate-500">Purpose:</span>
+                  <span className="text-slate-500 font-sans">Purpose:</span>
                   <span className="font-bold text-[#0A1628]">{purpose}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Payee Merchant:</span>
+                  <span className="text-slate-500 font-sans">Payee Merchant:</span>
                   <span className="font-bold text-[#0A1628] truncate max-w-[200px]">{merchantName}</span>
                 </div>
+              </div>
+
+              <div className="p-3 bg-blue-50/80 rounded-xl border border-blue-200 text-[11px] text-blue-900 text-left flex items-start gap-2">
+                <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <span>
+                  Our accounts team typically confirms UTRs within 15–30 minutes. You can monitor confirmation progress anytime under your <strong>Account Dashboard → Scheduled Visits</strong>.
+                </span>
               </div>
 
               <button
@@ -572,7 +623,7 @@ export default function SecureQrPaymentModal({
                 onClick={resetModal}
                 className="w-full py-3.5 bg-[#0A1628] text-[#C9A96E] font-extrabold text-sm rounded-xl shadow-xl hover:bg-[#132238] transition-all cursor-pointer border border-[#C9A96E]/30"
               >
-                Done & Continue
+                Understood & Close
               </button>
             </div>
           )}

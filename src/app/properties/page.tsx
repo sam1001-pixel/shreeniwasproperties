@@ -312,8 +312,14 @@ function PropertiesContent() {
             };
           });
           
-          // Combine admin properties with default listings
-          setPropertiesList([...formattedProps, ...MOCK_PROPERTIES]);
+          // Filter out default listings that are already defined or overridden by admin
+          const adminIds = new Set(formattedProps.map(p => p.id));
+          const adminSlugs = new Set(formattedProps.map(p => p.slug));
+          const remainingMocks = MOCK_PROPERTIES.filter(m => !adminIds.has(m.id) && !adminSlugs.has(m.slug));
+          setPropertiesList([...formattedProps, ...remainingMocks]);
+        } else if (Array.isArray(parsed) && parsed.length === 0) {
+          // Admin deleted everything
+          setPropertiesList([]);
         }
       }
     } catch (e) {}

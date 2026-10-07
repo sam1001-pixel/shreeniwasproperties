@@ -23,6 +23,17 @@ export function PropertyAlertModal() {
     }
   }, []);
 
+  // Allow closing/canceling via Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleDismiss();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   const handleDismiss = () => {
     setIsOpen(false);
     localStorage.setItem('shreeniwas_alert_seen', 'true');
@@ -31,15 +42,33 @@ export function PropertyAlertModal() {
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (!city || !type || !contact) return;
-    
-    // Simulate API call
+
+    try {
+      const existingRaw = localStorage.getItem('shreeniwas_inquiries');
+      const existing = existingRaw ? JSON.parse(existingRaw) : [];
+      const newLead = {
+        id: `ALERT-${Date.now().toString().slice(-4)}`,
+        user: contact.includes('@') ? contact.split('@')[0] : `Subscriber (${contact.slice(-4)})`,
+        email: contact.includes('@') ? contact : 'Not Provided',
+        phone: !contact.includes('@') ? contact : 'Not Provided',
+        property: `${type} properties in ${city}`,
+        type: 'Property Alert Subscription',
+        status: 'Active Subscriber',
+        query: `Subscribed for instant property alerts: ${type} properties in ${city}, Rajasthan. Contact: ${contact}`,
+        reply: '',
+        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      };
+      localStorage.setItem('shreeniwas_inquiries', JSON.stringify([newLead, ...existing]));
+      window.dispatchEvent(new Event('shreeniwas_data_updated'));
+    } catch (err) {
+      console.warn('Failed to save property alert lead:', err);
+    }
+
+    setIsSubscribed(true);
+    localStorage.setItem('shreeniwas_alert_seen', 'true');
     setTimeout(() => {
-      setIsSubscribed(true);
-      localStorage.setItem('shreeniwas_alert_seen', 'true');
-      setTimeout(() => {
-        setIsOpen(false);
-      }, 3000);
-    }, 800);
+      setIsOpen(false);
+    }, 3000);
   };
 
   return (
@@ -52,10 +81,13 @@ export function PropertyAlertModal() {
             exit={{ opacity: 0, y: 50, transition: { duration: 0.2 } }}
             className="relative w-full overflow-hidden bg-white rounded-2xl shadow-2xl border border-gray-100 pointer-events-auto"
           >
-            {/* Close button */}
+            {/* Close / Cancel icon button */}
             <button
+              type="button"
               onClick={handleDismiss}
-              className="absolute top-4 right-4 p-3 -m-1 text-gray-400 hover:text-gray-600 transition-colors z-10 rounded-full hover:bg-black/5"
+              className="absolute top-4 right-4 p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 transition-all z-20 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C9A96E]"
+              aria-label="Cancel and close alert"
+              title="Cancel"
             >
               <X className="w-5 h-5" />
             </button>
@@ -124,12 +156,22 @@ export function PropertyAlertModal() {
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="w-full py-4 sm:py-3.5 px-4 mt-3 bg-[#C9A96E] text-[#0A1628] font-bold rounded-lg hover:bg-[#b5955a] transition-all active:scale-[0.98] shadow-md shadow-[#C9A96E]/20"
-                  >
-                    Subscribe for Free Alerts
-                  </button>
+                  {/* Action Buttons: Subscribe & Cancel */}
+                  <div className="pt-2 flex flex-col gap-2">
+                    <button
+                      type="submit"
+                      className="w-full py-3.5 px-4 bg-[#C9A96E] text-[#0A1628] font-bold rounded-lg hover:bg-[#b5955a] transition-all active:scale-[0.98] shadow-md shadow-[#C9A96E]/20 text-sm cursor-pointer"
+                    >
+                      Subscribe for Free Alerts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDismiss}
+                      className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 font-medium rounded-lg transition-all active:scale-[0.98] text-sm text-center border border-gray-200 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <motion.div
@@ -142,9 +184,16 @@ export function PropertyAlertModal() {
                   </div>
                   <div>
                     <h4 className="text-lg font-bold text-gray-900 mb-1">Subscribed!</h4>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-gray-500 text-sm mb-4">
                       You will receive instant alerts for new properties in {city}.
                     </p>
+                    <button
+                      type="button"
+                      onClick={handleDismiss}
+                      className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-sm rounded-lg transition-colors cursor-pointer"
+                    >
+                      Close
+                    </button>
                   </div>
                 </motion.div>
               )}

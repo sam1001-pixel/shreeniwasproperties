@@ -83,16 +83,71 @@ export default function UserProfileDashboard() {
           // Load from unified saved properties manager
           setSavedList(getSavedProperties());
 
-          const userVisitsKey = `shreeniwas_vip_visits_${parsed.email}`;
-          const storedVisits = localStorage.getItem(userVisitsKey);
-          if (storedVisits) {
-            try { setVipVisits(JSON.parse(storedVisits)); } catch (e) { setVipVisits([]); }
-          } else {
-            setVipVisits([]);
-          }
+          const loadUserVisits = () => {
+            try {
+              // 1. Check user dedicated visits key
+              const userVisitsKey = `shreeniwas_vip_visits_${parsed.email}`;
+              const storedVisits = localStorage.getItem(userVisitsKey);
+              let combined: any[] = storedVisits ? JSON.parse(storedVisits) : [];
+
+              // 2. Also check confirmed inquiries where email matches or user name matches
+              const inqsRaw = localStorage.getItem('shreeniwas_inquiries');
+              if (inqsRaw) {
+                const inqs = JSON.parse(inqsRaw);
+                if (Array.isArray(inqs)) {
+                  inqs.forEach((inq: any) => {
+                    const isUserMatch = (inq.email && inq.email.toLowerCase() === parsed.email.toLowerCase()) ||
+                                        (inq.phone && parsed.phone && inq.phone === parsed.phone);
+                    const isConfirmed = inq.status?.includes('Verified') || inq.status?.includes('Confirmed');
+                    if (isUserMatch && isConfirmed) {
+                      const alreadyIn = combined.some((v: any) => v.id === inq.id || v.utrNumber === inq.utrNumber);
+                      if (!alreadyIn) {
+                        combined.push({
+                          id: inq.id || `VISIT-${Math.floor(100 + Math.random() * 900)}`,
+                          property: inq.property || 'VIP Rajasthan Property Pass',
+                          location: inq.location || 'Rajasthan, India',
+                          date: inq.visitDate ? `${inq.visitDate} (${inq.slotLabel || inq.visitTimeSlot || 'Confirmed'})` : `${inq.date || 'Active Pass'}`,
+                          agent: 'Shreeniwas Senior Executive (+91 6376117833)',
+                          fee: inq.amount ? `₹${inq.amount} Verified` : 'Verified & Confirmed',
+                          status: 'Confirmed & Scheduled',
+                          utrNumber: inq.utrNumber || '',
+                          receiptAvailable: true
+                        });
+                      }
+                    }
+                  });
+                }
+              }
+
+              // 3. Check global confirmed visits list as additional source
+              const allVisitsRaw = localStorage.getItem('shreeniwas_all_vip_visits');
+              if (allVisitsRaw) {
+                const allVisits = JSON.parse(allVisitsRaw);
+                if (Array.isArray(allVisits)) {
+                  allVisits.forEach((v: any) => {
+                    if (v.userEmail?.toLowerCase() === parsed.email.toLowerCase()) {
+                      const exists = combined.some((existing: any) => existing.id === v.id || (v.utrNumber && existing.utrNumber === v.utrNumber));
+                      if (!exists) combined.push(v);
+                    }
+                  });
+                }
+              }
+
+              setVipVisits(combined.length > 0 ? combined : MOCK_VIP_VISITS);
+            } catch (e) {
+              setVipVisits(MOCK_VIP_VISITS);
+            }
+          };
+
+          loadUserVisits();
+          window.addEventListener('shreeniwas_data_updated', loadUserVisits);
+          window.addEventListener('storage', loadUserVisits);
 
           setLoading(false);
-          return;
+          return () => {
+            window.removeEventListener('shreeniwas_data_updated', loadUserVisits);
+            window.removeEventListener('storage', loadUserVisits);
+          };
         }
       } catch (e) {}
     }
@@ -422,9 +477,16 @@ export default function UserProfileDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs">
-                    {MOCK_VIP_VISITS.map((visit) => (
+                    {vipVisits.map((visit) => (
                       <tr key={visit.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="p-4 pl-6 font-mono font-bold text-slate-500">{visit.id}</td>
+                        <td className="p-4 pl-6 font-mono font-bold text-slate-500">
+                          <span>{visit.id}</span>
+                          {visit.utrNumber && (
+                            <span className="block text-[9px] text-emerald-700 font-mono font-semibold">
+                              UTR: {visit.utrNumber}
+                            </span>
+                          )}
+                        </td>
                         <td className="p-4">
                           <p className="font-bold text-[#0A1628]">{visit.property}</p>
                           <p className="text-[10px] text-slate-400">{visit.location}</p>

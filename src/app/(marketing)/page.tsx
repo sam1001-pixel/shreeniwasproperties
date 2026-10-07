@@ -662,6 +662,54 @@ export default function MarketingPage() {
     });
   };
 
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsAdminLoggedIn(sessionStorage.getItem('shreeniwas_admin_auth') === 'true');
+    }
+  }, []);
+
+  if (settings?.maintenanceMode && !isAdminLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#0A1628] text-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 rounded-3xl bg-[#C9A96E]/20 border-2 border-[#C9A96E] flex items-center justify-center text-[#C9A96E] mb-6 shadow-2xl">
+          <Sparkles className="w-10 h-10 animate-pulse" />
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-white mb-3">
+          {settings.siteTitle || 'Shreeniwas Properties'}
+        </h1>
+        <p className="text-[#C9A96E] font-medium text-sm sm:text-base max-w-md mx-auto mb-6">
+          Scheduled Platform Maintenance & Upgrades in Progress
+        </p>
+        <p className="text-slate-400 text-xs sm:text-sm max-w-lg mx-auto mb-8 leading-relaxed">
+          We are currently updating our verified property database and RERA registry services. For immediate inquiries or urgent VIP site visits, reach our direct helpline.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <a
+            href={`tel:${settings.supportPhone || '+916376117833'}`}
+            className="px-5 py-3 rounded-xl bg-[#C9A96E] text-[#0A1628] font-bold text-xs flex items-center gap-2 hover:bg-[#b5955a] transition"
+          >
+            <PhoneCall className="w-4 h-4" />
+            <span>Call {settings.supportPhone || '+91 6376117833'}</span>
+          </a>
+          <a
+            href={settings.whatsappLink || 'https://wa.me/916376117833'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-2 hover:bg-emerald-700 transition"
+          >
+            <span>WhatsApp Support</span>
+          </a>
+        </div>
+        <div className="mt-12">
+          <Link href="/admin" className="text-slate-500 hover:text-slate-300 text-xs font-semibold underline">
+            Admin Console Portal Access
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#FDFBF7] text-[#0A1628]">
       <script
