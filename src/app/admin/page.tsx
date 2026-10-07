@@ -8,12 +8,13 @@ import {
   MapPin, Phone, Mail, Globe, Crown, Shield, Eye, Lock, EyeOff, LogOut, KeyRound,
   Clock, CalendarCheck, MessageSquare, Send, Check, AlertCircle, ShieldAlert, Sparkles, UserCheck, UserPlus,
   Video, Star, Share2, Camera, ThumbsUp, IndianRupee, Layers, ExternalLink, Download, ShieldCheck,
-  QrCode, Smartphone, RefreshCw, FileSpreadsheet, Image as ImageIcon, Copy, Filter, TrendingUp
+  QrCode, Smartphone, RefreshCw, FileSpreadsheet, Image as ImageIcon, Copy, Filter, TrendingUp,
+  ClipboardList, CheckSquare, CalendarX, PlusCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { DEFAULT_NEW_PROJECTS, NewProjectItem } from '@/components/shared/new-projects-section';
 import { DEFAULT_PAYMENT_SETTINGS, PaymentSettings } from '@/lib/settings/site-settings-context';
-import { exportInquiriesToExcel } from '@/lib/export/excel-export';
+import { exportInquiriesToExcel, exportVisitRecordsToExcel, exportAttendanceToExcel, PropertyVisitRecordItem } from '@/lib/export/excel-export';
 import { 
   RAJASTHAN_LOCALITIES_TRENDS, 
   LocalityPriceTrend, 
@@ -108,6 +109,33 @@ export default function AdminDashboard() {
   // Shift & Clock-In States
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockInTime, setClockInTime] = useState('');
+
+  // 13-Point Google Form Property Visit Records (Super Admin & Admin)
+  const [visitRecordsList, setVisitRecordsList] = useState<PropertyVisitRecordItem[]>([]);
+  const [showVisitRecordModal, setShowVisitRecordModal] = useState(false);
+  const [editingVisitRecord, setEditingVisitRecord] = useState<PropertyVisitRecordItem | null>(null);
+  const [visitRecordSearch, setVisitRecordSearch] = useState('');
+  const [visitRecordStaffFilter, setVisitRecordStaffFilter] = useState('All');
+  const [visitRecordForm, setVisitRecordForm] = useState<PropertyVisitRecordItem>({
+    clientName: '',
+    clientMobile: '',
+    propertyOwnerName: '',
+    ownerMobile: '',
+    propertyLocation: '',
+    visitDate: new Date().toISOString().split('T')[0],
+    visitTime: '11:00 AM',
+    coordinatorName: 'Priyanka',
+    visitCharge: '₹500',
+    paymentStatus: 'Paid',
+    feedback: '❤️ पसंद आई',
+    followUpRemark: '',
+    visitNumber: '1',
+  });
+
+  // Blocked / Blackout Visit Dates State (Super Admin)
+  const [blockedDatesList, setBlockedDatesList] = useState<{ date: string; reason: string }[]>([]);
+  const [newBlockedDate, setNewBlockedDate] = useState('');
+  const [newBlockedReason, setNewBlockedReason] = useState('Weekly Off / Holiday');
 
   // Inquiry Modal State
   const [selectedInquiry, setSelectedInquiry] = useState<any | null>(null);
@@ -339,6 +367,60 @@ export default function AdminDashboard() {
     // Load Reviews
     const savedReviews = localStorage.getItem('shreeniwas_testimonials_management');
     if (savedReviews) { try { setReviewsList(JSON.parse(savedReviews)); } catch (e) {} }
+
+    // Load 13-Point Property Visit Records (Google Form Engine)
+    const savedVisitRecords = localStorage.getItem('shreeniwas_property_visit_records');
+    if (savedVisitRecords) {
+      try { setVisitRecordsList(JSON.parse(savedVisitRecords)); } catch (e) {}
+    } else {
+      // Seed initial samples so the table has demonstration data from day 1
+      const initialSeedVisitRecords: PropertyVisitRecordItem[] = [
+        {
+          id: 'VR-101',
+          clientName: 'Rahul Choudhary',
+          clientMobile: '+91 98290 12345',
+          propertyOwnerName: 'Narpat Singh Rathore',
+          ownerMobile: '+91 98291 99887',
+          propertyLocation: 'Vaishali Nagar, Jaipur (The Royal Heritage Residency)',
+          visitDate: new Date().toISOString().split('T')[0],
+          visitTime: '11:30 AM',
+          coordinatorName: 'Priyanka',
+          visitCharge: '₹500',
+          paymentStatus: 'Paid',
+          feedback: '❤️ पसंद आई',
+          followUpRemark: 'Price negotiation meeting scheduled with owner this Friday.',
+          visitNumber: '1',
+          recordedBy: 'Super Admin',
+          createdAt: new Date().toLocaleString()
+        },
+        {
+          id: 'VR-102',
+          clientName: 'Sunita Meena',
+          clientMobile: '+91 94140 88765',
+          propertyOwnerName: 'Dinesh Bhati',
+          ownerMobile: '+91 94142 33445',
+          propertyLocation: 'Ratanada, Jodhpur (Heritage Haveli)',
+          visitDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+          visitTime: '04:00 PM',
+          coordinatorName: 'Suman',
+          visitCharge: '₹1,000',
+          paymentStatus: 'Paid',
+          feedback: '🤔 सोचकर बताएगा',
+          followUpRemark: 'Family wants to check Vastu direction again on Sunday.',
+          visitNumber: '2',
+          recordedBy: 'Suman (Staff)',
+          createdAt: new Date(Date.now() - 86400000).toLocaleString()
+        }
+      ];
+      setVisitRecordsList(initialSeedVisitRecords);
+      try { localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(initialSeedVisitRecords)); } catch (e) {}
+    }
+
+    // Load Blocked / Blackout Visit Dates
+    const savedBlockedDates = localStorage.getItem('shreeniwas_blocked_visit_dates');
+    if (savedBlockedDates) {
+      try { setBlockedDatesList(JSON.parse(savedBlockedDates)); } catch (e) {}
+    }
 
     // Load Platform Settings
     const savedSettings = localStorage.getItem('shreeniwas_platform_settings');
@@ -1074,6 +1156,104 @@ export default function AdminDashboard() {
     alert('Payment Confirmed! VIP Site Visit pass has been sent directly to the client account visit section.');
   };
 
+  // ==========================================
+  // GOOGLE FORM 13-POINT VISIT RECORDS HANDLERS
+  // ==========================================
+  const handleSaveVisitRecord = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!visitRecordForm.clientName.trim() || !visitRecordForm.clientMobile.trim()) {
+      alert('Please provide at least Client Name and Client Mobile Number.');
+      return;
+    }
+
+    let updatedRecords: PropertyVisitRecordItem[];
+    if (editingVisitRecord) {
+      updatedRecords = visitRecordsList.map(r => 
+        r.id === editingVisitRecord.id 
+          ? { ...visitRecordForm, id: r.id, createdAt: r.createdAt }
+          : r
+      );
+    } else {
+      const newRec: PropertyVisitRecordItem = {
+        ...visitRecordForm,
+        id: `VR-${Date.now().toString().slice(-5)}`,
+        recordedBy: adminRole === 'super' ? 'Super Administrator' : 'Staff Admin',
+        createdAt: new Date().toLocaleString()
+      };
+      updatedRecords = [newRec, ...visitRecordsList];
+    }
+
+    setVisitRecordsList(updatedRecords);
+    localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(updatedRecords));
+    notifyDataUpdated();
+    setShowVisitRecordModal(false);
+    setEditingVisitRecord(null);
+    setVisitRecordForm({
+      clientName: '',
+      clientMobile: '',
+      propertyOwnerName: '',
+      ownerMobile: '',
+      propertyLocation: '',
+      visitDate: new Date().toISOString().split('T')[0],
+      visitTime: '11:00 AM',
+      coordinatorName: 'Priyanka',
+      visitCharge: '₹500',
+      paymentStatus: 'Paid',
+      feedback: '❤️ पसंद आई',
+      followUpRemark: '',
+      visitNumber: '1',
+    });
+  };
+
+  const handleDeleteVisitRecord = (id: string) => {
+    if (!confirm('Are you sure you want to delete this property visit record?')) return;
+    const updated = visitRecordsList.filter(r => r.id !== id);
+    setVisitRecordsList(updated);
+    localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(updated));
+    notifyDataUpdated();
+  };
+
+  const handleExportVisitRecords = () => {
+    try {
+      exportVisitRecordsToExcel(visitRecordsList);
+    } catch (err: any) {
+      alert(err.message || 'Error exporting visit records to Excel');
+    }
+  };
+
+  const handleExportAttendance = () => {
+    try {
+      exportAttendanceToExcel(attendanceList);
+    } catch (err: any) {
+      alert(err.message || 'Error exporting attendance to Excel');
+    }
+  };
+
+  // ==========================================
+  // SUPER ADMIN BLOCKED VISIT DATES HANDLERS
+  // ==========================================
+  const handleAddBlockedDate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBlockedDate) return;
+    if (blockedDatesList.some(b => b.date === newBlockedDate)) {
+      alert('This date is already blocked.');
+      return;
+    }
+
+    const updated = [...blockedDatesList, { date: newBlockedDate, reason: newBlockedReason.trim() || 'Visits Not Available' }].sort((a, b) => a.date.localeCompare(b.date));
+    setBlockedDatesList(updated);
+    localStorage.setItem('shreeniwas_blocked_visit_dates', JSON.stringify(updated));
+    setNewBlockedDate('');
+    notifyDataUpdated();
+  };
+
+  const handleRemoveBlockedDate = (dateStr: string) => {
+    const updated = blockedDatesList.filter(b => b.date !== dateStr);
+    setBlockedDatesList(updated);
+    localStorage.setItem('shreeniwas_blocked_visit_dates', JSON.stringify(updated));
+    notifyDataUpdated();
+  };
+
   // Universal Media Gallery Asset Picker Helper
   const openMediaPicker = (callback: (url: string) => void) => {
     setGalleryTargetCallback(() => (url: string) => {
@@ -1085,6 +1265,7 @@ export default function AdminDashboard() {
 
   const navItems = adminRole === 'super' ? [
     { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
+    { id: 'visit-records', label: 'Property Visit Records (13-Point)', icon: ClipboardList },
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
     { id: 'projects', label: 'Builder Projects & Townships', icon: Layers },
     { id: 'trends', label: 'Localities & Price Trends', icon: TrendingUp },
@@ -1099,6 +1280,7 @@ export default function AdminDashboard() {
     { id: 'users', label: 'Users & Admin Management', icon: Users },
     { id: 'settings', label: 'Platform & Social Settings', icon: Settings },
   ] : [
+    { id: 'visit-records', label: 'Submit & View Visit Records', icon: ClipboardList },
     { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
     { id: 'attendance', label: 'My Shift Attendance', icon: Clock },
     { id: 'properties', label: 'View Properties', icon: Building2 },
@@ -1334,6 +1516,249 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* GOOGLE FORM 13-POINT PROPERTY VISIT RECORDS TAB (SUPER ADMIN & STAFF ADMIN) */}
+          {activeTab === 'visit-records' && (
+            <div className="space-y-6">
+              {/* Header Banner */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A96E]/10 text-[#C9A96E] text-xs font-bold uppercase tracking-wider mb-1 border border-[#C9A96E]/30">
+                    <ClipboardList className="w-3.5 h-3.5 text-[#C9A96E]" /> Google Form Integration • Shree Niwas Visit Record
+                  </div>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Property Visit Records & Field Verification</h3>
+                  <p className="text-xs text-slate-500">
+                    All 13 standard Google Form field records stored centrally. Filter by coordinator, track payments, feedback, and download formatted Excel.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <button
+                    onClick={handleExportVisitRecords}
+                    disabled={visitRecordsList.length === 0}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer border border-slate-300"
+                    title="Export all 13-point visit records to Excel"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                    <span>Download Excel (.xlsx)</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setEditingVisitRecord(null);
+                      setVisitRecordForm({
+                        clientName: '',
+                        clientMobile: '',
+                        propertyOwnerName: '',
+                        ownerMobile: '',
+                        propertyLocation: '',
+                        visitDate: new Date().toISOString().split('T')[0],
+                        visitTime: '11:00 AM',
+                        coordinatorName: 'Priyanka',
+                        visitCharge: '₹500',
+                        paymentStatus: 'Paid',
+                        feedback: '❤️ पसंद आई',
+                        followUpRemark: '',
+                        visitNumber: '1',
+                      });
+                      setShowVisitRecordModal(true);
+                    }}
+                    className="px-5 py-2.5 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] font-extrabold text-xs rounded-xl flex items-center gap-2 transition cursor-pointer shadow-md border border-[#C9A96E]/30"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Record New Property Visit
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase">Total Field Visits</p>
+                  <p className="text-2xl font-serif font-bold text-[#0A1628] mt-0.5">{visitRecordsList.length}</p>
+                  <p className="text-[10px] text-slate-500 font-medium">Logged in system</p>
+                </div>
+                <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200 shadow-sm">
+                  <p className="text-[11px] font-bold text-emerald-700 uppercase">Paid Visits</p>
+                  <p className="text-2xl font-serif font-bold text-emerald-900 mt-0.5">
+                    {visitRecordsList.filter(r => r.paymentStatus === 'Paid').length}
+                  </p>
+                  <p className="text-[10px] text-emerald-700 font-medium">Full charge collected</p>
+                </div>
+                <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-200 shadow-sm">
+                  <p className="text-[11px] font-bold text-amber-700 uppercase">Liked Properties</p>
+                  <p className="text-2xl font-serif font-bold text-amber-900 mt-0.5">
+                    {visitRecordsList.filter(r => r.feedback?.includes('पसंद आई')).length}
+                  </p>
+                  <p className="text-[10px] text-amber-700 font-medium">❤️ Client Approved</p>
+                </div>
+                <div className="bg-blue-50/70 p-4 rounded-2xl border border-blue-200 shadow-sm">
+                  <p className="text-[11px] font-bold text-blue-700 uppercase">Pending / Thinking</p>
+                  <p className="text-2xl font-serif font-bold text-blue-900 mt-0.5">
+                    {visitRecordsList.filter(r => r.feedback?.includes('सोचकर बताएगा')).length}
+                  </p>
+                  <p className="text-[10px] text-blue-700 font-medium">🤔 Active follow-up</p>
+                </div>
+              </div>
+
+              {/* Search & Coordinator Filters */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div className="relative flex-1 w-full">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={visitRecordSearch}
+                    onChange={(e) => setVisitRecordSearch(e.target.value)}
+                    placeholder="Search by client name, mobile, location, or owner name..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Staff:</span>
+                  <select
+                    value={visitRecordStaffFilter}
+                    onChange={(e) => setVisitRecordStaffFilter(e.target.value)}
+                    className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                  >
+                    <option value="All">All Staff Coordinators</option>
+                    <option value="Priyanka">Priyanka</option>
+                    <option value="Suman">Suman</option>
+                    <option value="Tammana">Tammana</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Records Table */}
+              {visitRecordsList.length === 0 ? (
+                <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
+                  <ClipboardList className="w-10 h-10 text-[#C9A96E] mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-[#0A1628]">No Property Visit Records Yet</h4>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Click &quot;Record New Property Visit&quot; to log the first accompanied property visit.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[950px]">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+                          <th className="p-3.5 pl-6">Client / Mobile</th>
+                          <th className="p-3.5">Property & Owner</th>
+                          <th className="p-3.5">Schedule</th>
+                          <th className="p-3.5">Coordinator</th>
+                          <th className="p-3.5">Fee & Payment</th>
+                          <th className="p-3.5">Feedback & Remarks</th>
+                          <th className="p-3.5 text-right pr-6">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-xs">
+                        {visitRecordsList
+                          .filter((rec) => {
+                            const query = visitRecordSearch.toLowerCase();
+                            const matchesQuery = 
+                              !query ||
+                              rec.clientName?.toLowerCase().includes(query) ||
+                              rec.clientMobile?.includes(query) ||
+                              rec.propertyOwnerName?.toLowerCase().includes(query) ||
+                              rec.propertyLocation?.toLowerCase().includes(query) ||
+                              rec.ownerMobile?.includes(query);
+
+                            const matchesStaff = 
+                              visitRecordStaffFilter === 'All' ||
+                              rec.coordinatorName === visitRecordStaffFilter;
+
+                            return matchesQuery && matchesStaff;
+                          })
+                          .map((rec) => (
+                            <tr key={rec.id} className="hover:bg-slate-50/80 transition-colors">
+                              <td className="p-3.5 pl-6">
+                                <div className="font-bold text-[#0A1628] flex items-center gap-1.5">
+                                  <span>{rec.clientName}</span>
+                                  <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-mono font-normal">
+                                    Visit #{rec.visitNumber || '1'}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
+                                  <Phone className="w-3 h-3 text-slate-400" />
+                                  <span>{rec.clientMobile}</span>
+                                </div>
+                              </td>
+
+                              <td className="p-3.5">
+                                <div className="font-semibold text-slate-800 line-clamp-1 max-w-[200px]" title={rec.propertyLocation}>
+                                  {rec.propertyLocation}
+                                </div>
+                                <div className="text-[11px] text-slate-500 mt-0.5">
+                                  Owner: <strong className="text-[#0A1628]">{rec.propertyOwnerName}</strong>
+                                  {rec.ownerMobile && <span className="font-mono text-slate-400 ml-1">({rec.ownerMobile})</span>}
+                                </div>
+                              </td>
+
+                              <td className="p-3.5">
+                                <div className="font-bold text-slate-800">{rec.visitDate}</div>
+                                <div className="text-[11px] text-[#C9A96E] font-semibold">{rec.visitTime}</div>
+                              </td>
+
+                              <td className="p-3.5">
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0A1628] text-[#C9A96E] border border-[#C9A96E]/30 inline-flex items-center gap-1">
+                                  <span>{rec.coordinatorName}</span>
+                                </span>
+                              </td>
+
+                              <td className="p-3.5">
+                                <div className="font-extrabold text-slate-900">{rec.visitCharge}</div>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block mt-0.5 ${
+                                  rec.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
+                                  rec.paymentStatus === 'Partial' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                                }`}>
+                                  {rec.paymentStatus}
+                                </span>
+                              </td>
+
+                              <td className="p-3.5 max-w-[220px]">
+                                <div className="font-semibold text-[#0A1628] flex items-center gap-1">
+                                  <span>{rec.feedback}</span>
+                                </div>
+                                {rec.followUpRemark && (
+                                  <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-2" title={rec.followUpRemark}>
+                                    {rec.followUpRemark}
+                                  </p>
+                                )}
+                              </td>
+
+                              <td className="p-3.5 text-right pr-6">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={() => {
+                                      setEditingVisitRecord(rec);
+                                      setVisitRecordForm({ ...rec });
+                                      setShowVisitRecordModal(true);
+                                    }}
+                                    className="p-1.5 text-slate-600 hover:text-[#C9A96E] hover:bg-slate-100 rounded-lg transition cursor-pointer"
+                                    title="Edit record"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                  {adminRole === 'super' && (
+                                    <button
+                                      onClick={() => handleDeleteVisitRecord(rec.id || '')}
+                                      className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                                      title="Delete record"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -2175,6 +2600,88 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* 4. Super Admin Blocked & Unavailable Visit Days Calendar (Blackout Dates) */}
+                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div>
+                      <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] flex items-center gap-2">
+                        <CalendarX className="w-4 h-4 text-rose-600" /> Blocked & Unavailable Site Visit Days (Blackout Dates)
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Choose specific dates when visits should NOT be available for users (holidays, staff off, maintenance). Users will be blocked from booking these dates.
+                      </p>
+                    </div>
+                    <span className="px-2.5 py-1 bg-rose-50 text-rose-700 rounded-full font-bold text-[11px] border border-rose-200 shrink-0">
+                      {blockedDatesList.length} Dates Blocked
+                    </span>
+                  </div>
+
+                  {/* Add Blocked Date Form */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">Pick Date to Block</label>
+                        <input
+                          type="date"
+                          value={newBlockedDate}
+                          onChange={(e) => setNewBlockedDate(e.target.value)}
+                          className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-rose-500 text-[#0A1628]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-700 uppercase block mb-1">Reason / Notice for Clients</label>
+                        <input
+                          type="text"
+                          value={newBlockedReason}
+                          onChange={(e) => setNewBlockedReason(e.target.value)}
+                          placeholder="e.g. Festival Holiday / Private Inspection Day"
+                          className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-rose-500 text-[#0A1628]"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <button
+                          type="button"
+                          onClick={handleAddBlockedDate}
+                          disabled={!newBlockedDate}
+                          className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <PlusCircle className="w-4 h-4" />
+                          Block This Date
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Blocked Dates List */}
+                  {blockedDatesList.length === 0 ? (
+                    <div className="p-4 text-center text-xs text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                      All dates are currently open for site inspections. No blackout dates configured.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-2">
+                      {blockedDatesList.map((item) => (
+                        <div key={item.date} className="p-3 bg-rose-50/60 border border-rose-200/80 rounded-2xl flex items-center justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <CalendarX className="w-3.5 h-3.5 text-rose-600" />
+                              <span className="font-mono font-bold text-xs text-rose-900">{item.date}</span>
+                            </div>
+                            <p className="text-[10px] text-rose-700 mt-0.5 line-clamp-1">{item.reason}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBlockedDate(item.date)}
+                            className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-100 rounded-lg transition cursor-pointer"
+                            title="Unblock this date"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <button
                   type="submit"
                   className="px-6 py-3.5 bg-[#0A1628] text-[#C9A96E] font-extrabold text-xs rounded-2xl shadow-xl hover:bg-[#0A1628]/90 transition cursor-pointer border border-[#C9A96E]/30 flex items-center gap-2"
@@ -2717,15 +3224,27 @@ export default function AdminDashboard() {
                   <p className="text-xs text-slate-500">Track daily shift clock-in times, staff hours, and shift logs.</p>
                 </div>
 
-                <button
-                  onClick={toggleClockIn}
-                  className={`px-5 py-3 rounded-2xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-md ${
-                    isClockedIn ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
-                  }`}
-                >
-                  <Clock className="w-4 h-4" />
-                  {isClockedIn ? 'Clock Out Shift' : 'Clock In My Shift Now'}
-                </button>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <button
+                    onClick={handleExportAttendance}
+                    disabled={attendanceList.length === 0}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer border border-slate-300"
+                    title="Download staff shift logs in Excel spreadsheet"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                    <span>Download Attendance (.xlsx)</span>
+                  </button>
+
+                  <button
+                    onClick={toggleClockIn}
+                    className={`px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-md ${
+                      isClockedIn ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    }`}
+                  >
+                    <Clock className="w-4 h-4" />
+                    {isClockedIn ? 'Clock Out Shift' : 'Clock In My Shift Now'}
+                  </button>
+                </div>
               </div>
 
               {attendanceList.length === 0 ? (
@@ -4987,6 +5506,297 @@ export default function AdminDashboard() {
                   Close
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 13-POINT GOOGLE FORM PROPERTY VISIT RECORD MODAL */}
+      <AnimatePresence>
+        {showVisitRecordModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl text-[#0A1628] space-y-5 my-8 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex justify-between items-start border-b border-slate-100 pb-3">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#C9A96E]/10 text-[#C9A96E] text-[10px] font-bold uppercase tracking-wider mb-1">
+                    <ClipboardList className="w-3 h-3 text-[#C9A96E]" /> Google Form Standard
+                  </div>
+                  <h4 className="font-serif font-bold text-xl text-[#0A1628]">
+                    {editingVisitRecord ? 'Edit Property Visit Record' : 'Record Property Visit (Google Form)'}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Shree Niwas Properties & Rentals Official 13-Point Field Inspection Record
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowVisitRecordModal(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer rounded-lg hover:bg-slate-100"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveVisitRecord} className="space-y-4 text-xs">
+                {/* 1 & 2. Client Details */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">
+                      1. Client Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={visitRecordForm.clientName}
+                      onChange={(e) => setVisitRecordForm({ ...visitRecordForm, clientName: e.target.value })}
+                      placeholder="e.g. Ramesh Kumar Sharma"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">
+                      2. Client Mobile Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={visitRecordForm.clientMobile}
+                      onChange={(e) => setVisitRecordForm({ ...visitRecordForm, clientMobile: e.target.value })}
+                      placeholder="e.g. +91 98290 12345"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                    />
+                  </div>
+                </div>
+
+                {/* 3 & 13. Owner Details */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">
+                      3. Property Owner Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={visitRecordForm.propertyOwnerName}
+                      onChange={(e) => setVisitRecordForm({ ...visitRecordForm, propertyOwnerName: e.target.value })}
+                      placeholder="e.g. Bhanwar Singh Rathore"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">
+                      13. Property Owner Mobile Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={visitRecordForm.ownerMobile || ''}
+                      onChange={(e) => setVisitRecordForm({ ...visitRecordForm, ownerMobile: e.target.value })}
+                      placeholder="e.g. +91 94140 99887"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Property / Location */}
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">
+                    4. Property / Location *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={visitRecordForm.propertyLocation}
+                    onChange={(e) => setVisitRecordForm({ ...visitRecordForm, propertyLocation: e.target.value })}
+                    placeholder="e.g. 4 BHK Villa, Vaishali Nagar, Jaipur"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                  />
+                </div>
+
+                {/* 5, 6 & 12. Date, Time & Visit Number */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">
+                      5. Visit Date *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={visitRecordForm.visitDate}
+                      onChange={(e) => setVisitRecordForm({ ...visitRecordForm, visitDate: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">
+                      6. Visit Time *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={visitRecordForm.visitTime}
+                      onChange={(e) => setVisitRecordForm({ ...visitRecordForm, visitTime: e.target.value })}
+                      placeholder="e.g. 11:30 AM or 4:00 PM"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">
+                      12. Visit Number
+                    </label>
+                    <select
+                      value={visitRecordForm.visitNumber}
+                      onChange={(e) => setVisitRecordForm({ ...visitRecordForm, visitNumber: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                    >
+                      <option value="1">1st Visit</option>
+                      <option value="2">2nd Visit</option>
+                      <option value="3">3rd Visit</option>
+                      <option value="4">4th Visit</option>
+                      <option value="5">5th Visit</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* 7. Visit किसने करवाई? (Staff Coordinator) */}
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1.5">
+                    7. Visit किसने करवाई? (Coordinator) *
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {['Priyanka', 'Suman', 'Tammana', 'Self / Other'].map((name) => (
+                      <button
+                        type="button"
+                        key={name}
+                        onClick={() => setVisitRecordForm({ ...visitRecordForm, coordinatorName: name })}
+                        className={`p-2.5 rounded-xl border text-center font-bold text-xs transition cursor-pointer ${
+                          visitRecordForm.coordinatorName === name
+                            ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E]'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 8 & 9. Visit Charge & Payment Status */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1.5">
+                      8. Visit Charge *
+                    </label>
+                    <div className="flex gap-2">
+                      {['₹500', '₹1,000', 'FREE (₹0)'].map((ch) => (
+                        <button
+                          type="button"
+                          key={ch}
+                          onClick={() => setVisitRecordForm({ ...visitRecordForm, visitCharge: ch })}
+                          className={`flex-1 p-2 rounded-xl border text-center font-bold text-xs transition cursor-pointer ${
+                            visitRecordForm.visitCharge === ch
+                              ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E]'
+                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {ch}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1.5">
+                      9. Payment Status *
+                    </label>
+                    <div className="flex gap-2">
+                      {['Paid', 'Not paid', 'Partial'].map((st) => (
+                        <button
+                          type="button"
+                          key={st}
+                          onClick={() => setVisitRecordForm({ ...visitRecordForm, paymentStatus: st })}
+                          className={`flex-1 p-2 rounded-xl border text-center font-bold text-xs transition cursor-pointer ${
+                            visitRecordForm.paymentStatus === st
+                              ? st === 'Paid' ? 'bg-emerald-600 text-white border-emerald-600' :
+                                st === 'Partial' ? 'bg-amber-600 text-white border-amber-600' :
+                                'bg-rose-600 text-white border-rose-600'
+                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {st}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 10. Property कैसी लगी? (Client Feedback) */}
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1.5">
+                    10. Property कैसी लगी? (Feedback) *
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { key: '❤️ पसंद आई', label: '❤️ पसंद आई (Liked)' },
+                      { key: '🤔 सोचकर बताएगा', label: '🤔 सोचकर बताएगा (Thinking)' },
+                      { key: '❌ पसंद नहीं आई', label: '❌ पसंद नहीं आई (Disliked)' }
+                    ].map((item) => (
+                      <button
+                        type="button"
+                        key={item.key}
+                        onClick={() => setVisitRecordForm({ ...visitRecordForm, feedback: item.key })}
+                        className={`p-2.5 rounded-xl border text-center font-bold text-xs transition cursor-pointer ${
+                          visitRecordForm.feedback === item.key
+                            ? 'bg-[#0A1628] text-[#C9A96E] border-[#C9A96E] shadow-sm'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 11. Follow-up / Remark Short Answer */}
+                <div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">
+                    11. Follow-up / Remark Short Answer
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={visitRecordForm.followUpRemark || ''}
+                    onChange={(e) => setVisitRecordForm({ ...visitRecordForm, followUpRemark: e.target.value })}
+                    placeholder="Client feedback notes, negotiation points, second visit timing, or owner remarks..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] text-[#0A1628]"
+                  />
+                </div>
+
+                {/* Form Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowVisitRecordModal(false)}
+                    className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] font-extrabold rounded-xl shadow-lg cursor-pointer border border-[#C9A96E]/30 flex items-center gap-1.5"
+                  >
+                    <CheckSquare className="w-4 h-4 text-[#C9A96E]" />
+                    {editingVisitRecord ? 'Update Visit Record' : 'Save Property Visit Record'}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

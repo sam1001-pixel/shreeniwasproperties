@@ -90,53 +90,75 @@ export default function ScheduleVisitModal({
   const [configuredVisitFee, setConfiguredVisitFee] = useState<number>(499);
   const [firstVisitFreeSetting, setFirstVisitFreeSetting] = useState<boolean>(true);
 
-  // Check login status & visit history on open
+  // Blocked / Blackout Visit Dates state set by Super Admin
+  const [blockedDates, setBlockedDates] = useState<{ date: string; reason: string }[]>([]);
+
+  // Check login status & visit history and blocked dates on open
   React.useEffect(() => {
     if (!isOpen) return;
 
-    try {
-      // Load live tariff settings
-      const tariffRaw = localStorage.getItem('shreeniwas_tariff_settings');
-      if (tariffRaw) {
-        const parsedTariff = JSON.parse(tariffRaw);
-        if (parsedTariff.vipSiteVisitFee) setConfiguredVisitFee(parsedTariff.vipSiteVisitFee);
-        if (typeof parsedTariff.firstVisitFree === 'boolean') setFirstVisitFreeSetting(parsedTariff.firstVisitFree);
-      } else {
-        const payRaw = localStorage.getItem('shreeniwas_payment_settings');
-        if (payRaw) {
-          const p = JSON.parse(payRaw);
-          if (p.vipSiteVisitFee) setConfiguredVisitFee(p.vipSiteVisitFee);
+    const loadSettingsAndBlockedDates = () => {
+      try {
+        // Load blocked visit dates set by Super Admin
+        const blockedRaw = localStorage.getItem('shreeniwas_blocked_visit_dates');
+        if (blockedRaw) {
+          setBlockedDates(JSON.parse(blockedRaw));
+        } else {
+          setBlockedDates([]);
         }
-      }
 
-      const sessionRaw = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
-      if (sessionRaw) {
-        const parsed = JSON.parse(sessionRaw);
-        if (parsed && (parsed.loggedIn || parsed.email)) {
-          setIsLoggedIn(true);
-          setCurrentUser(parsed);
-          if (parsed.name) setVisitorName(parsed.name);
-          if (parsed.phone) setVisitorPhone(parsed.phone);
-
-          // Calculate past visits for this specific user
-          const existingInqsRaw = localStorage.getItem('shreeniwas_inquiries');
-          const existingInqs = existingInqsRaw ? JSON.parse(existingInqsRaw) : [];
-          const userVisits = Array.isArray(existingInqs) 
-            ? existingInqs.filter((i: any) => 
-                (i.email && i.email === parsed.email) || 
-                (i.phone && i.phone === parsed.phone) ||
-                (i.type && i.type.includes('Visit'))
-              )
-            : [];
-          setCompletedVisitsCount(userVisits.length);
-          return;
+        // Load live tariff settings
+        const tariffRaw = localStorage.getItem('shreeniwas_tariff_settings');
+        if (tariffRaw) {
+          const parsedTariff = JSON.parse(tariffRaw);
+          if (parsedTariff.vipSiteVisitFee) setConfiguredVisitFee(parsedTariff.vipSiteVisitFee);
+          if (typeof parsedTariff.firstVisitFree === 'boolean') setFirstVisitFreeSetting(parsedTariff.firstVisitFree);
+        } else {
+          const payRaw = localStorage.getItem('shreeniwas_payment_settings');
+          if (payRaw) {
+            const p = JSON.parse(payRaw);
+            if (p.vipSiteVisitFee) setConfiguredVisitFee(p.vipSiteVisitFee);
+          }
         }
+
+        const sessionRaw = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
+        if (sessionRaw) {
+          const parsed = JSON.parse(sessionRaw);
+          if (parsed && (parsed.loggedIn || parsed.email)) {
+            setIsLoggedIn(true);
+            setCurrentUser(parsed);
+            if (parsed.name) setVisitorName(parsed.name);
+            if (parsed.phone) setVisitorPhone(parsed.phone);
+
+            // Calculate past visits for this specific user
+            const existingInqsRaw = localStorage.getItem('shreeniwas_inquiries');
+            const existingInqs = existingInqsRaw ? JSON.parse(existingInqsRaw) : [];
+            const userVisits = Array.isArray(existingInqs) 
+              ? existingInqs.filter((i: any) => 
+                  (i.email && i.email === parsed.email) || 
+                  (i.phone && i.phone === parsed.phone) ||
+                  (i.type && i.type.includes('Visit'))
+                )
+              : [];
+            setCompletedVisitsCount(userVisits.length);
+            return;
+          }
+        }
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+      } catch (e) {
+        setIsLoggedIn(false);
       }
-      setIsLoggedIn(false);
-      setCurrentUser(null);
-    } catch (e) {
-      setIsLoggedIn(false);
-    }
+    };
+
+    loadSettingsAndBlockedDates();
+
+    window.addEventListener('shreeniwas_data_updated', loadSettingsAndBlockedDates);
+    window.addEventListener('storage', loadSettingsAndBlockedDates);
+    return () => {
+      window.removeEventListener('shreeniwas_data_updated', loadSettingsAndBlockedDates);
+      window.removeEventListener('storage', loadSettingsAndBlockedDates);
+    };
   }, [isOpen]);
 
   const isFirstVisitFree = firstVisitFreeSetting && completedVisitsCount === 0;
@@ -444,9 +466,28 @@ export default function ScheduleVisitModal({
                       min={minDateStr}
                       value={visitDate}
                       onChange={(e) => setVisitDate(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white transition-all text-[#0A1628] cursor-pointer"
+                      className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-xs sm:text-sm font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] focus:bg-white transition-all text-[#0A1628] cursor-pointer ${
+                        blockedDates.some(b => b.date === visitDate)
+                          ? 'border-rose-400 bg-rose-50/50'
+                          : 'border-slate-200'
+                      }`}
                     />
                   </div>
+
+                  {/* Blocked Date Warning Banner if Super Admin disallowed this date */}
+                  {blockedDates.some(b => b.date === visitDate) && (
+                    <div className="mt-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold">
+                          Visits Not Available on this Date ({visitDate})
+                        </p>
+                        <p className="text-[11px] text-rose-700 mt-0.5">
+                          {blockedDates.find(b => b.date === visitDate)?.reason || "Super Admin has marked this date as unavailable for site inspections."} Please pick another date to proceed.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 3 TIME VARIATIONS - UI/UX PRO MAX CHIP SELECTOR */}
@@ -550,15 +591,19 @@ export default function ScheduleVisitModal({
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full py-3.5 sm:py-4 font-extrabold text-sm rounded-xl transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer border hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 ${
-                    isFirstVisitFree
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-emerald-700/20'
-                      : 'bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] border-[#C9A96E]/40 shadow-[#0A1628]/20'
+                  disabled={isSubmitting || blockedDates.some(b => b.date === visitDate)}
+                  className={`w-full py-3.5 sm:py-4 font-extrabold text-sm rounded-xl transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer border hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${
+                    blockedDates.some(b => b.date === visitDate)
+                      ? 'bg-slate-400 text-white border-slate-300 shadow-none'
+                      : isFirstVisitFree
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-emerald-700/20'
+                        : 'bg-[#0A1628] hover:bg-[#0A1628]/90 text-[#C9A96E] border-[#C9A96E]/40 shadow-[#0A1628]/20'
                   }`}
                 >
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : blockedDates.some(b => b.date === visitDate) ? (
+                    <span>Visits Blocked on Selected Date — Pick Another</span>
                   ) : (
                     <>
                       {isFirstVisitFree ? (
