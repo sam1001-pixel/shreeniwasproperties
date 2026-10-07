@@ -87,12 +87,28 @@ export default function ScheduleVisitModal({
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [completedVisitsCount, setCompletedVisitsCount] = useState<number>(0);
+  const [configuredVisitFee, setConfiguredVisitFee] = useState<number>(499);
+  const [firstVisitFreeSetting, setFirstVisitFreeSetting] = useState<boolean>(true);
 
   // Check login status & visit history on open
   React.useEffect(() => {
     if (!isOpen) return;
 
     try {
+      // Load live tariff settings
+      const tariffRaw = localStorage.getItem('shreeniwas_tariff_settings');
+      if (tariffRaw) {
+        const parsedTariff = JSON.parse(tariffRaw);
+        if (parsedTariff.vipSiteVisitFee) setConfiguredVisitFee(parsedTariff.vipSiteVisitFee);
+        if (typeof parsedTariff.firstVisitFree === 'boolean') setFirstVisitFreeSetting(parsedTariff.firstVisitFree);
+      } else {
+        const payRaw = localStorage.getItem('shreeniwas_payment_settings');
+        if (payRaw) {
+          const p = JSON.parse(payRaw);
+          if (p.vipSiteVisitFee) setConfiguredVisitFee(p.vipSiteVisitFee);
+        }
+      }
+
       const sessionRaw = localStorage.getItem('shreeniwas_user_session') || sessionStorage.getItem('shreeniwas_user_session');
       if (sessionRaw) {
         const parsed = JSON.parse(sessionRaw);
@@ -123,8 +139,8 @@ export default function ScheduleVisitModal({
     }
   }, [isOpen]);
 
-  const isFirstVisitFree = completedVisitsCount === 0;
-  const visitFeeAmount = isFirstVisitFree ? 0 : 499;
+  const isFirstVisitFree = firstVisitFreeSetting && completedVisitsCount === 0;
+  const visitFeeAmount = isFirstVisitFree ? 0 : configuredVisitFee;
 
   const selectedSlot = VISIT_TIME_SLOTS.find(s => s.id === selectedSlotId) || VISIT_TIME_SLOTS[0];
 
@@ -140,11 +156,11 @@ export default function ScheduleVisitModal({
       phone: visitorPhone.trim(),
       email: currentUser?.email || "vip.visit@shreeniwas.com",
       property: propertyTitle,
-      type: isFirstVisitFree ? "1st Complimentary Free Visit" : "Paid VIP Site Visit (₹499)",
-      status: isFirstVisitFree ? "Confirmed (Free 1st Visit)" : "Confirmed & Scheduled (₹499 Paid)",
+      type: isFirstVisitFree ? "1st Complimentary Free Visit" : `Paid VIP Site Visit (₹${visitFeeAmount})`,
+      status: isFirstVisitFree ? "Confirmed (Free 1st Visit)" : `Confirmed & Scheduled (₹${visitFeeAmount} Paid)`,
       query: isFirstVisitFree
         ? `Scheduled 1st FREE Complimentary Visit on ${visitDate} during ${selectedSlot.label} (${selectedSlot.timeRange}).`
-        : `Scheduled Paid VIP Site Visit on ${visitDate} during ${selectedSlot.label} (${selectedSlot.timeRange}). ₹499 fee refundable.`,
+        : `Scheduled Paid VIP Site Visit on ${visitDate} during ${selectedSlot.label} (${selectedSlot.timeRange}). ₹${visitFeeAmount} fee adjustable against brokerage.`,
       visitDate,
       visitTimeSlot: selectedSlot.timeRange,
       slotLabel: selectedSlot.label,
@@ -229,7 +245,7 @@ export default function ScheduleVisitModal({
                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                       : 'bg-[#F09032]/20 text-[#F09032] border border-[#F09032]/30'
                   }`}>
-                    {isFirstVisitFree ? '1st Visit FREE (₹0)' : 'Next Visit: ₹499 Pass'}
+                    {isFirstVisitFree ? '1st Visit FREE (₹0)' : `Next Visit: ₹${configuredVisitFee} Pass`}
                   </span>
                 </div>
                 <h2 id="schedule-modal-title" className="text-lg sm:text-xl font-serif font-bold text-white mt-0.5 leading-snug">
@@ -521,7 +537,7 @@ export default function ScheduleVisitModal({
                         ? 'bg-emerald-600 text-white' 
                         : 'text-[#C9A96E] bg-[#0A1628]'
                     }`}>
-                      {isFirstVisitFree ? '₹0 Free Pass' : '₹499 Deposit'}
+                      {isFirstVisitFree ? '₹0 Free Pass' : `₹${configuredVisitFee} Deposit`}
                     </span>
                   </div>
                   <p className="text-[10px] leading-tight text-slate-600">

@@ -32,13 +32,67 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
   const phoneNumber = '+91 6376117833';
   const whatsappBase = 'https://wa.me/916376117833';
 
+  // Live dynamic tariff and visit pricing state
+  const [tariffConfig, setTariffConfig] = useState({
+    vipSiteVisitFee: 499,
+    standardPassFee: 500,
+    premiumPassFee: 999,
+    firstVisitFree: true,
+    residentialRentBrokerage: '15 Days',
+    commercialRentBrokerage: '1 Month',
+    buySellUnder50L: '2%',
+    buySellAbove50L: '1%',
+  });
+
+  const loadTariffSettings = () => {
+    try {
+      // 1. Check dedicated tariff settings
+      const tariffRaw = localStorage.getItem('shreeniwas_tariff_settings');
+      if (tariffRaw) {
+        const parsed = JSON.parse(tariffRaw);
+        setTariffConfig(prev => ({ ...prev, ...parsed }));
+        return;
+      }
+      // 2. Check payment settings & brokerage settings fallback
+      const payRaw = localStorage.getItem('shreeniwas_payment_settings');
+      const brokRaw = localStorage.getItem('shreeniwas_brokerage_settings');
+      let merged: any = {};
+      if (payRaw) {
+        const p = JSON.parse(payRaw);
+        if (p.vipSiteVisitFee) merged.vipSiteVisitFee = p.vipSiteVisitFee;
+        if (p.standardPassFee) merged.standardPassFee = p.standardPassFee;
+        if (p.premiumPassFee) merged.premiumPassFee = p.premiumPassFee;
+      }
+      if (brokRaw) {
+        const b = JSON.parse(brokRaw);
+        if (b.residentialRentBrokerage) merged.residentialRentBrokerage = b.residentialRentBrokerage;
+        if (b.commercialRentBrokerage) merged.commercialRentBrokerage = b.commercialRentBrokerage;
+        if (b.buySellUnder50L) merged.buySellUnder50L = b.buySellUnder50L;
+        if (b.buySellAbove50L) merged.buySellAbove50L = b.buySellAbove50L;
+      }
+      if (Object.keys(merged).length > 0) {
+        setTariffConfig(prev => ({ ...prev, ...merged }));
+      }
+    } catch (e) {}
+  };
+
+  React.useEffect(() => {
+    loadTariffSettings();
+    window.addEventListener('shreeniwas_data_updated', loadTariffSettings);
+    window.addEventListener('storage', loadTariffSettings);
+    return () => {
+      window.removeEventListener('shreeniwas_data_updated', loadTariffSettings);
+      window.removeEventListener('storage', loadTariffSettings);
+    };
+  }, []);
+
   const visitPackages = [
     {
       id: 'free',
       name: 'Discovery Visit',
       badge: 'Single Inspection',
       badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-      price: 'FREE',
+      price: tariffConfig.firstVisitFree ? 'FREE' : `₹${tariffConfig.vipSiteVisitFee}`,
       duration: '1 Site Visit',
       highlight: false,
       features: [
@@ -48,15 +102,15 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
         'Direct meeting with owner'
       ],
       note: 'Transitions to Standard Pass if >1 property visited on day 1.',
-      ctaText: 'Book Free Visit',
-      ctaWhatsapp: `${whatsappBase}?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20book%20a%20FREE%20Discovery%20Visit%20(₹0)`
+      ctaText: tariffConfig.firstVisitFree ? 'Book Free Visit' : `Book Visit (₹${tariffConfig.vipSiteVisitFee})`,
+      ctaWhatsapp: `${whatsappBase}?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20book%20a%20Discovery%20Visit`
     },
     {
       id: 'standard',
       name: 'Standard Pass',
       badge: 'Most Popular',
       badgeColor: 'bg-blue-50 text-blue-800 border-blue-200',
-      price: '₹500',
+      price: `₹${tariffConfig.standardPassFee}`,
       duration: 'Up to 3 Properties',
       validityText: 'No time limit or expiry',
       highlight: false,
@@ -67,15 +121,15 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
         '100% adjusted against brokerage'
       ],
       note: '100% adjustable against final brokerage fee.',
-      ctaText: 'Get Standard Pass (₹500)',
-      ctaWhatsapp: `${whatsappBase}?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20book%20the%20Standard%20Pass%20(₹500%20for%203%20Visits)`
+      ctaText: `Get Standard Pass (₹${tariffConfig.standardPassFee})`,
+      ctaWhatsapp: `${whatsappBase}?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20book%20the%20Standard%20Pass%20(₹${tariffConfig.standardPassFee}%20for%203%20Visits)`
     },
     {
       id: 'premium',
       name: 'Premium Pass',
       badge: 'VIP Priority',
       badgeColor: 'bg-amber-50 text-amber-900 border-amber-300',
-      price: '₹999',
+      price: `₹${tariffConfig.premiumPassFee}`,
       duration: '6 Months Active Support',
       validityText: '6 months priority search across Rajasthan',
       highlight: true,
@@ -87,8 +141,8 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
         '100% adjusted against brokerage'
       ],
       note: '100% adjustable against final brokerage fee.',
-      ctaText: 'Get Premium Pass (₹999)',
-      ctaWhatsapp: `${whatsappBase}?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20activate%20the%20Premium%20Pass%20(₹999%20VIP%20Visits)`
+      ctaText: `Get Premium Pass (₹${tariffConfig.premiumPassFee})`,
+      ctaWhatsapp: `${whatsappBase}?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20activate%20the%20Premium%20Pass%20(₹${tariffConfig.premiumPassFee}%20VIP%20Visits)`
     }
   ];
 
@@ -364,7 +418,7 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
                         <p className="text-[10px] text-slate-500">Flats, villas & independent houses</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs sm:text-sm font-bold text-[#0A1628]">15 Days</span>
+                        <span className="text-xs sm:text-sm font-bold text-[#0A1628]">{tariffConfig.residentialRentBrokerage}</span>
                         <span className="block text-[9px] text-slate-400">Rent amount</span>
                       </div>
                     </div>
@@ -377,7 +431,7 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
                         <p className="text-[10px] text-slate-500">Offices, retail shops & showrooms</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs sm:text-sm font-bold text-[#0A1628]">1 Month</span>
+                        <span className="text-xs sm:text-sm font-bold text-[#0A1628]">{tariffConfig.commercialRentBrokerage}</span>
                         <span className="block text-[9px] text-slate-400">Rent amount</span>
                       </div>
                     </div>
@@ -423,7 +477,7 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
                         <p className="text-[10px] text-slate-500">Budget plots, apartments & houses</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs sm:text-sm font-bold text-emerald-700">2%</span>
+                        <span className="text-xs sm:text-sm font-bold text-emerald-700">{tariffConfig.buySellUnder50L}</span>
                         <span className="block text-[9px] text-slate-400">Deal value</span>
                       </div>
                     </div>
@@ -436,7 +490,7 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
                         <p className="text-[10px] text-slate-500">Luxury villas, commercial land & estates</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs sm:text-sm font-bold text-emerald-700">1%</span>
+                        <span className="text-xs sm:text-sm font-bold text-emerald-700">{tariffConfig.buySellAbove50L}</span>
                         <span className="block text-[9px] text-slate-400">Deal value</span>
                       </div>
                     </div>

@@ -118,17 +118,48 @@ export default function AdminDashboard() {
   const [editingMedia, setEditingMedia] = useState<any | null>(null);
   const [mediaForm, setMediaForm] = useState({ title: '', category: 'Properties', type: 'image', url: '', instaUrl: '' });
 
-  // Property Modal (with Google Maps Redirect Link)
+  // Tariff & Visits Management State (Super Admin)
+  const [tariffSettings, setTariffSettings] = useState({
+    vipSiteVisitFee: 499,
+    standardPassFee: 500,
+    premiumPassFee: 999,
+    firstVisitFree: true,
+    residentialRentBrokerage: '15 Days',
+    commercialRentBrokerage: '1 Month',
+    buySellUnder50L: '2%',
+    buySellAbove50L: '1%',
+    allowDirectOwnerContact: true,
+    escrowDepositPercent: 10
+  });
+
+  // Property Modal - Comprehensive Upload Suite
   const [showPropertyModal, setShowPropertyModal] = useState(false);
   const [editingProperty, setEditingProperty] = useState<any | null>(null);
   const [propForm, setPropForm] = useState({ 
     title: '', 
     location: '', 
+    city: 'Jaipur',
     price: '', 
+    pricePerSqft: '',
     type: 'Sale', 
-    status: 'Active', 
+    purpose: 'Buy',
+    status: 'Ready to Move', 
+    bhk: '3 BHK',
+    bedrooms: 3,
+    bathrooms: 2,
+    sqft: '2,100',
+    carpetArea: '1,800 sq.ft',
+    furnishing: 'Semi-Furnished',
+    floor: '3rd of 8 Floors',
+    facing: 'East (Vastu Compliant)',
+    reraApproved: true,
+    reraNumber: '',
+    zeroBrokerage: true,
     image: '',
-    googleMapsUrl: '' 
+    images: [] as string[],
+    googleMapsUrl: '',
+    description: '',
+    amenities: ['24x7 Security', 'Power Backup', 'Car Parking'] as string[]
   });
 
   // Builder Projects Management States
@@ -176,12 +207,6 @@ export default function AdminDashboard() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [editingReview, setEditingReview] = useState<any | null>(null);
   const [reviewForm, setReviewForm] = useState({ name: '', role: '', rating: 5, quote: '', status: 'Featured', avatar: '' });
-
-  const openGalleryPicker = (onSelectUrl: (url: string, item?: any) => void, initialCategory = 'All') => {
-    setGalleryCategoryFilter(initialCategory);
-    setGalleryTargetCallback(() => (url: string, item?: any) => onSelectUrl(url, item));
-    setShowGalleryPicker(true);
-  };
 
   const notifyDataUpdated = () => {
     if (typeof window !== 'undefined') {
@@ -303,6 +328,14 @@ export default function AdminDashboard() {
     // Load Brokerage Commission Settings (Super Admin Only)
     const savedBrokerage = localStorage.getItem('shreeniwas_brokerage_settings');
     if (savedBrokerage) { try { setBrokerageSettings(JSON.parse(savedBrokerage)); } catch (e) {} }
+
+    // Load Tariff & Visits Settings (Super Admin Only)
+    const savedTariffs = localStorage.getItem('shreeniwas_tariff_settings');
+    if (savedTariffs) { 
+      try { 
+        setTariffSettings(prev => ({ ...prev, ...JSON.parse(savedTariffs) })); 
+      } catch (e) {} 
+    }
 
     // Load Payment Gateway & UPI Settings (Super Admin Only)
     const savedPayment = localStorage.getItem('shreeniwas_payment_settings');
@@ -426,17 +459,25 @@ export default function AdminDashboard() {
     }
   };
 
-  // Property Handlers
+  // Property Handlers - Full Feature Suite
   const handleSaveProperty = (e: React.FormEvent) => {
     e.preventDefault();
     if (!propForm.title || !propForm.location || !propForm.price) return;
 
+    const payload = {
+      ...propForm,
+      // Provide fallback image if not supplied
+      image: propForm.image || propForm.images[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800',
+      images: propForm.images.length > 0 ? propForm.images : [propForm.image || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800'],
+      googleMapsUrl: propForm.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${propForm.title} ${propForm.location}`)}`
+    };
+
     if (editingProperty) {
-      const updated = propertiesList.map(p => p.id === editingProperty.id ? { ...p, ...propForm } : p);
+      const updated = propertiesList.map(p => p.id === editingProperty.id ? { ...p, ...payload } : p);
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
     } else {
-      const newProp = { id: `PROP-00${propertiesList.length + 1}`, ...propForm };
+      const newProp = { id: `PROP-${Date.now().toString().slice(-4)}`, ...payload };
       const updated = [newProp, ...propertiesList];
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
@@ -445,7 +486,64 @@ export default function AdminDashboard() {
 
     setShowPropertyModal(false);
     setEditingProperty(null);
-    setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active', image: '', googleMapsUrl: '' });
+    setPropForm({ 
+      title: '', 
+      location: '', 
+      city: 'Jaipur',
+      price: '', 
+      pricePerSqft: '',
+      type: 'Sale', 
+      purpose: 'Buy',
+      status: 'Ready to Move', 
+      bhk: '3 BHK',
+      bedrooms: 3,
+      bathrooms: 2,
+      sqft: '2,100',
+      carpetArea: '1,800 sq.ft',
+      furnishing: 'Semi-Furnished',
+      floor: '3rd of 8 Floors',
+      facing: 'East (Vastu Compliant)',
+      reraApproved: true,
+      reraNumber: '',
+      zeroBrokerage: true,
+      image: '',
+      images: [],
+      googleMapsUrl: '',
+      description: '',
+      amenities: ['24x7 Security', 'Power Backup', 'Car Parking']
+    });
+  };
+
+  // Super Admin Tariff & Site Visits Save Handler
+  const handleSaveTariffs = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminRole !== 'super') {
+      alert('Access Denied: Only Super Admin can modify tariff structures and visit fees.');
+      return;
+    }
+    localStorage.setItem('shreeniwas_tariff_settings', JSON.stringify(tariffSettings));
+    
+    // Also sync payment & brokerage settings for cross-compatibility
+    const existingPayment = localStorage.getItem('shreeniwas_payment_settings');
+    const payObj = existingPayment ? JSON.parse(existingPayment) : {};
+    payObj.vipSiteVisitFee = tariffSettings.vipSiteVisitFee;
+    payObj.standardPassFee = tariffSettings.standardPassFee;
+    payObj.premiumPassFee = tariffSettings.premiumPassFee;
+    localStorage.setItem('shreeniwas_payment_settings', JSON.stringify(payObj));
+
+    const existingBrok = localStorage.getItem('shreeniwas_brokerage_settings');
+    const brokObj = existingBrok ? JSON.parse(existingBrok) : {};
+    brokObj.residentialRentBrokerage = tariffSettings.residentialRentBrokerage;
+    brokObj.commercialRentBrokerage = tariffSettings.commercialRentBrokerage;
+    brokObj.buySellUnder50L = tariffSettings.buySellUnder50L;
+    brokObj.buySellAbove50L = tariffSettings.buySellAbove50L;
+    brokObj.vipSiteVisitFee = tariffSettings.vipSiteVisitFee;
+    brokObj.allowDirectOwnerContact = tariffSettings.allowDirectOwnerContact;
+    brokObj.escrowDepositPercent = tariffSettings.escrowDepositPercent;
+    localStorage.setItem('shreeniwas_brokerage_settings', JSON.stringify(brokObj));
+
+    notifyDataUpdated();
+    alert('Tariff, Visit Passes & Brokerage Rates Saved Live with Zero Delay!');
   };
 
   const handleDeleteProperty = (id: string) => {
@@ -765,21 +863,19 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
     { id: 'projects', label: 'Builder Projects & Townships', icon: Layers },
+    { id: 'tariffs', label: 'Tariff & Visits Management', icon: IndianRupee },
     { id: 'payments', label: 'Payment Gateway & UPI Setup', icon: QrCode },
-    { id: 'brokerage', label: 'Brokerage & Financials', icon: IndianRupee },
     { id: 'reels', label: 'Property Video Reels', icon: Video },
+    { id: 'blogs', label: 'Blog & Content', icon: FileText },
     { id: 'reviews', label: 'Buyer & Landlord Reviews', icon: Star },
-    { id: 'gallery', label: 'Media & Video Gallery', icon: Camera },
     { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
     { id: 'attendance', label: 'Staff Attendance System', icon: Clock },
     { id: 'users', label: 'Users & Admin Management', icon: Users },
-    { id: 'blogs', label: 'Blog & Content', icon: FileText },
     { id: 'settings', label: 'Platform & Social Settings', icon: Settings },
   ] : [
     { id: 'inquiries', label: 'Query & Lead Desk', icon: MessageSquare },
     { id: 'attendance', label: 'My Shift Attendance', icon: Clock },
     { id: 'properties', label: 'View Properties', icon: Building2 },
-    { id: 'gallery', label: 'Media & Video Gallery', icon: Camera },
   ];
 
   if (!isLoaded) {
@@ -1028,12 +1124,37 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => {
                       setEditingProperty(null);
-                      setPropForm({ title: '', location: '', price: '', type: 'Sale', status: 'Active', image: '', googleMapsUrl: '' });
+                      setPropForm({ 
+                        title: '', 
+                        location: '', 
+                        city: 'Jaipur',
+                        price: '', 
+                        pricePerSqft: '',
+                        type: 'Luxury Villa', 
+                        purpose: 'Buy',
+                        status: 'Ready to Move', 
+                        bhk: '3 BHK',
+                        bedrooms: 3,
+                        bathrooms: 2,
+                        sqft: '2,100',
+                        carpetArea: '1,800 sq.ft',
+                        furnishing: 'Semi-Furnished',
+                        floor: '3rd of 8 Floors',
+                        facing: 'East (Vastu Compliant)',
+                        reraApproved: true,
+                        reraNumber: '',
+                        zeroBrokerage: true,
+                        image: '',
+                        images: [],
+                        googleMapsUrl: '',
+                        description: '',
+                        amenities: ['24x7 Security', 'Power Backup', 'Car Parking']
+                      });
                       setShowPropertyModal(true);
                     }}
                     className="px-4 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer hover:bg-[#0A1628]/90"
                   >
-                    <Plus className="w-4 h-4" /> Add New Listing
+                    <Plus className="w-4 h-4" /> Add New Property Listing
                   </button>
                 )}
               </div>
@@ -1088,13 +1209,30 @@ export default function AdminDashboard() {
                                 onClick={() => {
                                   setEditingProperty(prop);
                                   setPropForm({ 
-                                    title: prop.title, 
-                                    location: prop.location, 
-                                    price: prop.price, 
-                                    type: prop.type, 
-                                    status: prop.status, 
+                                    title: prop.title || '', 
+                                    location: prop.location || '', 
+                                    city: prop.city || 'Jaipur',
+                                    price: prop.price || '', 
+                                    pricePerSqft: prop.pricePerSqft || '',
+                                    type: prop.type || 'Luxury Villa', 
+                                    purpose: prop.purpose || 'Buy',
+                                    status: prop.status || 'Ready to Move', 
+                                    bhk: prop.bhk || '3 BHK',
+                                    bedrooms: prop.bedrooms || 3,
+                                    bathrooms: prop.bathrooms || 2,
+                                    sqft: prop.sqft || '2,100',
+                                    carpetArea: prop.carpetArea || '1,800 sq.ft',
+                                    furnishing: prop.furnishing || 'Semi-Furnished',
+                                    floor: prop.floor || '3rd of 8 Floors',
+                                    facing: prop.facing || 'East (Vastu Compliant)',
+                                    reraApproved: prop.reraApproved ?? true,
+                                    reraNumber: prop.reraNumber || '',
+                                    zeroBrokerage: prop.zeroBrokerage ?? true,
                                     image: prop.image || '',
-                                    googleMapsUrl: prop.googleMapsUrl || ''
+                                    images: prop.images || (prop.image ? [prop.image] : []),
+                                    googleMapsUrl: prop.googleMapsUrl || '',
+                                    description: prop.description || '',
+                                    amenities: prop.amenities || ['24x7 Security', 'Power Backup', 'Car Parking']
                                   });
                                   setShowPropertyModal(true);
                                 }}
@@ -1250,144 +1388,147 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* SUPER ADMIN BROKERAGE & FINANCIALS TAB */}
-          {activeTab === 'brokerage' && adminRole === 'super' && (
+          {/* SUPER ADMIN TARIFF & VISITS MANAGEMENT TAB */}
+          {activeTab === 'tariffs' && adminRole === 'super' && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-xs font-bold uppercase tracking-wider mb-1 border border-amber-500/30">
-                    <ShieldAlert className="w-3.5 h-3.5 text-amber-600" /> Exclusive Super Admin Control
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A96E]/10 text-[#C9A96E] text-xs font-bold uppercase tracking-wider mb-1 border border-[#C9A96E]/30">
+                    <ShieldAlert className="w-3.5 h-3.5 text-[#C9A96E]" /> Super Admin Live Control • 0ms Sync
                   </div>
-                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Brokerage, Commission & Platform Financial Settings</h3>
+                  <h3 className="text-xl font-serif font-bold text-[#0A1628]">Tariff, Site Visits & Brokerage Engine</h3>
                   <p className="text-xs text-slate-500">
-                    Staff admins have 0% access to this section. All brokerage structures, visit fee payouts, and escrow percentages are governed here.
+                    Live control for site visit fees, visitor free-visit policies, pass bundles, rental brokerage, and buy/sell transaction percentages.
                   </p>
                 </div>
               </div>
 
-              <form onSubmit={handleSaveBrokerage} className="space-y-6 max-w-4xl">
-                {/* 1. Commission Model */}
+              <form onSubmit={handleSaveTariffs} className="space-y-6 max-w-4xl">
+                {/* 1. Site Visit Policies & Pass Pricing */}
                 <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                   <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
-                    <IndianRupee className="w-4 h-4 text-[#C9A96E]" /> Platform Brokerage Model
+                    <Crown className="w-4 h-4 text-[#C9A96E]" /> Site Visit Policies & Verified Visitor Passes
                   </h4>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <label className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                      brokerageSettings.model === 'zero' 
-                        ? 'border-[#0A1628] bg-slate-50 shadow-sm' 
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}>
-                      <input 
-                        type="radio" 
-                        name="brokerageModel" 
-                        className="hidden" 
-                        checked={brokerageSettings.model === 'zero'} 
-                        onChange={() => setBrokerageSettings({ ...brokerageSettings, model: 'zero' })} 
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <p className="font-bold text-sm text-[#0A1628]">1st Site Visit Complimentary (Free)</p>
+                      <p className="text-slate-500 text-xs">When enabled, first-time logged-in visitors can book 1 property tour completely free of charge.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={tariffSettings.firstVisitFree}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, firstVisitFree: e.target.checked })}
+                        className="sr-only peer"
                       />
-                      <span className="font-bold text-sm block text-[#0A1628] mb-1">Direct Owner (Zero Commission Option)</span>
-                      <p className="text-slate-500 text-[11px]">Free listing for direct owners; platform charges no commission from buyers/tenants.</p>
-                    </label>
-
-                    <label className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                      brokerageSettings.model === 'percentage' 
-                        ? 'border-[#0A1628] bg-slate-50 shadow-sm' 
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}>
-                      <input 
-                        type="radio" 
-                        name="brokerageModel" 
-                        className="hidden" 
-                        checked={brokerageSettings.model === 'percentage'} 
-                        onChange={() => setBrokerageSettings({ ...brokerageSettings, model: 'percentage' })} 
-                      />
-                      <span className="font-bold text-sm block text-[#0A1628] mb-1">Percentage Commission</span>
-                      <p className="text-slate-500 text-[11px]">Charge standard deal brokerage (e.g. 1% or 2%) on concluded transactions.</p>
-                    </label>
-
-                    <label className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                      brokerageSettings.model === 'fixed' 
-                        ? 'border-[#0A1628] bg-slate-50 shadow-sm' 
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}>
-                      <input 
-                        type="radio" 
-                        name="brokerageModel" 
-                        className="hidden" 
-                        checked={brokerageSettings.model === 'fixed'} 
-                        onChange={() => setBrokerageSettings({ ...brokerageSettings, model: 'fixed' })} 
-                      />
-                      <span className="font-bold text-sm block text-[#0A1628] mb-1">Flat Listing Fee</span>
-                      <p className="text-slate-500 text-[11px]">Charge a flat fee per commercial or high-ticket luxury verified listing.</p>
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                      <span className="ml-3 text-xs font-bold text-slate-700">
+                        {tariffSettings.firstVisitFree ? 'Active (Free 1st Visit)' : 'Disabled (All Visits Paid)'}
+                      </span>
                     </label>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                     <div>
-                      <label className="font-bold uppercase text-slate-700 block mb-1">Commission Rate (%)</label>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">VIP Single Visit Fee (₹)</label>
                       <input
                         type="number"
-                        step="0.1"
                         min="0"
-                        max="10"
-                        value={brokerageSettings.commissionRate}
-                        onChange={(e) => setBrokerageSettings({ ...brokerageSettings, commissionRate: parseFloat(e.target.value) || 0 })}
+                        value={tariffSettings.vipSiteVisitFee}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, vipSiteVisitFee: parseInt(e.target.value) || 0 })}
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Applicable when Percentage Commission model is active.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Paid on 2nd visit onwards (or 1st if free visit is disabled).</p>
                     </div>
 
                     <div>
-                      <label className="font-bold uppercase text-slate-700 block mb-1">Minimum Commission Floor (₹)</label>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Standard Pass Fee (₹)</label>
                       <input
                         type="number"
                         min="0"
-                        value={brokerageSettings.minCommission}
-                        onChange={(e) => setBrokerageSettings({ ...brokerageSettings, minCommission: parseInt(e.target.value) || 0 })}
+                        value={tariffSettings.standardPassFee}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, standardPassFee: parseInt(e.target.value) || 0 })}
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Minimum base platform fee on deals.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Includes 3 verified property visits + coordinator.</p>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Premium VIP Pass Fee (₹)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={tariffSettings.premiumPassFee}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, premiumPassFee: parseInt(e.target.value) || 0 })}
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Unlimited visits for 6 months + legal verification support.</p>
                     </div>
                   </div>
                 </div>
 
-                {/* 2. VIP Visit & Cab Charges */}
+                {/* 2. Transaction Brokerage & Commission Structure */}
                 <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                   <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
-                    <Crown className="w-4 h-4 text-[#C9A96E]" /> VIP Visit & Chauffeur Services Pricing
+                    <IndianRupee className="w-4 h-4 text-[#C9A96E]" /> Brokerage Rates Displayed on Site
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <div>
-                      <label className="font-bold uppercase text-slate-700 block mb-1">VIP Site Visit Booking Fee (₹)</label>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Residential Rent Brokerage</label>
                       <input
-                        type="number"
-                        min="0"
-                        value={brokerageSettings.vipSiteVisitFee}
-                        onChange={(e) => setBrokerageSettings({ ...brokerageSettings, vipSiteVisitFee: parseInt(e.target.value) || 0 })}
+                        type="text"
+                        value={tariffSettings.residentialRentBrokerage}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, residentialRentBrokerage: e.target.value })}
+                        placeholder="e.g. 15 Days Rent"
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Standard booking deposit (refundable upon deal execution).</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Displayed on pricing tariff table for residential rentals.</p>
                     </div>
 
                     <div>
-                      <label className="font-bold uppercase text-slate-700 block mb-1">Private AC Cab Pickup Add-on (₹)</label>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Commercial Rent Brokerage</label>
                       <input
-                        type="number"
-                        min="0"
-                        value={brokerageSettings.vipCabPickupFee}
-                        onChange={(e) => setBrokerageSettings({ ...brokerageSettings, vipCabPickupFee: parseInt(e.target.value) || 0 })}
+                        type="text"
+                        value={tariffSettings.commercialRentBrokerage}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, commercialRentBrokerage: e.target.value })}
+                        placeholder="e.g. 1 Month Rent"
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Direct airport/hotel luxury pickup for outstation buyers.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Displayed on pricing tariff table for commercial spaces.</p>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Sale & Purchase Commission (Under ₹50 Lacs)</label>
+                      <input
+                        type="text"
+                        value={tariffSettings.buySellUnder50L}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, buySellUnder50L: e.target.value })}
+                        placeholder="e.g. 2%"
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Commission rate for properties below ₹50 Lakhs.</p>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Sale & Purchase Commission (Above ₹50 Lacs)</label>
+                      <input
+                        type="text"
+                        value={tariffSettings.buySellAbove50L}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, buySellAbove50L: e.target.value })}
+                        placeholder="e.g. 1%"
+                        className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Discounted brokerage tier for high-value properties.</p>
                     </div>
                   </div>
                 </div>
 
-                {/* 3. Escrow & Platform Rules */}
+                {/* 3. Escrow & Security Rules */}
                 <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                   <h4 className="text-sm font-bold uppercase tracking-wider text-[#0A1628] border-b border-slate-100 pb-2 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" /> Platform Security & Escrow Threshold
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" /> Legal Title Escrow & Direct Owner Directives
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -1397,8 +1538,8 @@ export default function AdminDashboard() {
                         type="number"
                         min="0"
                         max="50"
-                        value={brokerageSettings.escrowDepositPercent}
-                        onChange={(e) => setBrokerageSettings({ ...brokerageSettings, escrowDepositPercent: parseInt(e.target.value) || 0 })}
+                        value={tariffSettings.escrowDepositPercent}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, escrowDepositPercent: parseInt(e.target.value) || 0 })}
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
                       <p className="text-[10px] text-slate-400 mt-1">Required security token held during title search and registry verification.</p>
@@ -1407,12 +1548,12 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-3 pt-4">
                       <input
                         type="checkbox"
-                        id="allowDirectOwner"
-                        checked={brokerageSettings.allowDirectOwnerContact}
-                        onChange={(e) => setBrokerageSettings({ ...brokerageSettings, allowDirectOwnerContact: e.target.checked })}
+                        id="allowDirectOwnerTariff"
+                        checked={tariffSettings.allowDirectOwnerContact}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, allowDirectOwnerContact: e.target.checked })}
                         className="w-5 h-5 accent-[#0A1628] cursor-pointer rounded"
                       />
-                      <label htmlFor="allowDirectOwner" className="font-bold text-slate-700 cursor-pointer text-xs">
+                      <label htmlFor="allowDirectOwnerTariff" className="font-bold text-slate-700 cursor-pointer text-xs">
                         Allow Direct Buyer-Owner WhatsApp Calls (Bypass Admin Desk)
                       </label>
                     </div>
@@ -1421,9 +1562,10 @@ export default function AdminDashboard() {
 
                 <button
                   type="submit"
-                  className="px-6 py-3.5 bg-[#0A1628] text-[#C9A96E] font-extrabold text-xs rounded-2xl shadow-xl hover:bg-[#0A1628]/90 transition cursor-pointer border border-[#C9A96E]/30"
+                  className="px-6 py-3.5 bg-[#0A1628] text-[#C9A96E] font-extrabold text-xs rounded-2xl shadow-xl hover:bg-[#0A1628]/90 transition cursor-pointer border border-[#C9A96E]/30 flex items-center gap-2"
                 >
-                  Save Super Admin Brokerage Controls Live
+                  <ShieldCheck className="w-4 h-4 text-[#C9A96E]" />
+                  Save Tariffs & Site Visit Settings (Instant Live Sync)
                 </button>
               </form>
             </div>
@@ -1502,14 +1644,6 @@ export default function AdminDashboard() {
                             onChange={(e) => handleFileUpload(e, (dataUrl) => setPaymentSettings(prev => ({ ...prev, customQrUrl: dataUrl })))}
                           />
                         </label>
-                        <span className="text-slate-300">|</span>
-                        <button
-                          type="button"
-                          onClick={() => openGalleryPicker((url) => setPaymentSettings(prev => ({ ...prev, customQrUrl: url })), 'QR Codes & Logos')}
-                          className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                        >
-                          <Camera className="w-3 h-3" /> Pick Gallery
-                        </button>
                         {paymentSettings.customQrUrl && (
                           <>
                             <span className="text-slate-300">|</span>
@@ -1957,189 +2091,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* MEDIA & VIDEO GALLERY TAB */}
-          {activeTab === 'gallery' && (
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
-                  <div>
-                    <h3 className="text-xl font-serif font-bold text-[#0A1628] flex items-center gap-2">
-                      <Camera className="w-5 h-5 text-[#C9A96E]" /> Media & Video Asset Gallery (All Admins)
-                    </h3>
-                    <p className="text-xs text-slate-500">Centralized media handling for property photos, video reel thumbnails, Instagram links, brand logos, and avatars.</p>
-                  </div>
 
-                  <div className="flex items-center gap-2 w-full md:w-auto">
-                    <input
-                      type="text"
-                      placeholder="Search gallery assets..."
-                      value={gallerySearchQuery}
-                      onChange={(e) => setGallerySearchQuery(e.target.value)}
-                      className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] w-full md:w-56"
-                    />
-                  </div>
-                </div>
-
-                {/* Quick Add Media Asset Form */}
-                <form onSubmit={handleAddMedia} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-slate-700 uppercase tracking-wider text-[11px]">
-                    <Plus className="w-3.5 h-3.5 text-[#C9A96E]" /> Add New Image / Video to Site Gallery
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-                    <input
-                      type="text"
-                      required
-                      placeholder="Asset Title (e.g. Royal Villa Pool)"
-                      value={newMediaForm.title}
-                      onChange={(e) => setNewMediaForm({ ...newMediaForm, title: e.target.value })}
-                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    />
-
-                    <select
-                      value={newMediaForm.category}
-                      onChange={(e) => setNewMediaForm({ ...newMediaForm, category: e.target.value })}
-                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    >
-                      <option value="Properties">Properties</option>
-                      <option value="Reels & Videos">Reels & Videos</option>
-                      <option value="Logos & Avatars">Logos & Avatars</option>
-                      <option value="Blogs">Blogs</option>
-                    </select>
-
-                    <select
-                      value={newMediaForm.type}
-                      onChange={(e) => setNewMediaForm({ ...newMediaForm, type: e.target.value })}
-                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    >
-                      <option value="image">Image Asset</option>
-                      <option value="video">Reel / Video Clip</option>
-                    </select>
-
-                    <div className="flex flex-col gap-1">
-                      <input
-                        type="text"
-                        required
-                        placeholder="Image / Thumbnail URL or Upload File"
-                        value={newMediaForm.url}
-                        onChange={(e) => setNewMediaForm({ ...newMediaForm, url: e.target.value })}
-                        className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                      />
-                      <label className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-[#0A1628] font-bold text-[10px] rounded-lg cursor-pointer flex items-center justify-center gap-1 border border-slate-300 transition-colors">
-                        <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Photo/Video from Device
-                        <input
-                          type="file"
-                          accept="image/*,video/*"
-                          className="hidden"
-                          onChange={(e) => handleFileUpload(e, (dataUrl) => setNewMediaForm(prev => ({ ...prev, url: dataUrl })))}
-                        />
-                      </label>
-                    </div>
-
-                    <input
-                      type="url"
-                      placeholder="Instagram Reel Link (Optional)"
-                      value={newMediaForm.instaUrl}
-                      onChange={(e) => setNewMediaForm({ ...newMediaForm, instaUrl: e.target.value })}
-                      className="p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button type="submit" className="px-4 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl text-xs hover:bg-slate-800 transition cursor-pointer shadow">
-                      + Save to Gallery
-                    </button>
-                  </div>
-                </form>
-
-                {/* Category Filter Tabs */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-2">
-                  {['All', 'Properties', 'Reels & Videos', 'Logos & Avatars', 'Blogs'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setGalleryCategoryFilter(cat)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
-                        galleryCategoryFilter === cat
-                          ? 'bg-[#0A1628] text-[#C9A96E] shadow-sm'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Gallery Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2">
-                  {mediaGallery
-                    .filter(m => galleryCategoryFilter === 'All' || m.category === galleryCategoryFilter)
-                    .filter(m => !gallerySearchQuery || m.title.toLowerCase().includes(gallerySearchQuery.toLowerCase()) || m.category.toLowerCase().includes(gallerySearchQuery.toLowerCase()))
-                    .map((item) => (
-                      <div key={item.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col justify-between space-y-2 group hover:shadow-md transition">
-                        <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-slate-200">
-                          <img src={item.url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                          
-                          {item.type === 'video' && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <span className="p-2 bg-[#C9A96E] text-[#0A1628] rounded-full shadow">
-                                <Video className="w-4 h-4 fill-current" />
-                              </span>
-                            </div>
-                          )}
-
-                          <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold rounded-md">
-                            {item.category}
-                          </span>
-                        </div>
-
-                        <div>
-                          <h5 className="font-bold text-xs text-[#0A1628] truncate">{item.title}</h5>
-                          {item.instaUrl && (
-                            <a href={item.instaUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-pink-600 font-bold hover:underline block truncate mt-0.5">
-                              Instagram Reel Link ↗
-                            </a>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-[11px]">
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => {
-                                setEditingMedia(item);
-                                setMediaForm({ title: item.title, category: item.category, type: item.type, url: item.url, instaUrl: item.instaUrl || '' });
-                                setShowEditMediaModal(true);
-                              }}
-                              className="px-2 py-1 bg-slate-100 text-slate-700 hover:bg-[#0A1628] hover:text-[#C9A96E] font-bold rounded-lg transition cursor-pointer flex items-center gap-1"
-                              title="Edit Media Asset"
-                            >
-                              <Edit className="w-3 h-3" /> Edit
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(item.url);
-                                alert("Media URL copied to clipboard!");
-                              }}
-                              className="text-slate-600 font-bold hover:text-[#0A1628] cursor-pointer"
-                            >
-                              Copy
-                            </button>
-                          </div>
-
-                          <button
-                            onClick={() => handleDeleteMedia(item.id)}
-                            className="p-1 text-rose-500 hover:text-rose-700 cursor-pointer"
-                            title="Delete Asset"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* ATTENDANCE TAB */}
           {activeTab === 'attendance' && (
@@ -2514,14 +2466,6 @@ export default function AdminDashboard() {
                               onChange={(e) => handleFileUpload(e, (dataUrl) => setSiteSettings(prev => ({ ...prev, logoUrl: dataUrl })))}
                             />
                           </label>
-                          <span className="text-slate-300">|</span>
-                          <button
-                            type="button"
-                            onClick={() => openGalleryPicker((url) => setSiteSettings(prev => ({ ...prev, logoUrl: url })), 'Logos & Avatars')}
-                            className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                          >
-                            <Camera className="w-3 h-3" /> Pick Gallery
-                          </button>
                         </div>
                       </div>
                       <input
@@ -2531,7 +2475,7 @@ export default function AdminDashboard() {
                         placeholder="https://example.com/logo.png or uploaded image"
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Upload from device, pick from gallery, or paste image URL.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Upload from device or paste image URL.</p>
                     </div>
 
                     <div>
@@ -2559,14 +2503,6 @@ export default function AdminDashboard() {
                             onChange={(e) => handleFileUpload(e, (dataUrl) => setSiteSettings(prev => ({ ...prev, heroBgUrl: dataUrl })))}
                           />
                         </label>
-                        <span className="text-slate-300">|</span>
-                        <button
-                          type="button"
-                          onClick={() => openGalleryPicker((url) => setSiteSettings(prev => ({ ...prev, heroBgUrl: url })), 'Properties')}
-                          className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                        >
-                          <Camera className="w-3 h-3" /> Pick Gallery
-                        </button>
                       </div>
                     </div>
                     <div className="flex gap-3 items-center">
@@ -2829,122 +2765,464 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Add/Edit Property Modal */}
+      {/* Add/Edit Property Modal - Full Comprehensive Super Admin Upload Suite */}
       <AnimatePresence>
         {showPropertyModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 sm:p-7 max-w-3xl w-full shadow-2xl text-[#0A1628] space-y-5 max-h-[90vh] overflow-y-auto no-scrollbar border border-slate-100">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h4 className="font-serif font-bold text-lg">{editingProperty ? "Edit Property Listing" : "Add New Property Listing"}</h4>
-                <button onClick={() => setShowPropertyModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#C9A96E]/10 text-[#C9A96E] text-[10px] font-bold uppercase tracking-wider mb-1">
+                    <Crown className="w-3 h-3 text-[#C9A96E]" /> Super Admin Complete Listing Suite
+                  </div>
+                  <h4 className="font-serif font-bold text-xl text-[#0A1628]">
+                    {editingProperty ? "Edit Property Listing" : "Upload New Property Listing"}
+                  </h4>
+                </div>
+                <button onClick={() => setShowPropertyModal(false)} className="p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer rounded-xl hover:bg-slate-100 transition">
+                  <XCircle className="w-6 h-6" />
+                </button>
               </div>
 
-              <form onSubmit={handleSaveProperty} className="space-y-3 text-xs">
-                <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1">Property Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={propForm.title}
-                    onChange={(e) => setPropForm({ ...propForm, title: e.target.value })}
-                    placeholder="e.g. Royal Villa Mansarovar"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                  />
-                </div>
+              <form onSubmit={handleSaveProperty} className="space-y-4 text-xs">
+                {/* 1. Basic Details & Categorization */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                  <h5 className="font-bold text-[11px] uppercase tracking-wider text-[#0A1628] flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-[#C9A96E]" /> Core Identity & Location
+                  </h5>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Property Title *</label>
+                      <input
+                        type="text"
+                        required
+                        value={propForm.title}
+                        onChange={(e) => setPropForm({ ...propForm, title: e.target.value })}
+                        placeholder="e.g. Royal Heritage Villa with Private Pool"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
 
-                <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1">Location / City</label>
-                  <input
-                    type="text"
-                    required
-                    value={propForm.location}
-                    onChange={(e) => setPropForm({ ...propForm, location: e.target.value })}
-                    placeholder="e.g. C-Scheme, Jaipur"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="font-bold uppercase text-slate-700">Property Cover Image</label>
-                    <div className="flex items-center gap-2">
-                      <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
-                        <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleFileUpload(e, (dataUrl) => setPropForm(prev => ({ ...prev, image: dataUrl })))}
-                        />
-                      </label>
-                      <span className="text-slate-300">|</span>
-                      <button
-                        type="button"
-                        onClick={() => openGalleryPicker((url) => setPropForm(prev => ({ ...prev, image: url })), 'Properties')}
-                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">City in Rajasthan *</label>
+                      <select
+                        value={propForm.city}
+                        onChange={(e) => setPropForm({ ...propForm, city: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       >
-                        <Camera className="w-3 h-3" /> Pick Gallery
-                      </button>
+                        <option value="Jaipur">Jaipur</option>
+                        <option value="Jodhpur">Jodhpur</option>
+                        <option value="Udaipur">Udaipur</option>
+                        <option value="Kota">Kota</option>
+                        <option value="Ajmer">Ajmer</option>
+                        <option value="Bikaner">Bikaner</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Locality / Address *</label>
+                      <input
+                        type="text"
+                        required
+                        value={propForm.location}
+                        onChange={(e) => setPropForm({ ...propForm, location: e.target.value })}
+                        placeholder="e.g. C-Scheme, Near Central Park"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Listing Purpose *</label>
+                      <select
+                        value={propForm.purpose}
+                        onChange={(e) => setPropForm({ ...propForm, purpose: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      >
+                        <option value="Buy">For Sale / Buy</option>
+                        <option value="Rent">For Rent</option>
+                        <option value="Commercial">Commercial Lease / Sale</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Property Type *</label>
+                      <select
+                        value={propForm.type}
+                        onChange={(e) => setPropForm({ ...propForm, type: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      >
+                        <option value="Luxury Villa">Luxury Villa</option>
+                        <option value="Apartment">Apartment / Flat</option>
+                        <option value="Penthouse">Penthouse</option>
+                        <option value="Heritage Haveli">Heritage Haveli</option>
+                        <option value="Commercial Office">Commercial Office</option>
+                        <option value="Retail Showroom">Retail Showroom</option>
+                        <option value="Plot / Land">Plot / Land</option>
+                      </select>
                     </div>
                   </div>
-                  <input
-                    type="text"
-                    value={propForm.image}
-                    onChange={(e) => setPropForm({ ...propForm, image: e.target.value })}
-                    placeholder="https://images.unsplash.com/... or upload from device"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                  />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="font-bold uppercase text-slate-700 block mb-1">Price</label>
-                    <input
-                      type="text"
-                      required
-                      value={propForm.price}
-                      onChange={(e) => setPropForm({ ...propForm, price: e.target.value })}
-                      placeholder="e.g. ₹2.5 Cr or ₹45,000/mo"
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    />
+                {/* 2. Pricing & Financials */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                  <h5 className="font-bold text-[11px] uppercase tracking-wider text-[#0A1628] flex items-center gap-1.5">
+                    <IndianRupee className="w-3.5 h-3.5 text-[#C9A96E]" /> Pricing & Financial Badges
+                  </h5>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Display Price *</label>
+                      <input
+                        type="text"
+                        required
+                        value={propForm.price}
+                        onChange={(e) => setPropForm({ ...propForm, price: e.target.value })}
+                        placeholder="e.g. ₹2.85 Cr or ₹45,000/mo"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Price Per Sq.Ft</label>
+                      <input
+                        type="text"
+                        value={propForm.pricePerSqft}
+                        onChange={(e) => setPropForm({ ...propForm, pricePerSqft: e.target.value })}
+                        placeholder="e.g. ₹9,500/sq.ft"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Construction Status</label>
+                      <select
+                        value={propForm.status}
+                        onChange={(e) => setPropForm({ ...propForm, status: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      >
+                        <option value="Ready to Move">Ready to Move</option>
+                        <option value="Under Construction">Under Construction</option>
+                        <option value="New Launch">New Launch</option>
+                        <option value="Resale Verified">Resale Verified</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="font-bold uppercase text-slate-700 block mb-1">Listing Purpose</label>
-                    <select
-                      value={propForm.type}
-                      onChange={(e) => setPropForm({ ...propForm, type: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    >
-                      <option value="Sale">Sale</option>
-                      <option value="Rent">Rent</option>
-                      <option value="Luxury Villa">Luxury Villa</option>
-                      <option value="Penthouse">Penthouse</option>
-                      <option value="Commercial">Commercial</option>
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <label className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={propForm.zeroBrokerage}
+                        onChange={(e) => setPropForm({ ...propForm, zeroBrokerage: e.target.checked })}
+                        className="w-4 h-4 accent-[#0A1628] rounded cursor-pointer"
+                      />
+                      <span className="font-bold text-slate-700">🏷️ 0% Brokerage Badge (Direct Deal)</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 p-2.5 bg-white rounded-xl border border-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={propForm.reraApproved}
+                        onChange={(e) => setPropForm({ ...propForm, reraApproved: e.target.checked })}
+                        className="w-4 h-4 accent-[#0A1628] rounded cursor-pointer"
+                      />
+                      <span className="font-bold text-slate-700">🛡️ RERA Approved & Verified</span>
+                    </label>
+                  </div>
+
+                  {propForm.reraApproved && (
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">RERA Registration Number</label>
+                      <input
+                        type="text"
+                        value={propForm.reraNumber}
+                        onChange={(e) => setPropForm({ ...propForm, reraNumber: e.target.value })}
+                        placeholder="e.g. RAJ/P/2023/1842"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-mono font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Specifications & Area Details */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                  <h5 className="font-bold text-[11px] uppercase tracking-wider text-[#0A1628] flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C9A96E]" /> Architectural Specifications
+                  </h5>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">BHK Configuration</label>
+                      <select
+                        value={propForm.bhk}
+                        onChange={(e) => setPropForm({ ...propForm, bhk: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      >
+                        <option value="1 BHK">1 BHK</option>
+                        <option value="2 BHK">2 BHK</option>
+                        <option value="3 BHK">3 BHK</option>
+                        <option value="4 BHK">4 BHK</option>
+                        <option value="5+ BHK">5+ BHK / Haveli</option>
+                        <option value="Studio">Studio</option>
+                        <option value="Commercial Space">Commercial Space</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Super Area (Sq.Ft)</label>
+                      <input
+                        type="text"
+                        value={propForm.sqft}
+                        onChange={(e) => setPropForm({ ...propForm, sqft: e.target.value })}
+                        placeholder="e.g. 2,450"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Carpet Area</label>
+                      <input
+                        type="text"
+                        value={propForm.carpetArea}
+                        onChange={(e) => setPropForm({ ...propForm, carpetArea: e.target.value })}
+                        placeholder="e.g. 1,980 sq.ft"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Furnishing</label>
+                      <select
+                        value={propForm.furnishing}
+                        onChange={(e) => setPropForm({ ...propForm, furnishing: e.target.value })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      >
+                        <option value="Fully Furnished">Fully Furnished</option>
+                        <option value="Semi-Furnished">Semi-Furnished</option>
+                        <option value="Unfurnished">Unfurnished</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Bedrooms</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={propForm.bedrooms}
+                        onChange={(e) => setPropForm({ ...propForm, bedrooms: parseInt(e.target.value) || 0 })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Bathrooms</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={propForm.bathrooms}
+                        onChange={(e) => setPropForm({ ...propForm, bathrooms: parseInt(e.target.value) || 0 })}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Floor Level</label>
+                      <input
+                        type="text"
+                        value={propForm.floor}
+                        onChange={(e) => setPropForm({ ...propForm, floor: e.target.value })}
+                        placeholder="e.g. 4th of 12"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Facing / Vastu</label>
+                      <input
+                        type="text"
+                        value={propForm.facing}
+                        onChange={(e) => setPropForm({ ...propForm, facing: e.target.value })}
+                        placeholder="e.g. East (Vastu)"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1 flex items-center justify-between">
-                    <span>Google Maps Direct / Redirect Link</span>
-                    <span className="text-[10px] text-emerald-700 font-bold">📍 Super Admin GPS Pin</span>
+                {/* 4. Google Maps GPS Redirection Link */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+                  <label className="font-bold uppercase text-slate-700 block flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-600" /> Google Maps Direct GPS Pin URL
+                    </span>
+                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      📍 Verified Redirection Link
+                    </span>
                   </label>
                   <input
                     type="url"
                     value={propForm.googleMapsUrl || ''}
                     onChange={(e) => setPropForm({ ...propForm, googleMapsUrl: e.target.value })}
                     placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/search/?api=1&query=..."
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Direct redirection link clicked by buyers and tenants to navigate straight to the property via Google Maps.
+                  <p className="text-[10px] text-slate-400">
+                    Direct redirection link for site visitors to open Google Maps directly on mobile or desktop navigation.
                   </p>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2">
-                  <button type="button" onClick={() => setShowPropertyModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
-                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Save Listing</button>
+                {/* 5. Description & Overview */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+                  <label className="font-bold uppercase text-slate-700 block">Property Description & Highlights</label>
+                  <textarea
+                    rows={3}
+                    value={propForm.description}
+                    onChange={(e) => setPropForm({ ...propForm, description: e.target.value })}
+                    placeholder="Detailed property description, neighbourhood landmarks, connectivity, and special architectural features..."
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                {/* 6. Amenities Selection */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+                  <label className="font-bold uppercase text-slate-700 block">Key Property Amenities (Click to toggle)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      '24x7 Security',
+                      'Power Backup',
+                      'Car Parking',
+                      'Swimming Pool',
+                      'Gymnasium',
+                      'Clubhouse',
+                      'Private Garden',
+                      'Lift Access',
+                      'Vastu Compliant',
+                      'CCTV Surveillance',
+                      'Gated Community',
+                      'Kids Play Area',
+                      'Wi-Fi Connectivity',
+                      'Modular Kitchen'
+                    ].map((amenity) => {
+                      const isSelected = propForm.amenities.includes(amenity);
+                      return (
+                        <button
+                          key={amenity}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setPropForm({ ...propForm, amenities: propForm.amenities.filter(a => a !== amenity) });
+                            } else {
+                              setPropForm({ ...propForm, amenities: [...propForm.amenities, amenity] });
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#0A1628] text-[#C9A96E] shadow-sm ring-1 ring-[#C9A96E]'
+                              : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                          }`}
+                        >
+                          {isSelected ? '✓ ' : '+ '} {amenity}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 7. Multi-Image Property Upload Suite */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                    <div>
+                      <h5 className="font-bold text-[11px] uppercase tracking-wider text-[#0A1628] flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-[#C9A96E]" /> Property Photo Gallery & Cover
+                      </h5>
+                      <p className="text-[10px] text-slate-500">Upload multiple photos from your device or paste high-res URLs.</p>
+                    </div>
+
+                    <label className="px-3.5 py-1.5 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl cursor-pointer flex items-center gap-1.5 shadow hover:bg-[#15233c] transition self-start sm:self-auto">
+                      <Camera className="w-3.5 h-3.5" /> Upload Photo from Device
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, (dataUrl) => {
+                          setPropForm(prev => ({
+                            ...prev,
+                            image: prev.image || dataUrl,
+                            images: [...prev.images, dataUrl]
+                          }));
+                        })}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Primary Cover Image URL */}
+                  <div>
+                    <label className="font-bold uppercase text-slate-700 block mb-1">Primary Cover Photo URL</label>
+                    <input
+                      type="text"
+                      value={propForm.image}
+                      onChange={(e) => setPropForm({ ...propForm, image: e.target.value })}
+                      placeholder="https://images.unsplash.com/... or upload from device above"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                  </div>
+
+                  {/* Multi-Image List & Previews */}
+                  {propForm.images.length > 0 && (
+                    <div className="space-y-2 pt-1">
+                      <p className="text-[10px] font-bold text-slate-600 uppercase">Gallery Photo Previews ({propForm.images.length})</p>
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {propForm.images.map((imgUrl, idx) => (
+                          <div key={idx} className="relative group aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-200">
+                            <img src={imgUrl} alt={`Property upload ${idx + 1}`} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setPropForm({ ...propForm, image: imgUrl })}
+                                title="Set as Cover"
+                                className="p-1 bg-[#C9A96E] text-[#0A1628] rounded-md text-[9px] font-bold cursor-pointer"
+                              >
+                                Cover
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updatedImgs = propForm.images.filter((_, i) => i !== idx);
+                                  setPropForm({
+                                    ...propForm,
+                                    images: updatedImgs,
+                                    image: propForm.image === imgUrl ? (updatedImgs[0] || '') : propForm.image
+                                  });
+                                }}
+                                title="Remove Image"
+                                className="p-1 bg-rose-600 text-white rounded-md text-[9px] font-bold cursor-pointer"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPropertyModal(false)} 
+                    className="px-5 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer hover:bg-slate-200 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-6 py-2.5 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow-lg hover:bg-[#15233c] transition cursor-pointer flex items-center gap-2 border border-[#C9A96E]/30"
+                  >
+                    <Crown className="w-4 h-4 text-[#C9A96E]" />
+                    {editingProperty ? "Save Changes Live (0ms Sync)" : "Publish Property Listing Live (0ms Sync)"}
+                  </button>
                 </div>
               </form>
             </motion.div>
@@ -3096,14 +3374,6 @@ export default function AdminDashboard() {
                           onChange={(e) => handleFileUpload(e, (dataUrl) => setProjectForm(prev => ({ ...prev, coverImage: dataUrl })))}
                         />
                       </label>
-                      <span className="text-slate-300">|</span>
-                      <button
-                        type="button"
-                        onClick={() => openGalleryPicker((url) => setProjectForm(prev => ({ ...prev, coverImage: url })), 'Properties')}
-                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                      >
-                        <Camera className="w-3 h-3" /> Pick Gallery
-                      </button>
                     </div>
                   </div>
                   <input
@@ -3183,16 +3453,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="font-bold uppercase text-slate-700">Instagram Reel Link (URL)</label>
-                    <button
-                      type="button"
-                      onClick={() => openGalleryPicker((url, item) => setReelForm(prev => ({ ...prev, instaUrl: item?.instaUrl || url })), 'Reels & Videos')}
-                      className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                    >
-                      <Camera className="w-3 h-3" /> Pick from Gallery
-                    </button>
-                  </div>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Instagram Reel Link (URL)</label>
                   <input
                     type="url"
                     value={reelForm.instaUrl}
@@ -3215,14 +3476,6 @@ export default function AdminDashboard() {
                           onChange={(e) => handleFileUpload(e, (dataUrl) => setReelForm(prev => ({ ...prev, embedUrl: dataUrl })))}
                         />
                       </label>
-                      <span className="text-slate-300">|</span>
-                      <button
-                        type="button"
-                        onClick={() => openGalleryPicker((url) => setReelForm(prev => ({ ...prev, embedUrl: url })), 'Properties')}
-                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                      >
-                        <Camera className="w-3 h-3" /> Pick Gallery
-                      </button>
                     </div>
                   </div>
                   <input
@@ -3345,14 +3598,6 @@ export default function AdminDashboard() {
                           onChange={(e) => handleFileUpload(e, (dataUrl) => setReviewForm(prev => ({ ...prev, avatar: dataUrl })))}
                         />
                       </label>
-                      <span className="text-slate-300">|</span>
-                      <button
-                        type="button"
-                        onClick={() => openGalleryPicker((url) => setReviewForm(prev => ({ ...prev, avatar: url })), 'Logos & Avatars')}
-                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                      >
-                        <Camera className="w-3 h-3" /> Pick Gallery
-                      </button>
                     </div>
                   </div>
                   <input
@@ -3410,14 +3655,6 @@ export default function AdminDashboard() {
                           onChange={(e) => handleFileUpload(e, (dataUrl) => setBlogForm(prev => ({ ...prev, image: dataUrl })))}
                         />
                       </label>
-                      <span className="text-slate-300">|</span>
-                      <button
-                        type="button"
-                        onClick={() => openGalleryPicker((url) => setBlogForm(prev => ({ ...prev, image: url })), 'Blogs')}
-                        className="text-[#C9A96E] hover:underline font-bold text-[10px] flex items-center gap-1 cursor-pointer"
-                      >
-                        <Camera className="w-3 h-3" /> Pick Gallery
-                      </button>
                     </div>
                   </div>
                   <input
@@ -3538,178 +3775,6 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Media Gallery Picker Modal */}
-      <AnimatePresence>
-        {showGalleryPicker && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl text-[#0A1628] space-y-4 max-h-[85vh] flex flex-col">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
-                <div>
-                  <h4 className="font-serif font-bold text-lg flex items-center gap-2">
-                    <Camera className="w-5 h-5 text-[#C9A96E]" /> Pick Media from Site Gallery
-                  </h4>
-                  <p className="text-xs text-slate-500">Click any image or video thumbnail to select it for your active form.</p>
-                </div>
-                <button onClick={() => setShowGalleryPicker(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
-              </div>
-
-              {/* Filter Tabs & Search */}
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-2 shrink-0">
-                <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-                  {['All', 'Properties', 'Reels & Videos', 'Logos & Avatars', 'Blogs'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setGalleryCategoryFilter(cat)}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
-                        galleryCategoryFilter === cat
-                          ? 'bg-[#0A1628] text-[#C9A96E]'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                <input
-                  type="text"
-                  placeholder="Filter media..."
-                  value={gallerySearchQuery}
-                  onChange={(e) => setGallerySearchQuery(e.target.value)}
-                  className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E] w-full sm:w-44"
-                />
-              </div>
-
-              {/* Gallery Items Grid */}
-              <div className="overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 p-1">
-                {mediaGallery
-                  .filter(m => galleryCategoryFilter === 'All' || m.category === galleryCategoryFilter)
-                  .filter(m => !gallerySearchQuery || m.title.toLowerCase().includes(gallerySearchQuery.toLowerCase()))
-                  .map((item) => (
-                    <div
-                      key={item.id}
-                      onClick={() => {
-                        if (galleryTargetCallback) {
-                          galleryTargetCallback(item.url || item.instaUrl, item);
-                        }
-                        setShowGalleryPicker(false);
-                      }}
-                      className="group cursor-pointer bg-slate-50 border border-slate-200 hover:border-[#C9A96E] hover:ring-2 hover:ring-[#C9A96E] rounded-2xl p-2 transition-all space-y-1"
-                    >
-                      <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-slate-200">
-                        <img src={item.url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                        {item.type === 'video' && (
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <span className="p-1.5 bg-[#C9A96E] text-[#0A1628] rounded-full">
-                              <Video className="w-3.5 h-3.5 fill-current" />
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <h5 className="font-bold text-[11px] text-[#0A1628] truncate">{item.title}</h5>
-                      <p className="text-[10px] text-slate-400 font-semibold uppercase">{item.category}</p>
-                    </div>
-                  ))}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Edit Media Asset Modal */}
-      <AnimatePresence>
-        {showEditMediaModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h4 className="font-serif font-bold text-lg">Edit Media & Video Asset</h4>
-                <button onClick={() => setShowEditMediaModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
-              </div>
-
-              <form onSubmit={handleSaveEditMedia} className="space-y-3 text-xs">
-                <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1">Asset Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={mediaForm.title}
-                    onChange={(e) => setMediaForm({ ...mediaForm, title: e.target.value })}
-                    placeholder="e.g. Royal Villa Pool"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="font-bold uppercase text-slate-700 block mb-1">Category</label>
-                    <select
-                      value={mediaForm.category}
-                      onChange={(e) => setMediaForm({ ...mediaForm, category: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    >
-                      <option value="Properties">Properties</option>
-                      <option value="Reels & Videos">Reels & Videos</option>
-                      <option value="Logos & Avatars">Logos & Avatars</option>
-                      <option value="Blogs">Blogs</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="font-bold uppercase text-slate-700 block mb-1">Asset Type</label>
-                    <select
-                      value={mediaForm.type}
-                      onChange={(e) => setMediaForm({ ...mediaForm, type: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                    >
-                      <option value="image">Image Asset</option>
-                      <option value="video">Reel / Video Clip</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="font-bold uppercase text-slate-700">Image / Video Thumbnail Asset</label>
-                    <label className="text-slate-700 hover:text-[#0A1628] font-bold text-[10px] flex items-center gap-1 cursor-pointer">
-                      <Camera className="w-3 h-3 text-[#C9A96E]" /> Upload Device
-                      <input
-                        type="file"
-                        accept="image/*,video/*"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload(e, (dataUrl) => setMediaForm(prev => ({ ...prev, url: dataUrl })))}
-                      />
-                    </label>
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={mediaForm.url}
-                    onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
-                    placeholder="https://images.unsplash.com/... or upload photo/video from device"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1">Instagram Reel Link (URL)</label>
-                  <input
-                    type="url"
-                    value={mediaForm.instaUrl}
-                    onChange={(e) => setMediaForm({ ...mediaForm, instaUrl: e.target.value })}
-                    placeholder="https://www.instagram.com/reel/..."
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button type="button" onClick={() => setShowEditMediaModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
-                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Update Asset</button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
