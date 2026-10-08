@@ -145,6 +145,28 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     loadSettings();
 
+    // Pull from persistent server database
+    fetch('/api/admin/sync?key=shreeniwas_platform_settings', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data?.success && data?.data) {
+          const parsed = data.data;
+          const mergedPayment: PaymentSettings = {
+            ...DEFAULT_PAYMENT_SETTINGS,
+            ...(parsed.payment || {}),
+          };
+          setSettings(prev => ({
+            ...prev,
+            ...parsed,
+            payment: mergedPayment,
+          }));
+          try {
+            localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(parsed));
+          } catch (e) {}
+        }
+      })
+      .catch(() => {});
+
     const handleUpdateEvent = () => loadSettings();
     window.addEventListener('shreeniwas_data_updated', handleUpdateEvent);
     window.addEventListener('storage', handleUpdateEvent);
@@ -161,6 +183,11 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
     try {
       localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(updated));
       window.dispatchEvent(new Event('shreeniwas_data_updated'));
+      fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'shreeniwas_platform_settings', data: updated }),
+      }).catch(() => {});
     } catch (err) {
       console.error('Failed to persist site settings:', err);
     }
@@ -174,6 +201,16 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(updated));
       localStorage.setItem('shreeniwas_payment_settings', JSON.stringify(updatedPayment));
       window.dispatchEvent(new Event('shreeniwas_data_updated'));
+      fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'shreeniwas_platform_settings', data: updated }),
+      }).catch(() => {});
+      fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'shreeniwas_payment_settings', data: updatedPayment }),
+      }).catch(() => {});
     } catch (err) {
       console.error('Failed to persist payment settings:', err);
     }

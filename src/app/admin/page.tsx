@@ -21,6 +21,7 @@ import {
   syncPriceTrendsWithLiveProperties, 
   STORAGE_KEY_CUSTOM_PRICE_TRENDS 
 } from '@/lib/location-service';
+import { syncAdminDataToDatabase, fetchAdminDataFromDatabase } from '@/lib/sync/admin-sync';
 
 // Initial Seed Data (Fallbacks if localStorage is empty)
 // Initial Seed Data (Fallbacks if localStorage is empty)
@@ -273,14 +274,19 @@ export default function AdminDashboard() {
   const [editingReview, setEditingReview] = useState<any | null>(null);
   const [reviewForm, setReviewForm] = useState({ name: '', role: '', rating: 5, quote: '', status: 'Featured', avatar: '' });
 
-  const notifyDataUpdated = () => {
+  const notifyDataUpdated = (key?: string, data?: any) => {
     if (typeof window !== 'undefined') {
-      // Dispatch in current window
+      // 1. Dispatch in current window for instant reactive UI updates
       window.dispatchEvent(new Event('shreeniwas_data_updated'));
-      // Trigger storage event across other open tabs/windows
+      // 2. Trigger storage event across other open tabs/windows
       try {
         localStorage.setItem('shreeniwas_last_sync_timestamp', Date.now().toString());
       } catch (e) {}
+
+      // 3. Persist directly to Supabase Database & Server Backup
+      if (key && data !== undefined) {
+        syncAdminDataToDatabase(key, data);
+      }
     }
   };
 
@@ -487,6 +493,59 @@ export default function AdminDashboard() {
       } catch (e) {}
     }
 
+    // -------------------------------------------------------------------------
+    // PERMANENT DATABASE RESTORATION ENGINE
+    // Pulls from Supabase Database & Server Backup to ensure data is NEVER lost
+    // -------------------------------------------------------------------------
+    fetchAdminDataFromDatabase().then((dbData) => {
+      if (dbData && typeof dbData === 'object' && Object.keys(dbData).length > 0) {
+        if (dbData.shreeniwas_admin_properties && Array.isArray(dbData.shreeniwas_admin_properties)) {
+          setPropertiesList(dbData.shreeniwas_admin_properties);
+          try { localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(dbData.shreeniwas_admin_properties)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_property_visit_records && Array.isArray(dbData.shreeniwas_property_visit_records)) {
+          setVisitRecordsList(dbData.shreeniwas_property_visit_records);
+          try { localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(dbData.shreeniwas_property_visit_records)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_blocked_visit_dates && Array.isArray(dbData.shreeniwas_blocked_visit_dates)) {
+          setBlockedDatesList(dbData.shreeniwas_blocked_visit_dates);
+          try { localStorage.setItem('shreeniwas_blocked_visit_dates', JSON.stringify(dbData.shreeniwas_blocked_visit_dates)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_admin_reels && Array.isArray(dbData.shreeniwas_admin_reels)) {
+          setReelsList(dbData.shreeniwas_admin_reels);
+          try { localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(dbData.shreeniwas_admin_reels)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_tariff_settings && typeof dbData.shreeniwas_tariff_settings === 'object') {
+          setTariffSettings(prev => ({ ...prev, ...dbData.shreeniwas_tariff_settings }));
+          try { localStorage.setItem('shreeniwas_tariff_settings', JSON.stringify(dbData.shreeniwas_tariff_settings)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_payment_settings && typeof dbData.shreeniwas_payment_settings === 'object') {
+          setPaymentSettings(prev => ({ ...prev, ...dbData.shreeniwas_payment_settings }));
+          try { localStorage.setItem('shreeniwas_payment_settings', JSON.stringify(dbData.shreeniwas_payment_settings)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_platform_settings && typeof dbData.shreeniwas_platform_settings === 'object') {
+          setSiteSettings(prev => ({ ...prev, ...dbData.shreeniwas_platform_settings }));
+          try { localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(dbData.shreeniwas_platform_settings)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_inquiries && Array.isArray(dbData.shreeniwas_inquiries)) {
+          setInquiriesList(dbData.shreeniwas_inquiries);
+          try { localStorage.setItem('shreeniwas_inquiries', JSON.stringify(dbData.shreeniwas_inquiries)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_blog_posts && Array.isArray(dbData.shreeniwas_blog_posts)) {
+          setBlogsList(dbData.shreeniwas_blog_posts);
+          try { localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(dbData.shreeniwas_blog_posts)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_testimonials_management && Array.isArray(dbData.shreeniwas_testimonials_management)) {
+          setReviewsList(dbData.shreeniwas_testimonials_management);
+          try { localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(dbData.shreeniwas_testimonials_management)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_admin_attendance && Array.isArray(dbData.shreeniwas_admin_attendance)) {
+          setAttendanceList(dbData.shreeniwas_admin_attendance);
+          try { localStorage.setItem('shreeniwas_admin_attendance', JSON.stringify(dbData.shreeniwas_admin_attendance)); } catch (e) {}
+        }
+      }
+    }).catch(() => {});
+
     setIsLoaded(true);
   }, []);
 
@@ -555,6 +614,7 @@ export default function AdminDashboard() {
         item.id === selectedInquiry.id ? { ...item, reply: replyText.trim(), status: 'Responded & Sent' } : item
       );
       localStorage.setItem('shreeniwas_inquiries', JSON.stringify(updated));
+      notifyDataUpdated('shreeniwas_inquiries', updated);
       return updated;
     });
 
@@ -582,6 +642,7 @@ export default function AdminDashboard() {
           ...prev
         ];
         localStorage.setItem('shreeniwas_admin_attendance', JSON.stringify(updated));
+        notifyDataUpdated('shreeniwas_admin_attendance', updated);
         return updated;
       });
     } else {
@@ -589,6 +650,7 @@ export default function AdminDashboard() {
       setAttendanceList(prev => {
         const updated = prev.map((item, idx) => idx === 0 ? { ...item, clockOut: nowTime } : item);
         localStorage.setItem('shreeniwas_admin_attendance', JSON.stringify(updated));
+        notifyDataUpdated('shreeniwas_admin_attendance', updated);
         return updated;
       });
     }
@@ -617,6 +679,7 @@ export default function AdminDashboard() {
       const updated = propertiesList.map(p => p.id === editingProperty.id ? { ...p, ...payload, slug: p.slug || generatedSlug } : p);
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+      notifyDataUpdated('shreeniwas_admin_properties', updated);
     } else {
       const newId = `PROP-${Date.now().toString().slice(-4)}`;
       const newProp = { 
@@ -627,8 +690,8 @@ export default function AdminDashboard() {
       const updated = [newProp, ...propertiesList];
       setPropertiesList(updated);
       localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
+      notifyDataUpdated('shreeniwas_admin_properties', updated);
     }
-    notifyDataUpdated();
 
     setShowPropertyModal(false);
     setEditingProperty(null);
@@ -688,15 +751,17 @@ export default function AdminDashboard() {
     brokObj.escrowDepositPercent = tariffSettings.escrowDepositPercent;
     localStorage.setItem('shreeniwas_brokerage_settings', JSON.stringify(brokObj));
 
-    notifyDataUpdated();
-    alert('Tariff, Visit Passes & Brokerage Rates Saved Live with Zero Delay!');
+    notifyDataUpdated('shreeniwas_tariff_settings', tariffSettings);
+    syncAdminDataToDatabase('shreeniwas_payment_settings', payObj);
+    syncAdminDataToDatabase('shreeniwas_brokerage_settings', brokObj);
+    alert('Tariff, Visit Passes & Brokerage Rates Saved Live with Zero Delay & Persisted in Database!');
   };
 
   const handleDeleteProperty = (id: string) => {
     const updated = propertiesList.filter(p => p.id !== id);
     setPropertiesList(updated);
     localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_admin_properties', updated);
   };
 
   // Builder Projects Handlers
@@ -716,6 +781,7 @@ export default function AdminDashboard() {
       } : p);
       setNewProjectsList(updated);
       localStorage.setItem('shreeniwas_new_projects', JSON.stringify(updated));
+      notifyDataUpdated('shreeniwas_new_projects', updated);
     } else {
       const newProj: NewProjectItem = {
         id: `proj-${Date.now()}`,
@@ -735,9 +801,9 @@ export default function AdminDashboard() {
       const updated = [newProj, ...newProjectsList];
       setNewProjectsList(updated);
       localStorage.setItem('shreeniwas_new_projects', JSON.stringify(updated));
+      notifyDataUpdated('shreeniwas_new_projects', updated);
     }
 
-    notifyDataUpdated();
     setShowProjectModal(false);
     setEditingProject(null);
     setProjectForm({
@@ -761,7 +827,7 @@ export default function AdminDashboard() {
     const updated = newProjectsList.filter(p => p.id !== id);
     setNewProjectsList(updated);
     localStorage.setItem('shreeniwas_new_projects', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_new_projects', updated);
   };
 
   // Super Admin Brokerage Save Handler
@@ -772,8 +838,8 @@ export default function AdminDashboard() {
       return;
     }
     localStorage.setItem('shreeniwas_brokerage_settings', JSON.stringify(brokerageSettings));
-    notifyDataUpdated();
-    alert('Super Admin Brokerage & Platform Financial Controls Saved Live!');
+    notifyDataUpdated('shreeniwas_brokerage_settings', brokerageSettings);
+    alert('Super Admin Brokerage & Platform Financial Controls Saved Live & Persisted in Database!');
   };
 
   // Super Admin Payment Gateway & UPI Save Handler
@@ -790,8 +856,9 @@ export default function AdminDashboard() {
     };
     setSiteSettings(updatedPlatformSettings);
     localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(updatedPlatformSettings));
-    notifyDataUpdated();
-    alert('Super Admin: Payment Gateway, UPI ID & QR Code Settings Saved Live!');
+    notifyDataUpdated('shreeniwas_payment_settings', paymentSettings);
+    syncAdminDataToDatabase('shreeniwas_platform_settings', updatedPlatformSettings);
+    alert('Super Admin: Payment Gateway, UPI ID & QR Code Settings Saved Live & Persisted in Database!');
   };
 
   // Blog Handlers
@@ -799,17 +866,18 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!blogForm.title) return;
 
+    let updated: any[];
     if (editingBlog) {
-      const updated = blogsList.map(b => b.id === editingBlog.id ? { ...b, ...blogForm } : b);
+      updated = blogsList.map(b => b.id === editingBlog.id ? { ...b, ...blogForm } : b);
       setBlogsList(updated);
       localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
     } else {
       const newBlog = { id: `BLOG-${Date.now().toString().slice(-4)}`, ...blogForm, date: "Today", status: "Published" };
-      const updated = [newBlog, ...blogsList];
+      updated = [newBlog, ...blogsList];
       setBlogsList(updated);
       localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
     }
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_blog_posts', updated);
 
     setShowBlogModal(false);
     setEditingBlog(null);
@@ -820,7 +888,7 @@ export default function AdminDashboard() {
     const updated = blogsList.filter(b => b.id !== id);
     setBlogsList(updated);
     localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_blog_posts', updated);
   };
 
   // Reel Handlers (Reels Management Power)
@@ -838,17 +906,18 @@ export default function AdminDashboard() {
       instaUrl: formattedInstaUrl
     };
 
+    let updated: any[];
     if (editingReel) {
-      const updated = reelsList.map(r => r.id === editingReel.id ? { ...r, ...payload } : r);
+      updated = reelsList.map(r => r.id === editingReel.id ? { ...r, ...payload } : r);
       setReelsList(updated);
       localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
     } else {
       const newReel = { id: `REEL-0${reelsList.length + 1}`, ...payload };
-      const updated = [newReel, ...reelsList];
+      updated = [newReel, ...reelsList];
       setReelsList(updated);
       localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
     }
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_admin_reels', updated);
 
     setShowReelModal(false);
     setEditingReel(null);
@@ -859,7 +928,7 @@ export default function AdminDashboard() {
     const updated = reelsList.filter(r => r.id !== id);
     setReelsList(updated);
     localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_admin_reels', updated);
   };
 
   // Review Handlers (Reviews Management Power)
@@ -867,17 +936,18 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!reviewForm.name || !reviewForm.quote) return;
 
+    let updated: any[];
     if (editingReview) {
-      const updated = reviewsList.map(r => r.id === editingReview.id ? { ...r, ...reviewForm } : r);
+      updated = reviewsList.map(r => r.id === editingReview.id ? { ...r, ...reviewForm } : r);
       setReviewsList(updated);
       localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(updated));
     } else {
       const newReview = { id: `REV-0${reviewsList.length + 1}`, ...reviewForm };
-      const updated = [newReview, ...reviewsList];
+      updated = [newReview, ...reviewsList];
       setReviewsList(updated);
       localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(updated));
     }
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_testimonials_management', updated);
 
     setShowReviewModal(false);
     setEditingReview(null);
@@ -888,7 +958,7 @@ export default function AdminDashboard() {
     const updated = reviewsList.filter(r => r.id !== id);
     setReviewsList(updated);
     localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_testimonials_management', updated);
   };
 
   // Make Admin Handler
@@ -994,7 +1064,7 @@ export default function AdminDashboard() {
   const executeSaveSettings = () => {
     localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(siteSettings));
     window.dispatchEvent(new Event('shreeniwas_data_updated'));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_platform_settings', siteSettings);
     setShowSettingsConfirmModal(false);
     setSettingsSaveSuccess(true);
     setTimeout(() => setSettingsSaveSuccess(false), 4000);
@@ -1077,14 +1147,14 @@ export default function AdminDashboard() {
     const updated = propertiesList.map(p => p.id === propId ? { ...p, verified: !p.verified } : p);
     setPropertiesList(updated);
     localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_admin_properties', updated);
   };
 
   const handleTogglePropertyFeatured = (propId: string) => {
     const updated = propertiesList.map(p => p.id === propId ? { ...p, featured: !p.featured } : p);
     setPropertiesList(updated);
     localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_admin_properties', updated);
   };
 
   const handleTogglePropertyStatus = (propId: string) => {
@@ -1097,7 +1167,7 @@ export default function AdminDashboard() {
     });
     setPropertiesList(updated);
     localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_admin_properties', updated);
   };
 
   // Payment Verification Handler (Super Admin)
@@ -1154,13 +1224,17 @@ export default function AdminDashboard() {
           { ...newVisitEntry, userEmail: clientEmail, userPhone: clientPhone, userName: verifiedInq.user },
           ...filteredGlobal
         ]));
+        syncAdminDataToDatabase('shreeniwas_all_vip_visits', [
+          { ...newVisitEntry, userEmail: clientEmail, userPhone: clientPhone, userName: verifiedInq.user },
+          ...filteredGlobal
+        ]);
       } catch (err) {
         console.warn('Failed to sync verified visit to user account:', err);
       }
     }
 
-    notifyDataUpdated();
-    alert('Payment Confirmed! VIP Site Visit pass has been sent directly to the client account visit section.');
+    notifyDataUpdated('shreeniwas_inquiries', updated);
+    alert('Payment Confirmed! VIP Site Visit pass has been sent directly to the client account visit section & synced to database.');
   };
 
   // ==========================================
@@ -1192,7 +1266,7 @@ export default function AdminDashboard() {
 
     setVisitRecordsList(updatedRecords);
     localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(updatedRecords));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_property_visit_records', updatedRecords);
     setShowVisitRecordModal(false);
     setEditingVisitRecord(null);
     setVisitRecordForm({
@@ -1217,7 +1291,7 @@ export default function AdminDashboard() {
     const updated = visitRecordsList.filter(r => r.id !== id);
     setVisitRecordsList(updated);
     localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_property_visit_records', updated);
   };
 
   const handleExportVisitRecords = () => {
@@ -1251,14 +1325,14 @@ export default function AdminDashboard() {
     setBlockedDatesList(updated);
     localStorage.setItem('shreeniwas_blocked_visit_dates', JSON.stringify(updated));
     setNewBlockedDate('');
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_blocked_visit_dates', updated);
   };
 
   const handleRemoveBlockedDate = (dateStr: string) => {
     const updated = blockedDatesList.filter(b => b.date !== dateStr);
     setBlockedDatesList(updated);
     localStorage.setItem('shreeniwas_blocked_visit_dates', JSON.stringify(updated));
-    notifyDataUpdated();
+    notifyDataUpdated('shreeniwas_blocked_visit_dates', updated);
   };
 
   // Universal Media Gallery Asset Picker Helper
