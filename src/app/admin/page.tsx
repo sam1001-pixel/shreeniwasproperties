@@ -187,7 +187,14 @@ export default function AdminDashboard() {
     buySellUnder50L: '2%',
     buySellAbove50L: '1%',
     allowDirectOwnerContact: true,
-    escrowDepositPercent: 10
+    escrowDepositPercent: 10,
+    // Customizable ₹999 Premium Pass copy
+    premiumPassTitle: 'Premium Pass',
+    premiumPassBadge: 'VIP Priority',
+    premiumPassDuration: '6 Months Active Support',
+    premiumPassValidity: '6 months priority search across Rajasthan',
+    premiumPassFeatures: 'Multiple visits matched to criteria\nVIP hunting & priority early access\nActive validity for 6 full months\nDirect owner negotiation support\n100% adjusted against brokerage',
+    premiumPassNote: '100% adjustable against final brokerage fee.'
   });
 
   // Property Modal - Comprehensive Upload Suite
@@ -2504,6 +2511,90 @@ export default function AdminDashboard() {
                         className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                       />
                       <p className="text-[10px] text-slate-400 mt-1">Unlimited visits for 6 months + legal verification support.</p>
+                    </div>
+                  </div>
+
+                  {/* 1.1 Customization of ₹999 Premium Plan Text */}
+                  <div className="mt-4 pt-4 border-t border-slate-200 space-y-3 bg-[#FAF8F5] p-4 rounded-2xl border">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#C9A96E]" />
+                      <h5 className="font-bold text-xs uppercase tracking-wider text-[#0A1628]">
+                        ₹{tariffSettings.premiumPassFee} Premium Pass — Card Text &amp; Bullet Points Customization
+                      </h5>
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Customize the exact text, headline, duration, and feature bullet points shown on the public ₹{tariffSettings.premiumPassFee} plan card.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Plan Title / Name</label>
+                        <input
+                          type="text"
+                          value={tariffSettings.premiumPassTitle || 'Premium Pass'}
+                          onChange={(e) => setTariffSettings({ ...tariffSettings, premiumPassTitle: e.target.value })}
+                          placeholder="e.g. Premium Pass / VIP Pass"
+                          className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Badge Tag</label>
+                        <input
+                          type="text"
+                          value={tariffSettings.premiumPassBadge || 'VIP Priority'}
+                          onChange={(e) => setTariffSettings({ ...tariffSettings, premiumPassBadge: e.target.value })}
+                          placeholder="e.g. VIP Priority / Best Value"
+                          className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Duration Text (Per Plan)</label>
+                        <input
+                          type="text"
+                          value={tariffSettings.premiumPassDuration || '6 Months Active Support'}
+                          onChange={(e) => setTariffSettings({ ...tariffSettings, premiumPassDuration: e.target.value })}
+                          placeholder="e.g. 6 Months Active Support"
+                          className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold uppercase text-slate-700 block mb-1">Validity Subtitle Text</label>
+                        <input
+                          type="text"
+                          value={tariffSettings.premiumPassValidity || '6 months priority search across Rajasthan'}
+                          onChange={(e) => setTariffSettings({ ...tariffSettings, premiumPassValidity: e.target.value })}
+                          placeholder="e.g. 6 months priority search across Rajasthan"
+                          className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">
+                        Plan Features &amp; Benefits (Enter one feature per line)
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={tariffSettings.premiumPassFeatures || ''}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, premiumPassFeatures: e.target.value })}
+                        placeholder="Multiple visits matched to criteria&#10;VIP hunting & priority early access&#10;Active validity for 6 full months&#10;Direct owner negotiation support&#10;100% adjusted against brokerage"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E] text-xs font-mono"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-0.5">Each line becomes an individual checked bullet point on the public website card.</p>
+                    </div>
+
+                    <div>
+                      <label className="font-bold uppercase text-slate-700 block mb-1">Footer Note / Guarantee</label>
+                      <input
+                        type="text"
+                        value={tariffSettings.premiumPassNote || '100% adjustable against final brokerage fee.'}
+                        onChange={(e) => setTariffSettings({ ...tariffSettings, premiumPassNote: e.target.value })}
+                        placeholder="e.g. 100% adjustable against final brokerage fee."
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                      />
                     </div>
                   </div>
                 </div>

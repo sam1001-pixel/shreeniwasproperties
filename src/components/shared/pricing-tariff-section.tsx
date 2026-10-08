@@ -42,6 +42,13 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
     commercialRentBrokerage: '1 Month',
     buySellUnder50L: '2%',
     buySellAbove50L: '1%',
+    // Customizable ₹999 Premium Pass copy
+    premiumPassTitle: 'Premium Pass',
+    premiumPassBadge: 'VIP Priority',
+    premiumPassDuration: '6 Months Active Support',
+    premiumPassValidity: '6 months priority search across Rajasthan',
+    premiumPassFeatures: 'Multiple visits matched to criteria\nVIP hunting & priority early access\nActive validity for 6 full months\nDirect owner negotiation support\n100% adjusted against brokerage',
+    premiumPassNote: '100% adjustable against final brokerage fee.'
   });
 
   const loadTariffSettings = () => {
@@ -126,23 +133,27 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
     },
     {
       id: 'premium',
-      name: 'Premium Pass',
-      badge: 'VIP Priority',
+      name: tariffConfig.premiumPassTitle || 'Premium Pass',
+      badge: tariffConfig.premiumPassBadge || 'VIP Priority',
       badgeColor: 'bg-amber-50 text-amber-900 border-amber-300',
       price: `₹${tariffConfig.premiumPassFee}`,
-      duration: '6 Months Active Support',
-      validityText: '6 months priority search across Rajasthan',
+      duration: tariffConfig.premiumPassDuration || '6 Months Active Support',
+      validityText: tariffConfig.premiumPassValidity || '6 months priority search across Rajasthan',
       highlight: true,
-      features: [
-        'Multiple visits matched to criteria',
-        'VIP hunting & priority early access',
-        'Active validity for 6 full months',
-        'Direct owner negotiation support',
-        '100% adjusted against brokerage'
-      ],
-      note: '100% adjustable against final brokerage fee.',
-      ctaText: `Get Premium Pass (₹${tariffConfig.premiumPassFee})`,
-      ctaWhatsapp: `${whatsappBase}?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20activate%20the%20Premium%20Pass%20(₹${tariffConfig.premiumPassFee}%20VIP%20Visits)`
+      features: (tariffConfig.premiumPassFeatures && typeof tariffConfig.premiumPassFeatures === 'string')
+        ? tariffConfig.premiumPassFeatures.split('\n').map(s => s.trim()).filter(Boolean)
+        : Array.isArray(tariffConfig.premiumPassFeatures)
+          ? tariffConfig.premiumPassFeatures
+          : [
+              'Multiple visits matched to criteria',
+              'VIP hunting & priority early access',
+              'Active validity for 6 full months',
+              'Direct owner negotiation support',
+              '100% adjusted against brokerage'
+            ],
+      note: tariffConfig.premiumPassNote || '100% adjustable against final brokerage fee.',
+      ctaText: `Get ${tariffConfig.premiumPassTitle || 'Premium Pass'} (₹${tariffConfig.premiumPassFee})`,
+      ctaWhatsapp: `${whatsappBase}?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20activate%20the%20${encodeURIComponent(tariffConfig.premiumPassTitle || 'Premium Pass')}%20(₹${tariffConfig.premiumPassFee}%20VIP%20Visits)`
     }
   ];
 

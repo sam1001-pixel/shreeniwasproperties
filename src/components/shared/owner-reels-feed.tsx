@@ -13,6 +13,7 @@ interface ReelItem {
   location: string;
   thumbnail: string;
   videoUrl?: string;
+  instaUrl?: string;
   views: string;
   likes: string;
   duration: string;
@@ -25,6 +26,8 @@ const REELS_DATA: ReelItem[] = [
     title: "4 BHK Royal Villa Inside Tour (Vaishali Nagar)",
     location: "Jaipur, Rajasthan",
     thumbnail: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-living-room-of-a-modern-house-41804-large.mp4",
+    instaUrl: "https://www.instagram.com/reels/",
     views: "24.5K",
     likes: "3.2K",
     duration: "0:45",
@@ -35,6 +38,8 @@ const REELS_DATA: ReelItem[] = [
     title: "Lakeview Penthouse Sunset Views",
     location: "Udaipur, Rajasthan",
     thumbnail: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-modern-interior-of-a-contemporary-flat-41793-large.mp4",
+    instaUrl: "https://www.instagram.com/reels/",
     views: "18.9K",
     likes: "2.8K",
     duration: "0:30",
@@ -45,6 +50,8 @@ const REELS_DATA: ReelItem[] = [
     title: "Heritage Haveli Renovation Story",
     location: "Jodhpur, Rajasthan",
     thumbnail: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-countryside-house-with-a-modern-swimming-pool-41806-large.mp4",
+    instaUrl: "https://www.instagram.com/reels/",
     views: "42.1K",
     likes: "5.6K",
     duration: "0:58",
@@ -55,6 +62,8 @@ const REELS_DATA: ReelItem[] = [
     title: "How to Spot RERA Approved Land in Rajasthan",
     location: "Founder's Desk",
     thumbnail: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=600",
+    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-living-room-with-a-patio-41807-large.mp4",
+    instaUrl: "https://www.instagram.com/reels/",
     views: "31.0K",
     likes: "4.1K",
     duration: "0:40",
@@ -67,6 +76,7 @@ export default function OwnerReelsFeed() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [reelsList, setReelsList] = useState<ReelItem[]>(REELS_DATA);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
   const loadLiveReels = () => {
     try {
@@ -74,21 +84,39 @@ export default function OwnerReelsFeed() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const formatted: ReelItem[] = parsed.map((r: any, idx: number) => ({
-            id: r.id || `reel-${idx}`,
-            title: r.title || 'Site Walkthrough Reel',
-            location: r.property || 'Jaipur, Rajasthan',
-            thumbnail: r.embedUrl || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=600',
-            videoUrl: r.instaUrl || '',
-            views: r.views || '12.5K',
-            likes: '2.4K',
-            duration: '0:45',
-            tag: 'Property Reel'
-          }));
-          setReelsList(formatted);
+          const activeReels = parsed.filter((r: any) => r.status !== 'Hidden');
+          if (activeReels.length > 0) {
+            const formatted: ReelItem[] = activeReels.map((r: any, idx: number) => {
+              const directVideo = (r.embedUrl && (r.embedUrl.endsWith('.mp4') || r.embedUrl.endsWith('.webm') || r.embedUrl.includes('data:video/'))) 
+                ? r.embedUrl 
+                : (r.videoUrl || '');
+              
+              const thumb = (r.embedUrl && !(r.embedUrl.endsWith('.mp4') || r.embedUrl.endsWith('.webm') || r.embedUrl.includes('data:video/')))
+                ? r.embedUrl
+                : (r.thumbnail || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=600');
+
+              return {
+                id: r.id || `reel-${idx}`,
+                title: r.title || 'Site Walkthrough Reel',
+                location: r.property || 'Jaipur, Rajasthan',
+                thumbnail: thumb,
+                videoUrl: directVideo,
+                instaUrl: r.instaUrl || '',
+                views: r.views || '12.5K',
+                likes: '2.4K',
+                duration: '0:45',
+                tag: 'Property Reel'
+              };
+            });
+            setReelsList(formatted);
+            return;
+          }
         }
       }
-    } catch (e) {}
+      setReelsList(REELS_DATA);
+    } catch (e) {
+      setReelsList(REELS_DATA);
+    }
   };
 
   React.useEffect(() => {
@@ -102,16 +130,29 @@ export default function OwnerReelsFeed() {
   }, []);
 
   const handleShare = (reel: ReelItem) => {
-    navigator.clipboard.writeText(`https://shreeniwasproperties-pi.vercel.app/reels/${reel.id}`);
+    const url = reel.instaUrl || (typeof window !== 'undefined' ? `${window.location.origin}/#reels` : 'https://shreeniwasproperties-pi.vercel.app');
+    navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const getInstagramLink = (reel?: ReelItem | null) => {
+    if (!reel) return 'https://instagram.com';
+    let url = reel.instaUrl || reel.videoUrl || '';
+    if (url.includes('instagram.com')) {
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = `https://${url}`;
+      }
+      return url;
+    }
+    return 'https://www.instagram.com/reels/';
   };
 
   // Duplicate reels array to ensure smooth continuous marquee looping
   const loopedReels = [...reelsList, ...reelsList, ...reelsList];
 
   return (
-    <section className="py-10 sm:py-12 px-4 bg-[#0A1628] text-white relative overflow-hidden">
+    <section className="py-10 sm:py-12 px-4 bg-[#0A1628] text-white relative overflow-hidden" id="reels">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#C9A96E]/10 blur-[140px] rounded-full pointer-events-none"></div>
 
@@ -121,38 +162,38 @@ export default function OwnerReelsFeed() {
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C9A96E]/20 text-[#C9A96E] border border-[#C9A96E]/40 text-[11px] font-bold uppercase tracking-wider mb-2">
               <Camera className="w-3.5 h-3.5 text-[#C9A96E]" />
-              Owner's Corner & Live Reels
+              Owner&apos;s Corner &amp; Live Reels
             </div>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-white">
-              Watch Real Site Tours & <span className="text-[#C9A96E]">Owner Insights</span>
+              Watch Real Site Tours &amp; <span className="text-[#C9A96E]">Owner Insights</span>
             </h2>
             <p className="text-slate-400 text-xs sm:text-sm mt-1 font-light">
-              60-second site inspection shorts & walkthroughs straight from our property owners.
+              60-second site inspection shorts &amp; walkthroughs straight from our property owners.
             </p>
           </div>
 
           {/* Compact Social Links */}
           <div className="flex items-center gap-2 flex-wrap">
             <a 
-              href="https://instagram.com" 
+              href="https://www.instagram.com" 
               target="_blank" 
-              rel="noreferrer" 
-              className="px-3 py-1.5 bg-white/10 hover:bg-[#C9A96E] hover:text-[#0A1628] text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/10"
+              rel="noopener noreferrer" 
+              className="px-3 py-1.5 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:opacity-90 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow"
             >
               <Camera className="w-3.5 h-3.5" /> Instagram
             </a>
             <a 
               href="https://youtube.com" 
               target="_blank" 
-              rel="noreferrer" 
+              rel="noopener noreferrer" 
               className="px-3 py-1.5 bg-white/10 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-white/10"
             >
               <Video className="w-3.5 h-3.5" /> Shorts
             </a>
             <a 
-              href="https://wa.me/916376117833" 
+              href="https://wa.me/916376117833?text=Namaste%20Shree%20Niwas%20Properties%2C%20I%20want%20to%20view%20more%20property%20video%20tours" 
               target="_blank" 
-              rel="noreferrer" 
+              rel="noopener noreferrer" 
               className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow"
             >
               <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
@@ -184,7 +225,10 @@ export default function OwnerReelsFeed() {
               <div
                 key={`${reel.id}-${idx}`}
                 className="w-44 sm:w-52 flex-shrink-0 bg-slate-900/90 rounded-2xl overflow-hidden border border-white/10 shadow-lg relative group cursor-pointer"
-                onClick={() => setSelectedReel(reel)}
+                onClick={() => {
+                  setSelectedReel(reel);
+                  setIsPlayingVideo(true);
+                }}
               >
                 {/* Aspect Ratio 9:14 Vertical Compact Card */}
                 <div className="relative aspect-[9/13] overflow-hidden">
@@ -229,7 +273,7 @@ export default function OwnerReelsFeed() {
         </div>
       </div>
 
-      {/* Video Reel Preview Modal */}
+      {/* Video Reel Playback Modal */}
       <AnimatePresence>
         {selectedReel && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
@@ -240,44 +284,72 @@ export default function OwnerReelsFeed() {
               className="relative w-full max-w-sm bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/20 text-white"
             >
               <button
-                onClick={() => setSelectedReel(null)}
-                className="absolute top-4 right-4 z-20 p-2 text-white bg-black/50 hover:bg-black rounded-full transition-colors"
+                onClick={() => {
+                  setSelectedReel(null);
+                  setIsPlayingVideo(false);
+                }}
+                className="absolute top-4 right-4 z-30 p-2 text-white bg-black/60 hover:bg-black rounded-full transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="relative aspect-[9/16] w-full overflow-hidden bg-black">
-                <img src={selectedReel.thumbnail} alt={selectedReel.title} className="w-full h-full object-cover opacity-80" />
-                
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-[#C9A96E] text-[#0A1628] flex items-center justify-center shadow-2xl animate-pulse">
-                    <Play className="w-8 h-8 fill-[#0A1628] ml-1" />
-                  </div>
-                </div>
+              <div className="relative aspect-[9/16] w-full overflow-hidden bg-black flex flex-col justify-end">
+                {/* Real Video or Responsive Media Player */}
+                {selectedReel.videoUrl ? (
+                  <video
+                    src={selectedReel.videoUrl}
+                    poster={selectedReel.thumbnail}
+                    autoPlay
+                    controls
+                    playsInline
+                    loop
+                    className="absolute inset-0 w-full h-full object-cover z-10"
+                  />
+                ) : (
+                  <>
+                    <img 
+                      src={selectedReel.thumbnail} 
+                      alt={selectedReel.title} 
+                      className="absolute inset-0 w-full h-full object-cover opacity-80" 
+                    />
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center bg-black/40">
+                      <a
+                        href={getInstagramLink(selectedReel)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform mb-3"
+                      >
+                        <Play className="w-8 h-8 fill-white ml-1" />
+                      </a>
+                      <p className="text-xs text-white/90 font-medium">Click above or below to watch full video on Instagram</p>
+                    </div>
+                  </>
+                )}
 
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent space-y-3">
+                {/* Bottom Overlay & Actions */}
+                <div className="relative z-20 p-5 bg-gradient-to-t from-black via-black/90 to-transparent space-y-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#C9A96E] uppercase tracking-wider">{selectedReel.tag}</span>
                     <span className="text-xs text-slate-300 font-mono">{selectedReel.views} Views</span>
                   </div>
-                  <h3 className="text-lg font-serif font-bold text-white">{selectedReel.title}</h3>
-                  <p className="text-xs text-slate-300">{selectedReel.location}</p>
+                  <h3 className="text-base sm:text-lg font-serif font-bold text-white line-clamp-2">{selectedReel.title}</h3>
+                  <p className="text-xs text-slate-300 truncate">{selectedReel.location}</p>
 
-                  <div className="pt-2 flex items-center gap-3">
+                  <div className="pt-2 flex items-center gap-2">
                     <button
                       onClick={() => handleShare(selectedReel)}
-                      className="flex-1 py-3 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2"
+                      className="flex-1 py-2.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer"
                     >
-                      {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-                      {copiedLink ? "Link Copied!" : "Share Reel"}
+                      {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+                      {copiedLink ? "Link Copied!" : "Share"}
                     </button>
                     <a
-                      href="https://instagram.com"
+                      href={getInstagramLink(selectedReel)}
                       target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-3 bg-[#C9A96E] text-[#0A1628] font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:opacity-95 text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow transition cursor-pointer"
                     >
-                      Instagram <ExternalLink className="w-3.5 h-3.5" />
+                      Watch on Instagram <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </div>
                 </div>
