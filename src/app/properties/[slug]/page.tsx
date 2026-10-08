@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
 import SavePropertyButton from '@/components/shared/save-property-button';
 import PropertyShareModal from '@/components/shared/property-share-modal';
+import { generatePropertyDetailSchema } from '@/lib/seo/schema-generators';
 
 const BASE_MOCK_PROPERTIES: Record<string, any> = {
   'royal-heritage-residency-jaipur': {
@@ -545,8 +546,25 @@ export default function PropertyDetailPage() {
     setIsShareModalOpen(true);
   };
 
+  const propertySchema = property ? generatePropertyDetailSchema({
+    title: property.title,
+    description: property.description,
+    price: property.price,
+    location: property.location,
+    city: property.city,
+    type: property.type,
+    images: property.images,
+    slug: String(slug),
+  }) : null;
+
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pb-32 lg:pb-24">
+      {propertySchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(propertySchema) }}
+        />
+      )}
       {/* Mobile Action Bar (Placed cleanly below fixed Navbar) */}
       <div className="md:hidden bg-white/95 border-b border-slate-200 px-4 py-2.5 pt-20 flex items-center justify-between shadow-sm">
         <Link href="/properties" className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-[#C9A96E] p-1.5 rounded-lg bg-slate-50">

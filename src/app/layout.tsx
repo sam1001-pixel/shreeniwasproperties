@@ -77,21 +77,35 @@ export const metadata: Metadata = {
   },
   other: {
     'geo.region': 'IN-RJ',
-    'geo.placename': 'Jaipur',
-    'geo.position': '26.9124;75.7873',
-    'ICBM': '26.9124, 75.7873'
+    'geo.placename': 'Jodhpur',
+    'geo.position': '26.2734;73.0125',
+    'ICBM': '26.2734, 73.0125'
   }
 };
 
 import SaveToastNotifier from '@/components/shared/save-toast-notifier';
+import { generateLocalBusinessSchema, generateLocalFaqSchema } from '@/lib/seo/schema-generators';
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const localBusinessSchema = generateLocalBusinessSchema();
+  const faqSchema = generateLocalFaqSchema();
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      </head>
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased flex flex-col',

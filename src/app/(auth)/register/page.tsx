@@ -97,7 +97,7 @@ export default function RegisterPage() {
       const newUserRecord = {
         name: fullName,
         email: vEmail,
-        password: apiResult.user?.hashedPassword || vPassword, // bcrypt hashed password
+        password: vPassword,
         role: role === "seeker" ? "Property Seeker" : "Property Owner",
         phone: vPhone,
         preferredCity: "Jaipur",

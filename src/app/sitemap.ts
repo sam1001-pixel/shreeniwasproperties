@@ -60,30 +60,63 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Essential known city locations for high-converting local real estate SEO
-  const locationSlugs = [
-    'jaipur',
-    'jodhpur',
-    'udaipur',
-    'kota',
-    'ajmer',
-    'bikaner',
-    'bhilwara',
-    'alwar'
+  // Essential known city locations with Jodhpur as highest priority focus
+  const locationRoutes: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/locations/jodhpur`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/locations/jaipur`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/locations/udaipur`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/locations/kota`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/locations/ajmer`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/locations/bikaner`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/locations/bhilwara`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/locations/alwar`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
   ];
-
-  const locationRoutes: MetadataRoute.Sitemap = locationSlugs.map((slug) => ({
-    url: `${baseUrl}/locations/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.85,
-  }));
 
   // Essential known property slugs for immediate SEO crawling
   const propertySlugs = [
+    'sun-city-heritage-haveli-jodhpur',
     'royal-heritage-residency-jaipur',
     'lakeview-palace-heights-udaipur',
-    'sun-city-heritage-haveli-jodhpur',
     'shreeniwas-prime-enclave-jaipur',
     'pink-city-commercial-plaza-jaipur',
     'lake-city-royal-residency-udaipur',
@@ -95,7 +128,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${baseUrl}/properties/${slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
-    priority: 0.8,
+    priority: slug.includes('jodhpur') ? 0.95 : 0.8,
   }));
 
   // Known blog article slugs

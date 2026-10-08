@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/auth/rate-limiter';
 import { LoginSchema } from '@/lib/auth/validation';
-import { comparePassword, hashPassword } from '@/lib/auth/security';
+import { comparePassword, hashPassword, createAdminSessionToken } from '@/lib/auth/security';
 
 export async function POST(request: Request) {
   try {
@@ -27,11 +27,19 @@ export async function POST(request: Request) {
     const { email, password, role } = parseResult.data;
 
     // Check built-in super admin credentials
-    if (
-      (email === 'superadmin@shreeniwasproperties.com' || email === 'admin@shreeniwasproperties.com') &&
-      (password === 'SuperAdmin@123' || password === 'admin123')
-    ) {
-      return NextResponse.json({
+    const adminEmail = process.env.ADMIN_EMAIL || 'superadmin@shreeniwasproperties.com';
+    const adminStaffEmail = 'admin@shreeniwasproperties.com';
+    const isSuperAdmin = (email.toLowerCase() === adminEmail.toLowerCase() || email.toLowerCase() === adminStaffEmail) &&
+      (password === (process.env.ADMIN_PASSWORD || 'SuperAdmin@123') || password === 'admin123');
+
+    if (isSuperAdmin) {
+      const token = await createAdminSessionToken({
+        email,
+        role: 'SUPER_ADMIN',
+        level: 'super',
+      });
+
+      const response = NextResponse.json({
         success: true,
         user: {
           name: 'Super Administrator',
@@ -39,10 +47,21 @@ export async function POST(request: Request) {
           role: 'SUPER_ADMIN',
           level: 'super',
           phone: '+91 6376117833',
-          city: 'Jaipur, Rajasthan',
+          city: 'Jodhpur, Rajasthan',
           memberSince: 'Oct 2024',
         },
       });
+
+      // Secure, HttpOnly, SameSite cookie
+      response.cookies.set('shreeniwas_admin_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24, // 24 hours
+      });
+
+      return response;
     }
 
     // Regular user authentication check

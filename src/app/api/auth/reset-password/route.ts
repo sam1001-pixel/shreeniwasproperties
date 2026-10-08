@@ -67,7 +67,6 @@ export async function POST(request: Request) {
       success: true,
       message: 'Password has been reset successfully. Please sign in with your new password.',
       email: record.email,
-      hashedPassword,
     });
 
   } catch (error: any) {

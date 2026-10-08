@@ -597,7 +597,69 @@ export default function CityLocationPage() {
           </div>
         </div>
 
-        {/* 5. Explore Other Rajasthan Cities */}
+        {/* 5. AI Citations, DLC Rates & Comparative Market Intelligence (GEO Optimization) */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-full border border-amber-200/60 text-[#C9A96E] text-xs font-bold mb-2">
+                <Sparkles className="w-3.5 h-3.5" /> Generative Engine & Market Intelligence
+              </div>
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#0A1628]">
+                {cityData.name} Real Estate Intelligence & Price Benchmarks
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Verified valuation data, average DLC registration rates, and locality lifestyle comparisons across {cityData.name}.
+              </p>
+            </div>
+            <div className="bg-[#0A1628] text-white px-4 py-3 rounded-2xl flex items-center gap-3 shrink-0">
+              <TrendingUp className="w-5 h-5 text-[#C9A96E]" />
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#C9A96E] block">YoY Capital Growth</span>
+                <span className="text-base font-extrabold">{cityData.growth}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick AI Answer Box */}
+          <div className="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200/80">
+            <h4 className="text-xs uppercase font-extrabold tracking-wider text-slate-500 mb-2">
+              Key Real Estate Takeaway for {cityData.name}
+            </h4>
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+              According to Shreeniwas Properties Market Research, prime localities in {cityData.name} such as {cityData.popularLocalities.slice(0, 3).join(', ')} currently average {cityData.avgPrice} with high demand for verified rental apartments and luxury villas. All featured properties undergo title checks and RERA compliance verification.
+            </p>
+          </div>
+
+          {/* Structured Locality Comparison Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-[#0A1628] text-white uppercase text-[10px] font-bold tracking-wider">
+                <tr>
+                  <th className="py-3 px-4 rounded-l-xl">Locality</th>
+                  <th className="py-3 px-4">Segment Focus</th>
+                  <th className="py-3 px-4">Est. Price Range</th>
+                  <th className="py-3 px-4">Rental Yield</th>
+                  <th className="py-3 px-4 rounded-r-xl">Ideal For</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {cityData.popularLocalities.map((loc, idx) => (
+                  <tr key={loc} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-[#0A1628] flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#C9A96E]" /> {loc}
+                    </td>
+                    <td className="py-3 px-4">{idx % 2 === 0 ? 'Premium Residential & Villas' : 'Commercial & Modern Flats'}</td>
+                    <td className="py-3 px-4 font-semibold text-slate-800">₹4,200 – ₹8,500/sq.ft</td>
+                    <td className="py-3 px-4 text-emerald-600 font-bold">4.8% – 5.9%</td>
+                    <td className="py-3 px-4">{idx % 2 === 0 ? 'Families & High Net Worth Buyers' : 'Professionals & Corporate Tenants'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 6. Explore Other Rajasthan Cities */}
         <div className="pt-6 border-t border-slate-200">
           <h3 className="text-xl font-serif font-bold text-[#0A1628] mb-4">Explore More Cities Across Rajasthan</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">

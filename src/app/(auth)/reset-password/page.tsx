@@ -67,7 +67,7 @@ function ResetPasswordContent() {
           const targetEmail = (emailFromUrl || data.email || '').toLowerCase();
           const updated = registered.map((user: any) => {
             if (user.email.toLowerCase() === targetEmail) {
-              return { ...user, password: data.hashedPassword || password };
+              return { ...user, password: password };
             }
             return user;
           });

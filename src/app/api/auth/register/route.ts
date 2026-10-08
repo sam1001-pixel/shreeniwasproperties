@@ -38,7 +38,6 @@ export async function POST(request: Request) {
         email,
         phone,
         role: role === 'owner' ? 'Property Owner' : 'Property Seeker',
-        hashedPassword, // returned to allow client storage sync if using mock store
       },
     });
 

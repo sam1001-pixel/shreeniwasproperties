@@ -11,17 +11,36 @@ export default function ContactPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
+    setErrorMessage("");
+
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMessage(data.error || "Submission failed. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
       setIsSubmitting(false);
       setIsSuccess(true);
 
+      // Local fallback sync
       const existingRaw = localStorage.getItem('shreeniwas_inquiries');
       const existing = existingRaw ? JSON.parse(existingRaw) : [];
       const newInq = {
-        id: `INQ-${Date.now().toString().slice(-4)}`,
+        id: data.inquiry?.id || `INQ-${Date.now().toString().slice(-4)}`,
         user: formData.name || "Website Visitor",
         phone: formData.phone || "--",
         email: formData.email || "--",
@@ -35,7 +54,10 @@ export default function ContactPage() {
 
       setFormData({ name: "", email: "", phone: "", topic: "Rent Inquiry", message: "" });
       setTimeout(() => setIsSuccess(false), 5000);
-    }, 1500);
+    } catch (err: any) {
+      setErrorMessage("Network error occurred. Please contact us via WhatsApp.");
+      setIsSubmitting(false);
+    }
   };
 
   const faqs = [
@@ -116,6 +138,12 @@ export default function ContactPage() {
             <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
               <h3 className="text-2xl font-serif text-[#0A1628] mb-6">Send us a Message</h3>
               
+              {errorMessage && (
+                <div className="bg-red-50 text-red-800 p-4 rounded-lg border border-red-200 mb-6 text-sm">
+                  {errorMessage}
+                </div>
+              )}
+
               {isSuccess ? (
                 <div className="bg-green-50 text-green-800 p-6 rounded-lg flex items-center space-x-4 border border-green-200">
                   <CheckCircle2 className="w-8 h-8 text-green-600" />

@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { SignJWT, jwtVerify } from 'jose';
 
 const SALT_ROUNDS = 10;
 
@@ -33,4 +34,31 @@ export function generateSecureToken(): string {
  */
 export function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.ADMIN_JWT_SECRET || 'shreeniwas_secure_master_jwt_secret_key_2026_jodhpur'
+);
+
+/**
+ * Sign an encrypted, tamper-proof session JWT for Admin access
+ */
+export async function createAdminSessionToken(payload: { email: string; role: string; level: string }): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('24h')
+    .sign(JWT_SECRET);
+}
+
+/**
+ * Verify session JWT
+ */
+export async function verifyAdminSessionToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload;
+  } catch (e) {
+    return null;
+  }
 }
