@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import ScheduleVisitModal from './schedule-visit-modal';
 import SecureQrPaymentModal from './secure-qr-payment-modal';
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 export default function PricingTariffSection({ showHeader = true }: { showHeader?: boolean }) {
   const [activeTab, setActiveTab] = useState<'visits' | 'brokerage'>('visits');
@@ -85,6 +86,10 @@ export default function PricingTariffSection({ showHeader = true }: { showHeader
 
   React.useEffect(() => {
     loadTariffSettings();
+    syncFromServerToLocal('shreeniwas_tariff_settings').then(() => {
+      loadTariffSettings();
+    }).catch(() => {});
+
     window.addEventListener('shreeniwas_data_updated', loadTariffSettings);
     window.addEventListener('storage', loadTariffSettings);
     return () => {

@@ -20,6 +20,7 @@ import {
   saveDetectedCity, 
   EVENT_NAME_LOCATION_DETECTED 
 } from '@/lib/location-service';
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 const CITIES = ["All Cities", "Jaipur", "Udaipur", "Jodhpur", "Kota", "Ajmer", "Bikaner", "Bhilwara", "Alwar"];
 const PROPERTY_TYPES = ["All Types", "Luxury Villa", "Apartment", "Penthouse", "Heritage Haveli", "Commercial Office", "Plot / Land"];
@@ -327,6 +328,9 @@ function PropertiesContent() {
 
   useEffect(() => {
     loadLiveProperties();
+    syncFromServerToLocal('shreeniwas_admin_properties').then(() => {
+      loadLiveProperties();
+    }).catch(() => {});
     window.addEventListener('shreeniwas_data_updated', loadLiveProperties);
     window.addEventListener('storage', loadLiveProperties);
     return () => {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock, User } from "lucide-react";
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 const categories = ["All", "Market Trends", "Buying Guide", "Tenant Advisory", "Commercial Real Estate"];
 
@@ -68,6 +69,10 @@ export default function BlogListingPage() {
 
   useEffect(() => {
     loadLiveBlogs();
+    syncFromServerToLocal('shreeniwas_blog_posts').then(() => {
+      loadLiveBlogs();
+    }).catch(() => {});
+
     window.addEventListener('shreeniwas_data_updated', loadLiveBlogs);
     window.addEventListener('storage', loadLiveBlogs);
     return () => {

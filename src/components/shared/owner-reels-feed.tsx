@@ -6,6 +6,7 @@ import {
   Play, Heart, Eye, Share2, Camera, Video, Globe, 
   MessageCircle, ExternalLink, Sparkles, X, Check
 } from 'lucide-react';
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 interface ReelItem {
   id: string;
@@ -121,6 +122,10 @@ export default function OwnerReelsFeed() {
 
   React.useEffect(() => {
     loadLiveReels();
+    syncFromServerToLocal('shreeniwas_admin_reels').then(() => {
+      loadLiveReels();
+    }).catch(() => {});
+
     window.addEventListener('shreeniwas_data_updated', loadLiveReels);
     window.addEventListener('storage', loadLiveReels);
     return () => {

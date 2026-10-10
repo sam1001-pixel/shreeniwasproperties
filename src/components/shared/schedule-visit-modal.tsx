@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import SecureQrPaymentModal from './secure-qr-payment-modal';
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 export type TimeSlotId = '9am-12' | '12-3pm' | '5-7pm';
 
@@ -152,6 +153,9 @@ export default function ScheduleVisitModal({
     };
 
     loadSettingsAndBlockedDates();
+    syncFromServerToLocal('shreeniwas_blocked_visit_dates').then(() => {
+      loadSettingsAndBlockedDates();
+    }).catch(() => {});
 
     window.addEventListener('shreeniwas_data_updated', loadSettingsAndBlockedDates);
     window.addEventListener('storage', loadSettingsAndBlockedDates);

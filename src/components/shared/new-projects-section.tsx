@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import ScheduleVisitModal from './schedule-visit-modal';
 import SavePropertyButton from './save-property-button';
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 export interface NewProjectItem {
   id: string;
@@ -131,7 +132,15 @@ export default function NewProjectsSection() {
     };
 
     window.addEventListener('shreeniwas_data_updated', handleUpdate);
-    return () => window.removeEventListener('shreeniwas_data_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    syncFromServerToLocal('shreeniwas_new_projects').then(() => {
+      handleUpdate();
+    }).catch(() => {});
+
+    return () => {
+      window.removeEventListener('shreeniwas_data_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
   }, []);
 
   const cities = ['All', ...Array.from(new Set(projects.map(p => p.city)))];

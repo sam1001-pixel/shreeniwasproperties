@@ -11,6 +11,7 @@ import {
 import { motion } from 'framer-motion';
 import SavePropertyButton from '@/components/shared/save-property-button';
 import PropertyShareModal, { ShareableProperty } from '@/components/shared/property-share-modal';
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 interface CityInfo {
   name: string;
@@ -310,6 +311,10 @@ export default function CityLocationPage() {
 
   useEffect(() => {
     loadProperties();
+    syncFromServerToLocal('shreeniwas_admin_properties').then(() => {
+      loadProperties();
+    }).catch(() => {});
+
     window.addEventListener('shreeniwas_data_updated', loadProperties);
     window.addEventListener('storage', loadProperties);
     return () => {

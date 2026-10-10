@@ -543,6 +543,10 @@ export default function AdminDashboard() {
           setAttendanceList(dbData.shreeniwas_admin_attendance);
           try { localStorage.setItem('shreeniwas_admin_attendance', JSON.stringify(dbData.shreeniwas_admin_attendance)); } catch (e) {}
         }
+        if (dbData.shreeniwas_new_projects && Array.isArray(dbData.shreeniwas_new_projects)) {
+          setNewProjectsList(dbData.shreeniwas_new_projects);
+          try { localStorage.setItem('shreeniwas_new_projects', JSON.stringify(dbData.shreeniwas_new_projects)); } catch (e) {}
+        }
       }
     }).catch(() => {});
 
@@ -567,6 +571,12 @@ export default function AdminDashboard() {
         setAdminRole('super');
         setIsAuthenticated(true);
         setActiveTab('overview');
+        // Synchronize server cookie session in background
+        fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'superadmin@shreeniwasproperties.com', password: 'SuperAdmin@123', role: 'super' })
+        }).catch(() => {});
         return;
       }
     } else {
@@ -579,6 +589,12 @@ export default function AdminDashboard() {
         setAdminRole('staff');
         setIsAuthenticated(true);
         setActiveTab('inquiries');
+        // Synchronize server cookie session in background
+        fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'admin@shreeniwasproperties.com', password: 'admin123', role: 'staff' })
+        }).catch(() => {});
         return;
       }
     }
@@ -603,6 +619,7 @@ export default function AdminDashboard() {
     setIsAuthenticated(false);
     setEmail('');
     setPassword('');
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
   };
 
   const handleSendReply = (e: React.FormEvent) => {

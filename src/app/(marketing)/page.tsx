@@ -49,6 +49,7 @@ import SavePropertyButton from "@/components/shared/save-property-button";
 import TopLocalitiesPriceTrends from "@/components/shared/top-localities-price-trends";
 import { syncPriceTrendsWithLiveProperties } from "@/lib/location-service";
 import { useSiteSettings } from "@/lib/settings/site-settings-context";
+import { syncFromServerToLocal } from "@/lib/sync/admin-sync";
 
 // Featured Properties
 const FEATURED_PROPERTIES = [
@@ -500,6 +501,10 @@ export default function MarketingPage() {
 
   useEffect(() => {
     loadLiveData();
+    // Fetch authoritative server/DB data so all admin updates appear globally across all devices
+    syncFromServerToLocal().then(() => {
+      loadLiveData();
+    }).catch(() => {});
     try {
       const savedFavs = localStorage.getItem('shreeniwas_user_favorites');
       if (savedFavs) {

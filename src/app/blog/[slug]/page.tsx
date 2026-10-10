@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { User, Clock, Calendar, ArrowLeft, Share2, MessageCircle, Check } from "lucide-react";
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 interface BlogPostData {
   slug: string;
@@ -138,53 +139,67 @@ export default function BlogPostPage() {
   );
 
   useEffect(() => {
-    // 1. Direct match in default articles
-    if (DEFAULT_ARTICLES[slug]) {
-      setArticle(DEFAULT_ARTICLES[slug]);
-      return;
-    }
-
-    // 2. Check localStorage posts
-    try {
-      const saved = localStorage.getItem('shreeniwas_blog_posts');
-      if (saved) {
-        const posts = JSON.parse(saved);
-        const match = posts.find((p: any) => 
-          p.id?.toLowerCase() === slug.toLowerCase() ||
-          p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(slug.toLowerCase())
-        );
-
-        if (match) {
-          setArticle({
-            slug: slug,
-            title: match.title,
-            category: match.category || 'Market Trends',
-            author: match.author || 'Aditi Sharma',
-            role: 'Property Insights Team',
-            date: match.date || 'Recently Published',
-            readTime: match.readTime || '4 min read',
-            image: match.image || 'https://images.unsplash.com/photo-1599661559882-6296fc1cb475?auto=format&fit=crop&w=1200&q=80',
-            authorImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
-            summary: match.excerpt || match.title,
-            content: [
-              {
-                heading: 'Market Overview & Highlights',
-                text: match.content || match.excerpt || 'Jaipur continues to see steady demand for residential and commercial spaces.'
-              }
-            ],
-            takeaways: [
-              'Verified property documentation saves long-term legal hurdles.',
-              'Prime connectivity routes show highest capital value growth.'
-            ],
-            conclusion: 'Stay connected with Shreeniwas Properties for real-time Rajasthan property trends.'
-          });
-          return;
-        }
+    const resolveBlogArticle = () => {
+      // 1. Direct match in default articles
+      if (DEFAULT_ARTICLES[slug]) {
+        setArticle(DEFAULT_ARTICLES[slug]);
+        return;
       }
-    } catch (e) {}
 
-    // Fallback default
-    setArticle(DEFAULT_ARTICLES['why-jaipur-is-the-next-big-real-estate-hub']);
+      // 2. Check localStorage posts
+      try {
+        const saved = localStorage.getItem('shreeniwas_blog_posts');
+        if (saved) {
+          const posts = JSON.parse(saved);
+          const match = posts.find((p: any) => 
+            p.id?.toLowerCase() === slug.toLowerCase() ||
+            p.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').includes(slug.toLowerCase())
+          );
+
+          if (match) {
+            setArticle({
+              slug: slug,
+              title: match.title,
+              category: match.category || 'Market Trends',
+              author: match.author || 'Aditi Sharma',
+              role: 'Property Insights Team',
+              date: match.date || 'Recently Published',
+              readTime: match.readTime || '4 min read',
+              image: match.image || 'https://images.unsplash.com/photo-1599661559882-6296fc1cb475?auto=format&fit=crop&w=1200&q=80',
+              authorImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+              summary: match.excerpt || match.title,
+              content: [
+                {
+                  heading: 'Market Overview & Highlights',
+                  text: match.content || match.excerpt || 'Jaipur continues to see steady demand for residential and commercial spaces.'
+                }
+              ],
+              takeaways: [
+                'Verified property documentation saves long-term legal hurdles.',
+                'Prime connectivity routes show highest capital value growth.'
+              ],
+              conclusion: 'Stay connected with Shreeniwas Properties for real-time Rajasthan property trends.'
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Fallback default
+      setArticle(DEFAULT_ARTICLES['why-jaipur-is-the-next-big-real-estate-hub']);
+    };
+
+    resolveBlogArticle();
+    syncFromServerToLocal('shreeniwas_blog_posts').then(() => {
+      resolveBlogArticle();
+    }).catch(() => {});
+
+    window.addEventListener('shreeniwas_data_updated', resolveBlogArticle);
+    window.addEventListener('storage', resolveBlogArticle);
+    return () => {
+      window.removeEventListener('shreeniwas_data_updated', resolveBlogArticle);
+      window.removeEventListener('storage', resolveBlogArticle);
+    };
   }, [slug]);
 
   const handleCopyLink = () => {

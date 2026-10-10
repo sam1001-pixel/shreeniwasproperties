@@ -9,15 +9,13 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect Admin Routes and Admin API Routes
-  if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard/admin')) {
+  // Protect internal Admin Dashboard Routes (redirect to /admin portal)
+  if (pathname.startsWith('/dashboard/admin')) {
     const token = request.cookies.get('shreeniwas_admin_token')?.value;
 
     if (!token) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      loginUrl.searchParams.set('error', 'unauthorized');
-      return NextResponse.redirect(loginUrl);
+      const adminUrl = new URL('/admin', request.url);
+      return NextResponse.redirect(adminUrl);
     }
 
     try {
@@ -26,7 +24,7 @@ export async function middleware(request: NextRequest) {
         throw new Error('Invalid token');
       }
     } catch (err) {
-      const response = NextResponse.redirect(new URL('/login?error=session_expired', request.url));
+      const response = NextResponse.redirect(new URL('/admin?error=session_expired', request.url));
       response.cookies.delete('shreeniwas_admin_token');
       return response;
     }

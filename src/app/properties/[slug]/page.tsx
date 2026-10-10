@@ -15,6 +15,7 @@ import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
 import SavePropertyButton from '@/components/shared/save-property-button';
 import PropertyShareModal from '@/components/shared/property-share-modal';
 import { generatePropertyDetailSchema } from '@/lib/seo/schema-generators';
+import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 const BASE_MOCK_PROPERTIES: Record<string, any> = {
   'royal-heritage-residency-jaipur': {
@@ -440,6 +441,9 @@ export default function PropertyDetailPage() {
     };
 
     resolveProperty();
+    syncFromServerToLocal('shreeniwas_admin_properties').then(() => {
+      resolveProperty();
+    }).catch(() => {});
 
     window.addEventListener('shreeniwas_data_updated', resolveProperty);
     window.addEventListener('storage', resolveProperty);
