@@ -51,47 +51,44 @@ export default function LoginPage() {
         return;
       }
 
-      // Check if Super Admin login
-      if (apiResult.user?.role === 'SUPER_ADMIN') {
-        sessionStorage.setItem('shreeniwas_admin_auth', 'true');
-        sessionStorage.setItem('shreeniwas_admin_role', 'super');
-        
-        const superSession = {
-          name: apiResult.user.name,
-          email: apiResult.user.email,
-          role: 'SUPER_ADMIN',
-          phone: apiResult.user.phone,
-          city: apiResult.user.city,
-          loggedIn: true,
-          memberSince: 'Oct 2024'
-        };
-        localStorage.setItem("shreeniwas_user_session", JSON.stringify(superSession));
-        sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(superSession));
+      // 2. Handle Server-Authenticated Sessions
+      if (apiResult.success && apiResult.user) {
+        // Admin Login
+        if (apiResult.user.role === 'SUPER_ADMIN' || apiResult.user.role === 'STAFF_ADMIN') {
+          sessionStorage.setItem('shreeniwas_admin_auth', 'true');
+          sessionStorage.setItem('shreeniwas_admin_role', apiResult.user.level || 'super');
+          
+          const superSession = {
+            name: apiResult.user.name,
+            email: apiResult.user.email,
+            role: apiResult.user.role,
+            phone: apiResult.user.phone,
+            city: apiResult.user.city,
+            loggedIn: true,
+            memberSince: 'Oct 2024'
+          };
+          localStorage.setItem("shreeniwas_user_session", JSON.stringify(superSession));
+          sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(superSession));
 
-        setSuccessMsg("Super Administrator access verified! Redirecting to Control Center...");
-        setTimeout(() => {
-          router.push("/admin");
-        }, 600);
-        return;
-      }
+          setSuccessMsg("Administrator access verified! Redirecting to Control Center...");
+          setTimeout(() => {
+            router.push("/admin");
+          }, 600);
+          return;
+        }
 
-      // 2. Attempt Supabase Auth
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: validatedEmail,
-        password: validatedPassword,
-      });
-
-      if (!error && data?.user && data?.session) {
+        // Regular Verified User Login
         const userSession = {
-          name: data.user.user_metadata?.full_name || validatedEmail.split('@')[0],
-          email: data.user.email || validatedEmail,
-          role: role === "seeker" ? "Property Seeker" : "Property Owner",
-          phone: data.user.user_metadata?.phone || "",
+          id: apiResult.user.id,
+          name: apiResult.user.name || validatedEmail.split('@')[0],
+          email: apiResult.user.email,
+          role: apiResult.user.role || (role === "seeker" ? "Property Seeker" : "Property Owner"),
+          phone: apiResult.user.phone || "",
           city: "Jaipur, Rajasthan",
-          savedCount: 5,
-          visitCount: 2,
+          savedCount: 3,
+          visitCount: 1,
           loggedIn: true,
-          token: data.session.access_token,
+          token: `shreeniwas_token_${Date.now()}`,
           memberSince: "Oct 2024"
         };
 
@@ -105,47 +102,9 @@ export default function LoginPage() {
         return;
       }
 
-      // 3. Fallback: Local registered user repository verification with bcrypt check
-      const rawRegisteredUsers = localStorage.getItem("shreeniwas_registered_users");
-      const registeredUsers = rawRegisteredUsers ? JSON.parse(rawRegisteredUsers) : [];
-
-      const matchingUser = registeredUsers.find((u: any) => u.email.toLowerCase() === validatedEmail);
-
-      if (!matchingUser) {
-        setErrorMsg("No account found with this email. Please register first.");
-        setLoading(false);
-        return;
-      }
-
-      const isPasswordMatch = await comparePassword(validatedPassword, matchingUser.password);
-      if (!isPasswordMatch) {
-        setErrorMsg("Invalid password. Please check your credentials or reset your password.");
-        setLoading(false);
-        return;
-      }
-
-      // Valid registered credentials match
-      const userSession = {
-        name: matchingUser.name || validatedEmail.split('@')[0],
-        email: matchingUser.email,
-        role: matchingUser.role || (role === "seeker" ? "Property Seeker" : "Property Owner"),
-        phone: matchingUser.phone || "",
-        city: matchingUser.preferredCity || "Jaipur, Rajasthan",
-        avatar: matchingUser.avatar || "",
-        savedCount: 3,
-        visitCount: 1,
-        loggedIn: true,
-        token: `shreeniwas_token_${Date.now()}`,
-        memberSince: matchingUser.registeredAt ? new Date(matchingUser.registeredAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : "Oct 2024"
-      };
-
-      localStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
-      sessionStorage.setItem("shreeniwas_user_session", JSON.stringify(userSession));
-
-      setSuccessMsg("Signed in securely! Redirecting to your User Portal...");
-      setTimeout(() => {
-        router.push("/dashboard/portal");
-      }, 600);
+      setErrorMsg("Authentication failed. Please check your credentials.");
+      setLoading(false);
+      return;
 
     } catch (err: any) {
       setErrorMsg(err?.message || "Authentication failed. Please check your credentials.");

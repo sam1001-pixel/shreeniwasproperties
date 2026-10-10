@@ -93,11 +93,10 @@ export default function RegisterPage() {
         },
       });
 
-      // 3. Add to registered users repository with bcrypt password hash
+      // 3. Add to local client cache (omitting sensitive password)
       const newUserRecord = {
         name: fullName,
         email: vEmail,
-        password: vPassword,
         role: role === "seeker" ? "Property Seeker" : "Property Owner",
         phone: vPhone,
         preferredCity: "Jaipur",

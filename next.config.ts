@@ -59,7 +59,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            value: 'max-age=31536000; includeSubDomains',
           },
           {
             key: 'X-Frame-Options',
@@ -84,7 +84,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://cdnjs.cloudflare.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com https://*.supabase.co https://*.google.com https://*.googleapis.com https://*.gstatic.com",
+              "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com https://*.supabase.co https://*.google.com https://*.googleapis.com https://*.gstatic.com https://*.cdninstagram.com https://instagram.com",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com https://*.google.com",
               "frame-src 'self' https://www.google.com https://maps.google.com https://www.instagram.com",
               "frame-ancestors 'none'",
