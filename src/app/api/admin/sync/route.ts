@@ -1,10 +1,24 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { getAdminSession } from '@/lib/auth/security';
 
 // Supabase configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Use service role key on the server if available to safely bypass client RLS
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+// Whitelist of public non-sensitive keys permitted for unauthenticated visitor reads
+const PUBLIC_ALLOWED_KEYS = new Set([
+  'shreeniwas_admin_properties',
+  'shreeniwas_new_projects',
+  'shreeniwas_blog_posts',
+  'shreeniwas_blocked_visit_dates',
+  'shreeniwas_admin_reels',
+  'shreeniwas_tariff_settings',
+  'hero_slides',
+  'site_settings',
+]);
 
 // Local persistent filesystem backup path (server-side safety net)
 const BACKUP_DIR = path.join(process.cwd(), 'data');
@@ -44,18 +58,30 @@ function writeLocalBackup(store: Record<string, any>) {
 
 // -----------------------------------------------------------------------------
 // GET /api/admin/sync
-// Returns all stored admin data: Supabase DB first, merged with local backup
+// Authenticated admins receive full store.
+// Unauthenticated visitors ONLY receive whitelisted public marketing datasets.
 // -----------------------------------------------------------------------------
 export async function GET(request: Request) {
   try {
+    const session = await getAdminSession(request);
+    const isAdmin = Boolean(session);
+
     const { searchParams } = new URL(request.url);
     const requestedKey = searchParams.get('key');
+
+    // Access control check for requested specific key
+    if (requestedKey && !isAdmin && !PUBLIC_ALLOWED_KEYS.has(requestedKey)) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Administrator authentication required to access this dataset.' },
+        { status: 401 }
+      );
+    }
 
     let dbData: Record<string, any> = {};
     let dbConnected = false;
 
-    // 1. Attempt fetching from Supabase DB
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    // 1. Fetch authoritative data from database
+    if (SUPABASE_URL && SUPABASE_KEY) {
       try {
         const queryUrl = requestedKey
           ? `${SUPABASE_URL}/rest/v1/admin_store?key=eq.${encodeURIComponent(requestedKey)}&select=*`
@@ -63,8 +89,8 @@ export async function GET(request: Request) {
 
         const res = await fetch(queryUrl, {
           headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
           },
           cache: 'no-store',
         });
@@ -79,7 +105,7 @@ export async function GET(request: Request) {
           }
         }
       } catch (err) {
-        console.warn('[Admin Sync] Supabase query error, fallback active:', err);
+        console.warn('[Admin Sync] Database query error, fallback active:', err);
       }
     }
 
@@ -87,7 +113,18 @@ export async function GET(request: Request) {
     const localBackup = readLocalBackup();
 
     // 3. Merge: Database takes precedence, local backup fills gaps
-    const mergedData = { ...localBackup, ...dbData };
+    let mergedData = { ...localBackup, ...dbData };
+
+    // If caller is NOT an authenticated administrator, strip all sensitive keys
+    if (!isAdmin) {
+      const sanitized: Record<string, any> = {};
+      Object.keys(mergedData).forEach((k) => {
+        if (PUBLIC_ALLOWED_KEYS.has(k)) {
+          sanitized[k] = mergedData[k];
+        }
+      });
+      mergedData = sanitized;
+    }
 
     if (requestedKey) {
       return NextResponse.json({
@@ -114,10 +151,18 @@ export async function GET(request: Request) {
 
 // -----------------------------------------------------------------------------
 // POST /api/admin/sync
-// Upserts admin data to Supabase DB AND persists to local server-side backup
+// STRICTLY REQUIRES ADMINISTRATOR AUTHENTICATION
 // -----------------------------------------------------------------------------
 export async function POST(request: Request) {
   try {
+    const session = await getAdminSession(request);
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Administrator session required to modify site data.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { key, data } = body;
 
@@ -128,7 +173,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Immediately persist to server-side backup file (guarantees zero data loss)
+    // 1. Immediately persist to server-side backup file
     const localBackup = readLocalBackup();
     localBackup[key] = data;
     writeLocalBackup(localBackup);
@@ -136,15 +181,15 @@ export async function POST(request: Request) {
     let dbSaved = false;
     let dbErrorMsg: string | null = null;
 
-    // 2. Upsert to Supabase PostgreSQL Database
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    // 2. Upsert to Supabase PostgreSQL Database using server credentials
+    if (SUPABASE_URL && SUPABASE_KEY) {
       try {
         const upsertUrl = `${SUPABASE_URL}/rest/v1/admin_store`;
         const res = await fetch(upsertUrl, {
           method: 'POST',
           headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
             'Content-Type': 'application/json',
             Prefer: 'resolution=merge-duplicates,return=representation',
           },
@@ -160,7 +205,7 @@ export async function POST(request: Request) {
         } else {
           const errText = await res.text();
           dbErrorMsg = errText;
-          console.warn('[Admin Sync POST] Supabase returned status:', res.status, errText);
+          console.warn('[Admin Sync POST] Supabase status:', res.status, errText);
         }
       } catch (err: any) {
         dbErrorMsg = err?.message || 'Network error';

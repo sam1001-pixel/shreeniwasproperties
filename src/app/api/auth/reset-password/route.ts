@@ -2,15 +2,18 @@ import { NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/auth/rate-limiter';
 import { ResetPasswordSchema } from '@/lib/auth/validation';
 import { hashPassword, hashToken } from '@/lib/auth/security';
+import { updateUserPassword } from '@/lib/auth/user-store';
 
 const globalResetTokens = (global as any).__resetTokenStore || new Map<string, any>();
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const rawIp = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
+                  request.headers.get('x-real-ip') || 
+                  '127.0.0.1';
 
     // Rate limit: 5 attempts per 15 minutes
-    const rate = checkRateLimit(`reset_pass_${ip}`, { maxAttempts: 5, windowMs: 15 * 60 * 1000 });
+    const rate = checkRateLimit(`reset_pass_${rawIp}`, { maxAttempts: 5, windowMs: 15 * 60 * 1000 });
     if (!rate.allowed) {
       return NextResponse.json(
         { error: `Too many attempts. Please try again in ${rate.retryAfterSeconds} seconds.` },
@@ -56,12 +59,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Mark as used immediately to prevent reuse (single-use token)
+    // Mark as used immediately to prevent replay attacks
     record.used = true;
     globalResetTokens.set(hashed, record);
 
     // Hash the new password using bcrypt
     const hashedPassword = await hashPassword(password);
+
+    // Persist new password into the database / user store
+    await updateUserPassword(record.email, hashedPassword);
 
     return NextResponse.json({
       success: true,

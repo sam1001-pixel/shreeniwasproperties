@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/auth/rate-limiter';
 import { LoginSchema } from '@/lib/auth/validation';
-import { comparePassword, hashPassword, createAdminSessionToken } from '@/lib/auth/security';
+import { comparePassword, createAdminSessionToken } from '@/lib/auth/security';
+import { findUserByEmail } from '@/lib/auth/user-store';
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const rawIp = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
+                  request.headers.get('x-real-ip') || 
+                  '127.0.0.1';
     
     // Rate limit check: 5 attempts per 15 minutes per IP
-    const rate = checkRateLimit(`login_${ip}`, { maxAttempts: 6, windowMs: 15 * 60 * 1000 });
+    const rate = checkRateLimit(`login_${rawIp}`, { maxAttempts: 6, windowMs: 15 * 60 * 1000 });
     if (!rate.allowed) {
       return NextResponse.json(
         { error: `Too many login attempts. Please try again in ${rate.retryAfterSeconds} seconds.` },
@@ -25,51 +28,107 @@ export async function POST(request: Request) {
     }
 
     const { email, password, role } = parseResult.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // Check built-in super admin credentials
-    const adminEmail = process.env.ADMIN_EMAIL || 'superadmin@shreeniwasproperties.com';
-    const adminStaffEmail = 'admin@shreeniwasproperties.com';
-    const isSuperAdmin = (email.toLowerCase() === adminEmail.toLowerCase() || email.toLowerCase() === adminStaffEmail) &&
-      (password === (process.env.ADMIN_PASSWORD || 'SuperAdmin@123') || password === 'admin123');
+    // -------------------------------------------------------------------------
+    // 1. Administrator Authentication
+    // -------------------------------------------------------------------------
+    const adminEmail = (process.env.ADMIN_EMAIL || 'superadmin@shreeniwasproperties.com').toLowerCase();
+    const staffEmail = (process.env.STAFF_ADMIN_EMAIL || 'admin@shreeniwasproperties.com').toLowerCase();
 
-    if (isSuperAdmin) {
-      const token = await createAdminSessionToken({
-        email,
-        role: 'SUPER_ADMIN',
-        level: 'super',
-      });
+    const isTargetingAdmin = normalizedEmail === adminEmail || normalizedEmail === staffEmail;
 
-      const response = NextResponse.json({
-        success: true,
-        user: {
-          name: 'Super Administrator',
-          email,
-          role: 'SUPER_ADMIN',
-          level: 'super',
-          phone: '+91 6376117833',
-          city: 'Jodhpur, Rajasthan',
-          memberSince: 'Oct 2024',
-        },
-      });
+    if (isTargetingAdmin) {
+      const adminPass = process.env.ADMIN_PASSWORD;
+      const adminHash = process.env.ADMIN_PASSWORD_HASH;
 
-      // Secure, HttpOnly, SameSite cookie
-      response.cookies.set('shreeniwas_admin_token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24, // 24 hours
-      });
+      // In production, ensure admin secrets are explicitly configured in environment
+      if (process.env.NODE_ENV === 'production' && !adminPass && !adminHash) {
+        console.error('[Security ALERT] ADMIN_PASSWORD or ADMIN_PASSWORD_HASH is not configured in production.');
+        return NextResponse.json(
+          { error: 'Administrator authentication is not properly configured. Contact system owner.' },
+          { status: 500 }
+        );
+      }
 
-      return response;
+      // Check password using timing-safe comparison
+      let adminAuthPassed = false;
+      if (adminHash) {
+        adminAuthPassed = await comparePassword(password, adminHash);
+      } else if (adminPass) {
+        adminAuthPassed = await comparePassword(password, adminPass);
+      } else {
+        // Fallback for local development only if no env set
+        adminAuthPassed = password === 'SuperAdmin@123' || password === 'admin123';
+      }
+
+      if (adminAuthPassed) {
+        const isSuper = normalizedEmail === adminEmail;
+        const token = await createAdminSessionToken({
+          email: normalizedEmail,
+          role: isSuper ? 'SUPER_ADMIN' : 'STAFF_ADMIN',
+          level: isSuper ? 'super' : 'staff',
+        });
+
+        const response = NextResponse.json({
+          success: true,
+          user: {
+            name: isSuper ? 'Super Administrator' : 'Staff Administrator',
+            email: normalizedEmail,
+            role: isSuper ? 'SUPER_ADMIN' : 'STAFF_ADMIN',
+            level: isSuper ? 'super' : 'staff',
+            phone: '+91 6376117833',
+            city: 'Jodhpur, Rajasthan',
+            memberSince: 'Oct 2024',
+          },
+        });
+
+        // Set secure, HttpOnly session cookie
+        response.cookies.set('shreeniwas_admin_token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 60 * 60 * 24, // 24 hours
+        });
+
+        return response;
+      }
+
+      return NextResponse.json(
+        { error: 'Invalid administrator email or password.' },
+        { status: 401 }
+      );
     }
 
-    // Regular user authentication check
+    // -------------------------------------------------------------------------
+    // 2. Regular User Authentication (Verified against persistent store)
+    // -------------------------------------------------------------------------
+    const existingUser = await findUserByEmail(normalizedEmail);
+
+    if (!existingUser) {
+      return NextResponse.json(
+        { error: 'No account found with this email. Please check your credentials or register.' },
+        { status: 401 }
+      );
+    }
+
+    const passwordMatches = await comparePassword(password, existingUser.passwordHash);
+    if (!passwordMatches) {
+      return NextResponse.json(
+        { error: 'Invalid email or password.' },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       user: {
-        email,
-        role: role === 'owner' ? 'Property Owner' : 'Property Seeker',
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+        phone: existingUser.phone,
+        role: existingUser.role || (role === 'owner' ? 'Property Owner' : 'Property Seeker'),
       },
     });
 

@@ -4,7 +4,6 @@ import { ForgotPasswordSchema } from '@/lib/auth/validation';
 import { generateSecureToken, hashToken } from '@/lib/auth/security';
 import { sendPasswordResetEmail } from '@/lib/email/email-service';
 
-// Structure: hashedToken -> { email: string, expiresAt: number, used: boolean }
 export interface ResetTokenRecord {
   email: string;
   expiresAt: number;
@@ -15,12 +14,43 @@ export interface ResetTokenRecord {
 const globalResetTokens = (global as any).__resetTokenStore || new Map<string, ResetTokenRecord>();
 (global as any).__resetTokenStore = globalResetTokens;
 
+/**
+ * Validates and resolves a strictly trusted production or local site origin.
+ * Defends against Host Header Injection and Password Reset Poisoning attacks.
+ */
+function getTrustedSiteOrigin(request: Request): string {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
+  if (envUrl && (envUrl.startsWith('https://') || (process.env.NODE_ENV !== 'production' && envUrl.startsWith('http://')))) {
+    return envUrl.replace(/\/$/, '');
+  }
+
+  const ALLOWED_HOSTS = new Set([
+    'www.shreeniwasproperties.in',
+    'shreeniwasproperties.in',
+    'shreeniwasproperties-pi.vercel.app',
+    'localhost:3000',
+    '127.0.0.1:3000',
+  ]);
+
+  const rawHost = (request.headers.get('host') || '').trim().toLowerCase();
+  if (ALLOWED_HOSTS.has(rawHost)) {
+    const isLocal = rawHost.includes('localhost') || rawHost.includes('127.0.0.1');
+    const proto = isLocal ? 'http' : 'https';
+    return `${proto}://${rawHost}`;
+  }
+
+  // Canonical fallback prevents hostile injection
+  return 'https://www.shreeniwasproperties.in';
+}
+
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const rawIp = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
+                  request.headers.get('x-real-ip') || 
+                  '127.0.0.1';
 
     // Rate limit: 3 requests per 15 minutes per IP to prevent spam
-    const rate = checkRateLimit(`forgot_pass_${ip}`, { maxAttempts: 3, windowMs: 15 * 60 * 1000 });
+    const rate = checkRateLimit(`forgot_pass_${rawIp}`, { maxAttempts: 3, windowMs: 15 * 60 * 1000 });
     if (!rate.allowed) {
       return NextResponse.json(
         { error: `Too many password reset requests. Please retry in ${rate.retryAfterSeconds} seconds.` },
@@ -53,20 +83,18 @@ export async function POST(request: Request) {
       used: false,
     });
 
-    // Determine host origin for absolute email link
-    const proto = request.headers.get('x-forwarded-proto') || 'http';
-    const host = request.headers.get('host') || 'localhost:3000';
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${proto}://${host}`;
-    const absoluteResetLink = `${siteUrl.replace(/\/$/, '')}/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    // Resolve trusted site origin (Host Header Injection defended)
+    const siteOrigin = getTrustedSiteOrigin(request);
+    const absoluteResetLink = `${siteOrigin}/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
 
-    // Dispatch email to recipient's Gmail / email inbox
+    // Dispatch email to recipient
     await sendPasswordResetEmail({
       toEmail: email,
       resetLink: absoluteResetLink,
       expiresInMinutes: 15,
     });
 
-    // Generic response to avoid user enumeration, with no exposed developer tokens
+    // Generic response to avoid user enumeration
     return NextResponse.json({
       success: true,
       message: 'If an account exists with this email address, a password reset link has been dispatched to your Gmail / email inbox.',
