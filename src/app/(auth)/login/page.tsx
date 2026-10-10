@@ -294,6 +294,21 @@ export default function LoginPage() {
           </p>
         </div>
 
+        <div className="mt-4 p-3.5 bg-slate-900/60 rounded-2xl border border-slate-800 flex items-center justify-between shadow-sm">
+          <div className="text-left">
+            <p className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>Admin / Staff Member?</span>
+            </p>
+            <p className="text-[11px] text-slate-400">Access Super Admin Console & Controls</p>
+          </div>
+          <Link
+            href="/admin"
+            className="px-3.5 py-1.5 bg-[#C9A96E] hover:bg-[#b89558] text-[#0A1628] text-xs font-extrabold rounded-xl transition-all shadow-md shrink-0"
+          >
+            Admin Portal →
+          </Link>
+        </div>
+
         <div className="mt-6 text-center">
           <Link href="/" className="text-xs text-slate-400 hover:text-[#C9A96E] transition-colors">
             ← Return to Homepage

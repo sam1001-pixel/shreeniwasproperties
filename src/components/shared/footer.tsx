@@ -64,7 +64,8 @@ export function Footer() {
                 { label: 'Buy Properties', href: '/properties?purpose=sale' },
                 { label: 'Commercial', href: '/properties?purpose=commercial_lease' },
                 { label: 'All Locations', href: '/locations' },
-                { label: 'Real Estate Blog', href: '/blog' }
+                { label: 'Real Estate Blog', href: '/blog' },
+                { label: 'Admin Portal', href: '/admin' }
               ].map((item) => (
                 <li key={item.label}>
                   <Link href={item.href} className="block py-1.5 text-sm text-white/70 hover:text-[#F09032] transition-colors">
@@ -126,6 +127,10 @@ export function Footer() {
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/50">
             <Link href="/privacy" className="py-2 hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="py-2 hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/admin" className="py-2 text-[#C9A96E]/90 hover:text-[#C9A96E] font-semibold transition-colors flex items-center gap-1">
+              <span>Admin Portal</span>
+              <span className="text-[10px] px-1.5 py-0.2 bg-[#C9A96E]/20 text-[#C9A96E] rounded">Staff</span>
+            </Link>
           </div>
         </div>
       </div>

@@ -461,6 +461,13 @@ export function Navbar() {
                           <Building2 className="w-4 h-4 text-blue-600" />
                           <span>Landlord Dashboard</span>
                         </Link>
+                        <Link
+                          href="/admin"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#C9A96E] hover:bg-[#C9A96E]/10 transition-colors"
+                        >
+                          <ShieldCheck className="w-4 h-4 text-[#C9A96E]" />
+                          <span>Admin Portal</span>
+                        </Link>
                         <button
                           type="button"
                           onClick={handleLogout}
@@ -576,6 +583,7 @@ export function Navbar() {
                       { title: 'About Shreeniwas', href: '/about' },
                       { title: 'Real Estate Blog', href: '/blog' },
                       { title: 'Contact VIP Desk', href: '/contact' },
+                      { title: 'Admin & Staff Portal', href: '/admin' },
                     ].map((item) => {
                       const isActive = pathname === item.href;
                       return (
