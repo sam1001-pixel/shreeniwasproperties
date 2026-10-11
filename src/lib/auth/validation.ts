@@ -9,7 +9,7 @@ export const LoginSchema = z.object({
   password: z
     .string()
     .min(6, 'Password must be at least 6 characters long'),
-  role: z.enum(['seeker', 'owner', 'super_admin']).default('seeker')
+  role: z.enum(['seeker', 'owner', 'super_admin', 'admin', 'staff_admin', 'agent']).optional().default('seeker')
 });
 
 export type LoginInput = z.infer<typeof LoginSchema>;

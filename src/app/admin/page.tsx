@@ -576,7 +576,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           email: trimmedEmail,
           password: trimmedPass,
-          role: selectedRoleType === 'super' ? 'admin' : 'agent',
+          role: selectedRoleType === 'super' ? 'super_admin' : 'admin',
         }),
       });
 

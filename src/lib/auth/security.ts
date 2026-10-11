@@ -94,7 +94,7 @@ export async function getAdminSession(request: Request): Promise<{ email: string
     if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
       const bearerToken = authHeader.substring(7).trim();
       const payload = await verifyAdminSessionToken(bearerToken);
-      if (payload && (payload.role === 'SUPER_ADMIN' || payload.role === 'admin' || payload.role === 'ADMIN')) {
+      if (payload && (payload.role === 'SUPER_ADMIN' || payload.role === 'STAFF_ADMIN' || payload.role === 'admin' || payload.role === 'ADMIN')) {
         return payload as any;
       }
     }
@@ -105,7 +105,7 @@ export async function getAdminSession(request: Request): Promise<{ email: string
     if (match && match[1]) {
       const cookieToken = decodeURIComponent(match[1]);
       const payload = await verifyAdminSessionToken(cookieToken);
-      if (payload && (payload.role === 'SUPER_ADMIN' || payload.role === 'admin' || payload.role === 'ADMIN')) {
+      if (payload && (payload.role === 'SUPER_ADMIN' || payload.role === 'STAFF_ADMIN' || payload.role === 'admin' || payload.role === 'ADMIN')) {
         return payload as any;
       }
     }
