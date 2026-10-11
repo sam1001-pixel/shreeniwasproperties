@@ -1,37 +1,17 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { Pool } from 'pg';
 import { getAdminSession } from '@/lib/auth/security';
 
-// Supabase REST configuration
+// Supabase configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-const SUPABASE_KEY =
+const SUPABASE_SERVICE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.SUPABASE_SECRET_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Direct PostgreSQL connection (pre-configured by Vercel Supabase integration)
-const RAW_POSTGRES_URL =
-  process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL_NON_POOLING;
-
-let pgPool: Pool | null = null;
-let schemaInitialized = false;
-
-function getPgPool(): Pool | null {
-  if (!RAW_POSTGRES_URL) return null;
-  if (!pgPool) {
-    // Strip sslmode=require from URL so pg does not override ssl: { rejectUnauthorized: false }
-    const cleanConnStr = RAW_POSTGRES_URL.replace(/[?&]sslmode=[^&]+/g, '').replace(/\?&/, '?').replace(/\?$/, '');
-    pgPool = new Pool({
-      connectionString: cleanConnStr,
-      ssl: { rejectUnauthorized: false },
-      max: 3,
-      connectionTimeoutMillis: 5000,
-    });
-  }
-  return pgPool;
-}
+const STORAGE_BUCKET = 'admin-store';
+const STORAGE_OBJECT = 'store.json';
 
 // Whitelist of public non-sensitive keys permitted for unauthenticated visitor reads
 const PUBLIC_ALLOWED_KEYS = new Set([
@@ -81,47 +61,65 @@ function writeLocalBackup(store: Record<string, any>) {
     ensureBackupDirectory();
     fs.writeFileSync(BACKUP_FILE, JSON.stringify(store, null, 2), 'utf-8');
   } catch (err) {
-    // Read-only filesystem in production serverless environment; PostgreSQL handles persistence
+    // Read-only filesystem in production serverless environment; Supabase handles persistence
   }
 }
 
-async function ensureAdminStoreSchemaAndSeed(localBackup: Record<string, any>): Promise<void> {
-  if (schemaInitialized) return;
-  const pool = getPgPool();
-  if (!pool) return;
-
+async function readSupabaseCloudStorage(): Promise<{ data: Record<string, any>; ok: boolean }> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return { data: {}, ok: false };
   try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS public.admin_store (
-        key TEXT PRIMARY KEY,
-        data JSONB NOT NULL DEFAULT '{}'::jsonb,
-        updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
-      );
-      ALTER TABLE public.admin_store ENABLE ROW LEVEL SECURITY;
-      DROP POLICY IF EXISTS "Service role full access admin_store" ON public.admin_store;
-      CREATE POLICY "Service role full access admin_store"
-        ON public.admin_store
-        FOR ALL
-        TO service_role
-        USING (true)
-        WITH CHECK (true);
-    `);
-
-    // Seed any recovered backup keys that do not yet exist in PostgreSQL
-    for (const [k, v] of Object.entries(localBackup)) {
-      if (k === 'test_sync_key') continue;
-      await pool.query(
-        `INSERT INTO public.admin_store (key, data, updated_at)
-         VALUES ($1, $2::jsonb, NOW())
-         ON CONFLICT (key) DO NOTHING`,
-        [k, JSON.stringify(v)]
-      );
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${STORAGE_OBJECT}`, {
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      },
+      cache: 'no-store',
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json && typeof json === 'object') {
+        return { data: json, ok: true };
+      }
     }
-
-    await pool.query(`NOTIFY pgrst, 'reload schema';`).catch(() => {});
-    schemaInitialized = true;
   } catch (err) {
-    console.warn('[Admin Sync] Auto-schema initialization warning:', err);
+    // Storage bucket/object may not exist yet
+  }
+  return { data: {}, ok: false };
+}
+
+async function writeSupabaseCloudStorage(store: Record<string, any>): Promise<boolean> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return false;
+  try {
+    // Ensure bucket exists (idempotent)
+    await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: STORAGE_BUCKET,
+        name: STORAGE_BUCKET,
+        public: false,
+      }),
+    }).catch(() => {});
+
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${STORAGE_OBJECT}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        'x-upsert': 'true',
+      },
+      body: JSON.stringify(store),
+    });
+
+    return uploadRes.ok;
+  } catch (err) {
+    console.warn('[Admin Sync] Cloud storage write warning:', err);
+    return false;
   }
 }
 
@@ -147,31 +145,11 @@ export async function GET(request: Request) {
     }
 
     const localBackup = readLocalBackup();
-    await ensureAdminStoreSchemaAndSeed(localBackup);
-
     let dbData: Record<string, any> = {};
     let dbConnected = false;
 
-    // 1. Primary: Direct PostgreSQL query via POSTGRES_URL
-    const pool = getPgPool();
-    if (pool) {
-      try {
-        const res = requestedKey
-          ? await pool.query('SELECT key, data FROM public.admin_store WHERE key = $1', [requestedKey])
-          : await pool.query('SELECT key, data FROM public.admin_store');
-        for (const row of res.rows) {
-          if (row.key) {
-            dbData[row.key] = row.data;
-          }
-        }
-        dbConnected = true;
-      } catch (pgErr) {
-        console.warn('[Admin Sync] Direct PG query fallback:', pgErr);
-      }
-    }
-
-    // 2. Secondary fallback: Supabase REST API
-    if (!dbConnected && SUPABASE_URL && SUPABASE_KEY) {
+    // 1. Primary: Supabase PostgreSQL REST API (if public.admin_store table exists)
+    if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
       try {
         const queryUrl = requestedKey
           ? `${SUPABASE_URL}/rest/v1/admin_store?key=eq.${encodeURIComponent(requestedKey)}&select=*`
@@ -179,8 +157,8 @@ export async function GET(request: Request) {
 
         const res = await fetch(queryUrl, {
           headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
+            apikey: SUPABASE_SERVICE_KEY,
+            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
           },
           cache: 'no-store',
         });
@@ -195,12 +173,25 @@ export async function GET(request: Request) {
           }
         }
       } catch (err) {
-        console.warn('[Admin Sync] REST query error, fallback active:', err);
+        // Fallback to Supabase Cloud Storage
       }
     }
 
-    // 3. Merge: Database takes precedence, recovered server backup fills any missing keys
-    let mergedData = { ...localBackup, ...dbData };
+    // 2. Secondary Cloud Persistence: Supabase Storage (works out-of-the-box without custom SQL tables)
+    const cloudStore = await readSupabaseCloudStorage();
+    if (cloudStore.ok) {
+      dbConnected = true;
+    } else if (Object.keys(localBackup).length > 0) {
+      // Seed cloud storage with recovered localBackup on first access
+      await writeSupabaseCloudStorage(localBackup);
+    }
+
+    // 3. Merge: Local seed -> Cloud Storage -> PostgreSQL table
+    let mergedData: Record<string, any> = {
+      ...localBackup,
+      ...cloudStore.data,
+      ...dbData,
+    };
 
     // If caller is NOT an authenticated administrator, strip all sensitive keys
     if (!isAdmin) {
@@ -260,43 +251,35 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Update local backup file when running in writable dev environment
+    // 1. Read existing merged state so we never lose other keys
     const localBackup = readLocalBackup();
-    localBackup[key] = data;
-    writeLocalBackup(localBackup);
+    const cloudStore = await readSupabaseCloudStorage();
+    const combinedStore: Record<string, any> = {
+      ...localBackup,
+      ...cloudStore.data,
+      [key]: data,
+    };
 
-    await ensureAdminStoreSchemaAndSeed(localBackup);
+    // 2. Persist to local backup file (dev environment)
+    writeLocalBackup(combinedStore);
 
     let dbSaved = false;
-    let dbErrorMsg: string | null = null;
 
-    // 2. Primary: Upsert directly to PostgreSQL Database
-    const pool = getPgPool();
-    if (pool) {
-      try {
-        await pool.query(
-          `INSERT INTO public.admin_store (key, data, updated_at)
-           VALUES ($1, $2::jsonb, NOW())
-           ON CONFLICT (key) DO UPDATE
-           SET data = EXCLUDED.data, updated_at = NOW()`,
-          [key, JSON.stringify(data)]
-        );
-        dbSaved = true;
-      } catch (pgErr: any) {
-        dbErrorMsg = pgErr?.message || 'PG Upsert Error';
-        console.warn('[Admin Sync POST] Direct PG upsert error:', pgErr);
-      }
+    // 3. Persist to Supabase Cloud Storage (always available in production)
+    const cloudSaved = await writeSupabaseCloudStorage(combinedStore);
+    if (cloudSaved) {
+      dbSaved = true;
     }
 
-    // 3. Secondary fallback: Upsert via Supabase REST API
-    if (!dbSaved && SUPABASE_URL && SUPABASE_KEY) {
+    // 4. Also upsert to Supabase PostgreSQL table if present
+    if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
       try {
         const upsertUrl = `${SUPABASE_URL}/rest/v1/admin_store`;
         const res = await fetch(upsertUrl, {
           method: 'POST',
           headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
+            apikey: SUPABASE_SERVICE_KEY,
+            Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
             'Content-Type': 'application/json',
             Prefer: 'resolution=merge-duplicates,return=representation',
           },
@@ -309,13 +292,9 @@ export async function POST(request: Request) {
 
         if (res.ok) {
           dbSaved = true;
-          dbErrorMsg = null;
-        } else {
-          const errText = await res.text();
-          dbErrorMsg = errText;
         }
-      } catch (err: any) {
-        dbErrorMsg = err?.message || 'Network error';
+      } catch (err) {
+        // Cloud storage already persisted the update
       }
     }
 
@@ -325,9 +304,8 @@ export async function POST(request: Request) {
       persistedInDatabase: dbSaved,
       persistedInBackup: true,
       message: dbSaved
-        ? 'Data saved permanently in PostgreSQL database'
+        ? 'Data saved permanently in Supabase Cloud & server backup'
         : 'Data saved in persistent server backup',
-      detail: dbErrorMsg,
     });
   } catch (error: any) {
     console.error('[Admin Sync POST] Unexpected error:', error);
