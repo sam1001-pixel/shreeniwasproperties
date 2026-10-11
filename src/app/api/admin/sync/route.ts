@@ -12,20 +12,22 @@ const SUPABASE_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Direct PostgreSQL connection (pre-configured by Vercel Supabase integration)
-const POSTGRES_CONNECTION_STRING =
-  process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL;
+const RAW_POSTGRES_URL =
+  process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL_NON_POOLING;
 
 let pgPool: Pool | null = null;
 let schemaInitialized = false;
 
 function getPgPool(): Pool | null {
-  if (!POSTGRES_CONNECTION_STRING) return null;
+  if (!RAW_POSTGRES_URL) return null;
   if (!pgPool) {
+    // Strip sslmode=require from URL so pg does not override ssl: { rejectUnauthorized: false }
+    const cleanConnStr = RAW_POSTGRES_URL.replace(/[?&]sslmode=[^&]+/g, '').replace(/\?&/, '?').replace(/\?$/, '');
     pgPool = new Pool({
-      connectionString: POSTGRES_CONNECTION_STRING,
+      connectionString: cleanConnStr,
       ssl: { rejectUnauthorized: false },
       max: 3,
-      connectionTimeoutMillis: 8000,
+      connectionTimeoutMillis: 5000,
     });
   }
   return pgPool;
