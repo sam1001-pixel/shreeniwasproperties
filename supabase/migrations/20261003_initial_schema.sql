@@ -121,7 +121,11 @@ ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.property_media ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public profiles read" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users read own profile" ON public.profiles FOR SELECT TO authenticated USING ((select auth.uid()) = id);
+CREATE POLICY "Users update own profile" ON public.profiles FOR UPDATE TO authenticated USING ((select auth.uid()) = id) WITH CHECK ((select auth.uid()) = id);
+CREATE POLICY "Service role manages profiles" ON public.profiles FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "Active properties public read" ON public.properties FOR SELECT USING (status = 'active');
 CREATE POLICY "Owners manage properties" ON public.properties FOR ALL TO authenticated USING ((select auth.uid()) = owner_id) WITH CHECK ((select auth.uid()) = owner_id);
 CREATE POLICY "Public lead submission" ON public.inquiries FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users read own inquiries" ON public.inquiries FOR SELECT TO authenticated USING ((select auth.uid()) = user_id);
+CREATE POLICY "Service role manages inquiries" ON public.inquiries FOR ALL TO service_role USING (true) WITH CHECK (true);

@@ -39,12 +39,16 @@ export async function POST(request: Request) {
     const isTargetingAdmin = normalizedEmail === adminEmail || normalizedEmail === staffEmail;
 
     if (isTargetingAdmin) {
-      const adminPass = process.env.ADMIN_PASSWORD;
-      const adminHash = process.env.ADMIN_PASSWORD_HASH;
+      const isSuper = normalizedEmail === adminEmail;
+      const targetPass = isSuper
+        ? process.env.ADMIN_PASSWORD
+        : (process.env.STAFF_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD);
+      const targetHash = isSuper
+        ? process.env.ADMIN_PASSWORD_HASH
+        : (process.env.STAFF_ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD_HASH);
 
-      // In production, ensure admin secrets are explicitly configured in environment
-      if (process.env.NODE_ENV === 'production' && !adminPass && !adminHash) {
-        console.error('[Security ALERT] ADMIN_PASSWORD or ADMIN_PASSWORD_HASH is not configured in production.');
+      if (!targetPass && !targetHash) {
+        console.error('[Security ALERT] ADMIN_PASSWORD or ADMIN_PASSWORD_HASH is not configured in environment.');
         return NextResponse.json(
           { error: 'Administrator authentication is not properly configured. Contact system owner.' },
           { status: 500 }
@@ -53,13 +57,10 @@ export async function POST(request: Request) {
 
       // Check password using timing-safe comparison
       let adminAuthPassed = false;
-      if (adminHash) {
-        adminAuthPassed = await comparePassword(password, adminHash);
-      } else if (adminPass) {
-        adminAuthPassed = await comparePassword(password, adminPass);
-      } else {
-        // Fallback for local development only if no env set
-        adminAuthPassed = password === 'SuperAdmin@123' || password === 'admin123';
+      if (targetHash) {
+        adminAuthPassed = await comparePassword(password, targetHash);
+      } else if (targetPass) {
+        adminAuthPassed = await comparePassword(password, targetPass);
       }
 
       if (adminAuthPassed) {

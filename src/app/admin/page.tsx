@@ -497,6 +497,12 @@ export default function AdminDashboard() {
     // PERMANENT DATABASE RESTORATION ENGINE
     // Pulls from Supabase Database & Server Backup to ensure data is NEVER lost
     // -------------------------------------------------------------------------
+    loadAdminDataFromServer();
+
+    setIsLoaded(true);
+  }, []);
+
+  const loadAdminDataFromServer = () => {
     fetchAdminDataFromDatabase().then((dbData) => {
       if (dbData && typeof dbData === 'object' && Object.keys(dbData).length > 0) {
         if (dbData.shreeniwas_admin_properties && Array.isArray(dbData.shreeniwas_admin_properties)) {
@@ -549,68 +555,49 @@ export default function AdminDashboard() {
         }
       }
     }).catch(() => {});
+  };
 
-    setIsLoaded(true);
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
 
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedPass = password.trim();
 
-    // Primary built-in super / staff login
-    if (selectedRoleType === 'super') {
-      if (
-        (trimmedEmail === 'superadmin@shreeniwasproperties.com' || trimmedEmail === 'admin' || trimmedEmail === 'admin@shreeniwas.com') &&
-        (trimmedPass === 'admin123' || trimmedPass === 'SuperAdmin@123' || trimmedPass === 'admin')
-      ) {
-        sessionStorage.setItem('shreeniwas_admin_auth', 'true');
-        sessionStorage.setItem('shreeniwas_admin_role', 'super');
-        setAdminRole('super');
-        setIsAuthenticated(true);
-        setActiveTab('overview');
-        // Synchronize server cookie session in background
-        fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: 'superadmin@shreeniwasproperties.com', password: 'SuperAdmin@123', role: 'super' })
-        }).catch(() => {});
-        return;
-      }
-    } else {
-      if (
-        (trimmedEmail === 'admin@shreeniwasproperties.com' || trimmedEmail === 'staff' || trimmedEmail === 'admin@shreeniwas.com') &&
-        (trimmedPass === 'admin123' || trimmedPass === 'AdminPass@123' || trimmedPass === 'admin')
-      ) {
-        sessionStorage.setItem('shreeniwas_admin_auth', 'true');
-        sessionStorage.setItem('shreeniwas_admin_role', 'staff');
-        setAdminRole('staff');
-        setIsAuthenticated(true);
-        setActiveTab('inquiries');
-        // Synchronize server cookie session in background
-        fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: 'admin@shreeniwasproperties.com', password: 'admin123', role: 'staff' })
-        }).catch(() => {});
-        return;
-      }
-    }
-
-    // Dynamically created admin account login check
-    const matchAccount = adminAccountsList.find(a => a.email.toLowerCase() === trimmedEmail);
-    if (matchAccount) {
-      sessionStorage.setItem('shreeniwas_admin_auth', 'true');
-      sessionStorage.setItem('shreeniwas_admin_role', matchAccount.level || 'staff');
-      setAdminRole(matchAccount.level || 'staff');
-      setIsAuthenticated(true);
-      setActiveTab(matchAccount.level === 'super' ? 'overview' : 'inquiries');
+    if (!trimmedEmail || !trimmedPass) {
+      setLoginError('Please enter both administrator email and password.');
       return;
     }
 
-    setLoginError('Invalid email or password. Please verify your admin credentials.');
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          password: trimmedPass,
+          role: selectedRoleType === 'super' ? 'admin' : 'agent',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success && (result.user?.role === 'SUPER_ADMIN' || result.user?.role === 'STAFF_ADMIN')) {
+        const resolvedLevel = result.user.level === 'super' ? 'super' : 'staff';
+        sessionStorage.setItem('shreeniwas_admin_auth', 'true');
+        sessionStorage.setItem('shreeniwas_admin_role', resolvedLevel);
+        setAdminRole(resolvedLevel);
+        setIsAuthenticated(true);
+        setActiveTab(resolvedLevel === 'super' ? 'overview' : 'inquiries');
+        // Refresh full administrative dataset now that HttpOnly session cookie is active
+        loadAdminDataFromServer();
+        return;
+      }
+
+      setLoginError(result.error || 'Invalid administrator email or password.');
+    } catch (err) {
+      setLoginError('Authentication service error. Please try again.');
+    }
   };
 
   const handleLogout = () => {

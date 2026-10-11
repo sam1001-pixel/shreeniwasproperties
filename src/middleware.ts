@@ -5,12 +5,8 @@ import { jwtVerify } from 'jose';
 function getMiddlewareJwtSecret(): Uint8Array | null {
   const secret = process.env.ADMIN_JWT_SECRET;
   if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      console.error('[Security ALERT] ADMIN_JWT_SECRET is missing in production environment.');
-      return null;
-    }
-    // In development only, require setting in .env.local or fallback to dev-only string
-    return new TextEncoder().encode('dev_local_only_secret_key_change_in_production');
+    console.error('[Security ALERT] ADMIN_JWT_SECRET is not configured in environment.');
+    return null;
   }
   return new TextEncoder().encode(secret);
 }
