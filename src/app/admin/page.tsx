@@ -553,6 +553,22 @@ export default function AdminDashboard() {
           setNewProjectsList(dbData.shreeniwas_new_projects);
           try { localStorage.setItem('shreeniwas_new_projects', JSON.stringify(dbData.shreeniwas_new_projects)); } catch (e) {}
         }
+        if (dbData.shreeniwas_brokerage_settings && typeof dbData.shreeniwas_brokerage_settings === 'object') {
+          setBrokerageSettings(prev => ({ ...prev, ...dbData.shreeniwas_brokerage_settings }));
+          try { localStorage.setItem('shreeniwas_brokerage_settings', JSON.stringify(dbData.shreeniwas_brokerage_settings)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_registered_users && Array.isArray(dbData.shreeniwas_registered_users)) {
+          setUsersList(dbData.shreeniwas_registered_users);
+          try { localStorage.setItem('shreeniwas_registered_users', JSON.stringify(dbData.shreeniwas_registered_users)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_admin_accounts && Array.isArray(dbData.shreeniwas_admin_accounts)) {
+          setAdminAccountsList(dbData.shreeniwas_admin_accounts);
+          try { localStorage.setItem('shreeniwas_admin_accounts', JSON.stringify(dbData.shreeniwas_admin_accounts)); } catch (e) {}
+        }
+        if (dbData.shreeniwas_locality_price_trends_v2 && typeof dbData.shreeniwas_locality_price_trends_v2 === 'object') {
+          setAllTrends(prev => ({ ...prev, ...dbData.shreeniwas_locality_price_trends_v2 }));
+          try { localStorage.setItem(STORAGE_KEY_CUSTOM_PRICE_TRENDS, JSON.stringify(dbData.shreeniwas_locality_price_trends_v2)); } catch (e) {}
+        }
       }
     }).catch(() => {});
   };

@@ -1,6 +1,733 @@
 {
-  "test_sync_key": {
-    "test": true,
-    "timestamp": "2026-10-09"
+  "shreeniwas_inquiries": [
+    {
+      "id": "VISIT-7943",
+      "user": "tamana solanki",
+      "phone": "6376117833",
+      "email": "mistysolanki@gmail.com",
+      "property": "Manglam Grand City & Greens by Manglam Group",
+      "type": "Paid VIP Site Visit (₹499)",
+      "status": "Confirmed & Scheduled (₹499 Paid)",
+      "query": "Scheduled Paid VIP Site Visit on 2026-10-07 during 12 - 3pm (12:00 PM – 3:00 PM). ₹499 fee refundable.",
+      "visitDate": "2026-10-07",
+      "visitTimeSlot": "12:00 PM – 3:00 PM",
+      "slotLabel": "12 - 3pm",
+      "reply": ""
+    },
+    {
+      "id": "VISIT-3281",
+      "user": "tamana solanki",
+      "phone": "6376117833",
+      "email": "mistysolanki@gmail.com",
+      "property": "Manglam Grand City & Greens by Manglam Group",
+      "type": "1st Complimentary Free Visit",
+      "status": "Confirmed (Free 1st Visit)",
+      "query": "Scheduled 1st FREE Complimentary Visit on 2026-10-07 during 12 - 3pm (12:00 PM – 3:00 PM).",
+      "visitDate": "2026-10-07",
+      "visitTimeSlot": "12:00 PM – 3:00 PM",
+      "slotLabel": "12 - 3pm",
+      "reply": ""
+    },
+    {
+      "id": "INQ-1791301427131",
+      "name": "sujal",
+      "phone": "9079199951",
+      "email": "",
+      "propertyTitle": "[Brochure Request] Mahima Florence & Panache (Mahima Group)",
+      "propertyPrice": "₹65 Lakh - ₹1.85 Cr",
+      "message": "Requested RERA brochure and price breakdown for Mahima Florence & Panache.",
+      "date": "6 Oct 2026",
+      "status": "Hot Lead"
+    },
+    {
+      "id": "TXN-377911",
+      "user": "Direct UPI Customer",
+      "email": "direct.pay@upi",
+      "phone": "UTR-1545",
+      "property": "Premium Pass (₹999)",
+      "type": "UPI Payment (UTR Submitted)",
+      "amount": 999,
+      "utrNumber": "435132135241545",
+      "status": "Payment Under Verification",
+      "query": "UPI payment of ₹999 submitted for \"Premium Pass (₹999)\". UTR: 435132135241545. Awaiting Super Admin bank confirmation before issuing visit pass.",
+      "reply": "",
+      "date": "7 Oct 2026",
+      "isPayment": true
+    }
+  ],
+  "shreeniwas_property_visit_records": [
+    {
+      "clientName": "sujal",
+      "clientMobile": "9079199951",
+      "propertyOwnerName": "sujal",
+      "ownerMobile": "9079199951",
+      "propertyLocation": "MILKMAN COLONY",
+      "visitDate": "2026-10-11",
+      "visitTime": "11:00 AM",
+      "coordinatorName": "Tammana",
+      "visitCharge": "₹500",
+      "paymentStatus": "Partial",
+      "feedback": "❌ पसंद नहीं आई",
+      "followUpRemark": "AYEGA SOON",
+      "visitNumber": "1",
+      "id": "VR-82002",
+      "recordedBy": "Super Administrator",
+      "createdAt": "11/10/2026, 08:01:22"
+    },
+    {
+      "id": "VR-101",
+      "clientName": "Rahul Choudhary",
+      "clientMobile": "+91 98290 12345",
+      "propertyOwnerName": "Narpat Singh Rathore",
+      "ownerMobile": "+91 98291 99887",
+      "propertyLocation": "Vaishali Nagar, Jaipur (The Royal Heritage Residency)",
+      "visitDate": "2026-10-07",
+      "visitTime": "11:30 AM",
+      "coordinatorName": "Priyanka",
+      "visitCharge": "₹500",
+      "paymentStatus": "Paid",
+      "feedback": "❤️ पसंद आई",
+      "followUpRemark": "Price negotiation meeting scheduled with owner this Friday.",
+      "visitNumber": "1",
+      "recordedBy": "Super Admin",
+      "createdAt": "07/10/2026, 14:32:14"
+    },
+    {
+      "id": "VR-102",
+      "clientName": "Sunita Meena",
+      "clientMobile": "+91 94140 88765",
+      "propertyOwnerName": "Dinesh Bhati",
+      "ownerMobile": "+91 94142 33445",
+      "propertyLocation": "Ratanada, Jodhpur (Heritage Haveli)",
+      "visitDate": "2026-10-06",
+      "visitTime": "04:00 PM",
+      "coordinatorName": "Suman",
+      "visitCharge": "₹1,000",
+      "paymentStatus": "Paid",
+      "feedback": "🤔 सोचकर बताएगा",
+      "followUpRemark": "Family wants to check Vastu direction again on Sunday.",
+      "visitNumber": "2",
+      "recordedBy": "Suman (Staff)",
+      "createdAt": "06/10/2026, 14:32:14"
+    }
+  ],
+  "shreeniwas_admin_reels": [
+    {
+      "id": "REEL-01",
+      "title": "4 BHK Royal Villa 360° Walkthrough",
+      "property": "The Royal Heritage Residency",
+      "instaUrl": "https://www.instagram.com/reel/DeOqtsUTFXF/?utm_source=ig_web_copy_link&rpxt=MzRlODBiNWFlZA==&srtk=MzRlODBiNWFlZA==",
+      "embedUrl": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800",
+      "views": "14.2K",
+      "status": "Active"
+    },
+    {
+      "id": "REEL-02",
+      "title": "Lakeview Penthouse Sunset Tour Udaipur",
+      "property": "Lakeview Palace Heights",
+      "instaUrl": "https://www.instagram.com/reel/C9ABC67890/",
+      "embedUrl": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800",
+      "views": "9.8K",
+      "status": "Active"
+    },
+    {
+      "id": "REEL-03",
+      "title": "Heritage Haveli Jodhpur Royal Courtyard",
+      "property": "Heritage Haveli Jodhpur",
+      "instaUrl": "https://www.instagram.com/reel/C7DEF11223/",
+      "embedUrl": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800",
+      "views": "22.5K",
+      "status": "Active"
+    }
+  ],
+  "shreeniwas_admin_attendance": [
+    {
+      "id": "ATT-1791125047547",
+      "staffName": "Super Administrator",
+      "role": "Super Administrator",
+      "date": "Today",
+      "clockIn": "20:14",
+      "clockOut": "20:14",
+      "status": "Present (On Time)",
+      "hours": "0.1 hrs"
+    },
+    {
+      "id": "ATT-1791124919659",
+      "staffName": "Staff Admin",
+      "role": "Query Coordinator",
+      "date": "Today",
+      "clockIn": "20:11",
+      "clockOut": "20:12",
+      "status": "Present (On Time)",
+      "hours": "0.1 hrs"
+    },
+    {
+      "id": "ATT-1791365208457",
+      "staffName": "Super Administrator",
+      "role": "Super Administrator",
+      "date": "Today",
+      "clockIn": "14:56",
+      "clockOut": "14:56",
+      "status": "Present (On Time)",
+      "hours": "0.1 hrs"
+    }
+  ],
+  "shreeniwas_registered_users": [
+    {
+      "name": "Sujal solaki",
+      "email": "rahulsolanki771980@gmail.com",
+      "role": "Property Seeker",
+      "phone": "9079199955",
+      "registeredAt": "2026-10-04T14:46:24.832Z"
+    },
+    {
+      "name": "tammana solanki",
+      "email": "sdf@gmail.com",
+      "role": "Property Seeker",
+      "phone": "6376117833",
+      "registeredAt": "2026-10-04T15:29:51.826Z"
+    },
+    {
+      "name": "Sujal Solanki",
+      "email": "sujalsolanki7719801@gmail.com",
+      "role": "Property Seeker",
+      "phone": "9079199951",
+      "registeredAt": "2026-10-05T07:26:24.300Z"
+    },
+    {
+      "name": "tamana solanki",
+      "email": "mistysolanki@gmail.com",
+      "role": "Property Seeker",
+      "phone": "6376117833",
+      "preferredCity": "Jaipur",
+      "avatar": "",
+      "registeredAt": "2026-10-06T16:02:04.239Z"
+    },
+    {
+      "name": "Demo User",
+      "email": "demo@shreeniwasproperties.com",
+      "role": "Property Seeker",
+      "phone": "+91 98765 43210"
+    },
+    {
+      "name": "Admin User",
+      "email": "admin@shreeniwasproperties.com",
+      "role": "Property Owner",
+      "phone": "+91 99999 88888"
+    },
+    {
+      "name": "sujal Solanki",
+      "email": "sujalsolanki200410@gmail.com",
+      "role": "Property Seeker",
+      "phone": "9079199951",
+      "registeredAt": "2026-10-03T14:23:36.484Z"
+    }
+  ],
+  "shreeniwas_payment_settings": {
+    "upiId": "6376117833-2@ybl",
+    "merchantName": "Shreeniwas Properties",
+    "customQrUrl": "",
+    "bankName": "HDFC Bank Ltd",
+    "accountNumber": "50200089123456",
+    "ifscCode": "HDFC0001234",
+    "accountHolder": "Shreeniwas Properties Pvt Ltd",
+    "accountType": "Current Account",
+    "standardPassFee": 500,
+    "premiumPassFee": 999,
+    "vipSiteVisitFee": 499,
+    "enableDirectUpiPay": true,
+    "enableDownloadQr": true,
+    "enableShareQr": true,
+    "paymentInstructions": "Scan QR with any UPI app (GPay, PhonePe, Paytm, BHIM) or tap Direct Pay buttons below. After payment, enter your 12-digit UTR reference number for instant confirmation."
+  },
+  "shreeniwas_tariff_settings": {
+    "vipSiteVisitFee": 499,
+    "standardPassFee": 500,
+    "premiumPassFee": 999,
+    "firstVisitFree": true,
+    "residentialRentBrokerage": "15 Days",
+    "commercialRentBrokerage": "1 Month",
+    "buySellUnder50L": "2%",
+    "buySellAbove50L": "1%",
+    "allowDirectOwnerContact": true,
+    "escrowDepositPercent": 10
+  },
+  "shreeniwas_brokerage_settings": {
+    "residentialRentBrokerage": "15 Days",
+    "commercialRentBrokerage": "1 Month",
+    "buySellUnder50L": "2%",
+    "buySellAbove50L": "1%",
+    "vipSiteVisitFee": 499,
+    "allowDirectOwnerContact": true,
+    "escrowDepositPercent": 10
+  },
+  "shreeniwas_platform_settings": {
+    "siteTitle": "Shreeniwas Rentals",
+    "tagline": "Exclusive Real Estate & Rental Network in Rajasthan",
+    "logoUrl": "/logo/shreeniwas-logo-dark.png",
+    "heroBgUrl": "/hero/jodhpur-hero-royal.jpg",
+    "contactEmail": "contact@shreeniwasproperties.com",
+    "supportPhone": "+91 6376117833",
+    "headOffice": "15 Royal Avenue, C-Scheme, Jaipur, Rajasthan 302001",
+    "whatsappLink": "https://wa.me/916376117833",
+    "instagramLink": "https://www.instagram.com/shreeniwas_rental_services?utm_source=ig_web_button_share_sheet&cplk=ZDNlZDc0MzIxNw==",
+    "facebookLink": "https://facebook.com/shreeniwasproperties",
+    "youtubeLink": "https://youtube.com/@shreeniwaspropertiesandrentals",
+    "linkedinLink": "https://linkedin.com/company/shreeniwasproperties",
+    "twitterLink": "https://x.com/shreeniwasprop",
+    "maintenanceMode": false,
+    "payment": {
+      "upiId": "6376117833-2@ybl",
+      "merchantName": "Shreeniwas Properties",
+      "customQrUrl": "",
+      "bankName": "HDFC Bank Ltd",
+      "accountNumber": "50200089123456",
+      "ifscCode": "HDFC0001234",
+      "accountHolder": "Shreeniwas Properties Pvt Ltd",
+      "accountType": "Current Account",
+      "standardPassFee": 500,
+      "premiumPassFee": 999,
+      "vipSiteVisitFee": 499,
+      "enableDirectUpiPay": true,
+      "enableDownloadQr": true,
+      "enableShareQr": true,
+      "paymentInstructions": "Scan QR with any UPI app (GPay, PhonePe, Paytm, BHIM) or tap Direct Pay buttons below. After payment, enter your 12-digit UTR reference number for instant confirmation."
+    }
+  },
+  "shreeniwas_locality_price_trends_v2": {
+    "Jodhpur": [
+      {
+        "name": "Ratanada",
+        "city": "Jodhpur",
+        "avgPrice": "₹8,404",
+        "avgPriceNum": 8404,
+        "growth": "+11.0%",
+        "growthNum": 11,
+        "type": "Heritage & Villas",
+        "count": "140+ Properties",
+        "rentalYield": "4.8% Yield"
+      },
+      {
+        "name": "Shastri Nagar",
+        "city": "Jodhpur",
+        "avgPrice": "₹6,100",
+        "avgPriceNum": 6100,
+        "growth": "+13.4%",
+        "growthNum": 13.4,
+        "type": "Premium Residential",
+        "count": "195+ Properties",
+        "rentalYield": "4.5% Yield"
+      },
+      {
+        "name": "Sardarpura",
+        "city": "Jodhpur",
+        "avgPrice": "₹9,401",
+        "avgPriceNum": 9401,
+        "growth": "+10.2%",
+        "growthNum": 10.2,
+        "type": "High-End Commercial",
+        "count": "85+ Properties",
+        "rentalYield": "5.4% Yield"
+      },
+      {
+        "name": "Paota",
+        "city": "Jodhpur",
+        "avgPrice": "₹4,600",
+        "avgPriceNum": 4600,
+        "growth": "+9.1%",
+        "growthNum": 9.1,
+        "type": "Transit & Residential",
+        "count": "120+ Properties",
+        "rentalYield": "4.9% Yield"
+      },
+      {
+        "name": "Pal Road",
+        "city": "Jodhpur",
+        "avgPrice": "₹4,200",
+        "avgPriceNum": 4200,
+        "growth": "+15.3%",
+        "growthNum": 15.3,
+        "type": "Fast Growth Corridor",
+        "count": "210+ Properties",
+        "rentalYield": "5.1% Yield"
+      },
+      {
+        "name": "Chopasni Housing Board",
+        "city": "Jodhpur",
+        "avgPrice": "₹3,750",
+        "avgPriceNum": 3750,
+        "growth": "+8.7%",
+        "growthNum": 8.7,
+        "type": "Affordable Township",
+        "count": "165+ Properties",
+        "rentalYield": "4.2% Yield"
+      }
+    ],
+    "Jaipur": [
+      {
+        "name": "Mansarovar",
+        "city": "Jaipur",
+        "avgPrice": "₹5,248",
+        "avgPriceNum": 5248,
+        "growth": "+14.2%",
+        "growthNum": 14.2,
+        "type": "High Demand",
+        "count": "340+ Properties",
+        "rentalYield": "4.6% Yield"
+      },
+      {
+        "name": "C-Scheme",
+        "city": "Jaipur",
+        "avgPrice": "₹13,181",
+        "avgPriceNum": 13181,
+        "growth": "+9.8%",
+        "growthNum": 9.8,
+        "type": "Ultra Luxury",
+        "count": "115+ Properties",
+        "rentalYield": "3.9% Yield"
+      },
+      {
+        "name": "Vaishali Nagar",
+        "city": "Jaipur",
+        "avgPrice": "₹8,870",
+        "avgPriceNum": 8870,
+        "growth": "+12.5%",
+        "growthNum": 12.5,
+        "type": "Premium Residential",
+        "count": "280+ Properties",
+        "rentalYield": "4.4% Yield"
+      },
+      {
+        "name": "Malviya Nagar",
+        "city": "Jaipur",
+        "avgPrice": "₹7,600",
+        "avgPriceNum": 7600,
+        "growth": "+11.8%",
+        "growthNum": 11.8,
+        "type": "Tech Hub & Commercial",
+        "count": "190+ Properties",
+        "rentalYield": "5.0% Yield"
+      },
+      {
+        "name": "Jagatpura",
+        "city": "Jaipur",
+        "avgPrice": "₹4,200",
+        "avgPriceNum": 4200,
+        "growth": "+16.8%",
+        "growthNum": 16.8,
+        "type": "IT & Educational",
+        "count": "410+ Properties",
+        "rentalYield": "5.5% Yield"
+      },
+      {
+        "name": "Tonk Road",
+        "city": "Jaipur",
+        "avgPrice": "₹5,800",
+        "avgPriceNum": 5800,
+        "growth": "+10.6%",
+        "growthNum": 10.6,
+        "type": "Airport Corridor",
+        "count": "175+ Properties",
+        "rentalYield": "4.7% Yield"
+      }
+    ],
+    "Udaipur": [
+      {
+        "name": "Fatehpura",
+        "city": "Udaipur",
+        "avgPrice": "₹7,679",
+        "avgPriceNum": 7679,
+        "growth": "+16.1%",
+        "growthNum": 16.1,
+        "type": "Lake View Luxury",
+        "count": "95+ Properties",
+        "rentalYield": "5.2% Yield"
+      },
+      {
+        "name": "Shobhagpura",
+        "city": "Udaipur",
+        "avgPrice": "₹5,370",
+        "avgPriceNum": 5370,
+        "growth": "+13.7%",
+        "growthNum": 13.7,
+        "type": "Modern Highrise",
+        "count": "140+ Properties",
+        "rentalYield": "4.8% Yield"
+      },
+      {
+        "name": "Lake Pichola",
+        "city": "Udaipur",
+        "avgPrice": "₹14,500",
+        "avgPriceNum": 14500,
+        "growth": "+8.9%",
+        "growthNum": 8.9,
+        "type": "Boutique Heritage",
+        "count": "45+ Properties",
+        "rentalYield": "6.8% Yield"
+      },
+      {
+        "name": "Sukher",
+        "city": "Udaipur",
+        "avgPrice": "₹3,900",
+        "avgPriceNum": 3900,
+        "growth": "+12.3%",
+        "growthNum": 12.3,
+        "type": "Marble Corridor",
+        "count": "110+ Properties",
+        "rentalYield": "4.6% Yield"
+      },
+      {
+        "name": "Hiran Magri",
+        "city": "Udaipur",
+        "avgPrice": "₹4,400",
+        "avgPriceNum": 4400,
+        "growth": "+10.5%",
+        "growthNum": 10.5,
+        "type": "Planned Residential",
+        "count": "180+ Properties",
+        "rentalYield": "4.3% Yield"
+      },
+      {
+        "name": "Panchwati",
+        "city": "Udaipur",
+        "avgPrice": "₹8,100",
+        "avgPriceNum": 8100,
+        "growth": "+11.2%",
+        "growthNum": 11.2,
+        "type": "Centrally Located",
+        "count": "60+ Properties",
+        "rentalYield": "4.9% Yield"
+      }
+    ],
+    "Kota": [
+      {
+        "name": "RK Puram",
+        "city": "Kota",
+        "avgPrice": "₹4,400",
+        "avgPriceNum": 4400,
+        "growth": "+9.5%",
+        "growthNum": 9.5,
+        "type": "Riverfront Villas",
+        "count": "85+ Properties",
+        "rentalYield": "4.7% Yield"
+      },
+      {
+        "name": "Talwandi",
+        "city": "Kota",
+        "avgPrice": "₹5,100",
+        "avgPriceNum": 5100,
+        "growth": "+11.2%",
+        "growthNum": 11.2,
+        "type": "Student Hostel Hub",
+        "count": "160+ Properties",
+        "rentalYield": "7.1% Yield"
+      },
+      {
+        "name": "Vigyan Nagar",
+        "city": "Kota",
+        "avgPrice": "₹4,700",
+        "avgPriceNum": 4700,
+        "growth": "+8.8%",
+        "growthNum": 8.8,
+        "type": "Commercial Rental",
+        "count": "125+ Properties",
+        "rentalYield": "6.5% Yield"
+      },
+      {
+        "name": "Kunhari",
+        "city": "Kota",
+        "avgPrice": "₹3,600",
+        "avgPriceNum": 3600,
+        "growth": "+14.0%",
+        "growthNum": 14,
+        "type": "New Academic Belt",
+        "count": "190+ Properties",
+        "rentalYield": "6.8% Yield"
+      },
+      {
+        "name": "Chambal Garden",
+        "city": "Kota",
+        "avgPrice": "₹4,800",
+        "avgPriceNum": 4800,
+        "growth": "+10.4%",
+        "growthNum": 10.4,
+        "type": "Scenic Gated Homes",
+        "count": "70+ Properties",
+        "rentalYield": "4.5% Yield"
+      }
+    ],
+    "Ajmer": [
+      {
+        "name": "Vaishali Nagar",
+        "city": "Ajmer",
+        "avgPrice": "₹4,100",
+        "avgPriceNum": 4100,
+        "growth": "+9.2%",
+        "growthNum": 9.2,
+        "type": "Prime Residential",
+        "count": "90+ Properties",
+        "rentalYield": "4.5% Yield"
+      },
+      {
+        "name": "Panchsheel Nagar",
+        "city": "Ajmer",
+        "avgPrice": "₹3,600",
+        "avgPriceNum": 3600,
+        "growth": "+8.4%",
+        "growthNum": 8.4,
+        "type": "Planned Gated",
+        "count": "115+ Properties",
+        "rentalYield": "4.2% Yield"
+      },
+      {
+        "name": "Ana Sagar Circular",
+        "city": "Ajmer",
+        "avgPrice": "₹5,200",
+        "avgPriceNum": 5200,
+        "growth": "+12.1%",
+        "growthNum": 12.1,
+        "type": "Lakefront Living",
+        "count": "65+ Properties",
+        "rentalYield": "5.0% Yield"
+      },
+      {
+        "name": "Civil Lines",
+        "city": "Ajmer",
+        "avgPrice": "₹4,900",
+        "avgPriceNum": 4900,
+        "growth": "+7.8%",
+        "growthNum": 7.8,
+        "type": "Elite Administrative",
+        "count": "50+ Properties",
+        "rentalYield": "4.1% Yield"
+      }
+    ],
+    "Bikaner": [
+      {
+        "name": "Sadul Ganj",
+        "city": "Bikaner",
+        "avgPrice": "₹3,700",
+        "avgPriceNum": 3700,
+        "growth": "+8.6%",
+        "growthNum": 8.6,
+        "type": "Heritage & Modern",
+        "count": "75+ Properties",
+        "rentalYield": "4.3% Yield"
+      },
+      {
+        "name": "Jai Narayan Vyas Colony",
+        "city": "Bikaner",
+        "avgPrice": "₹4,200",
+        "avgPriceNum": 4200,
+        "growth": "+10.1%",
+        "growthNum": 10.1,
+        "type": "Premium Residential",
+        "count": "105+ Properties",
+        "rentalYield": "4.6% Yield"
+      },
+      {
+        "name": "Pawan Puri",
+        "city": "Bikaner",
+        "avgPrice": "₹3,300",
+        "avgPriceNum": 3300,
+        "growth": "+7.9%",
+        "growthNum": 7.9,
+        "type": "Affordable Township",
+        "count": "80+ Properties",
+        "rentalYield": "4.0% Yield"
+      },
+      {
+        "name": "Kanta Khaturia Colony",
+        "city": "Bikaner",
+        "avgPrice": "₹3,500",
+        "avgPriceNum": 3500,
+        "growth": "+9.4%",
+        "growthNum": 9.4,
+        "type": "Planned Colony",
+        "count": "90+ Properties",
+        "rentalYield": "4.4% Yield"
+      }
+    ],
+    "Bhilwara": [
+      {
+        "name": "Subhash Nagar",
+        "city": "Bhilwara",
+        "avgPrice": "₹3,500",
+        "avgPriceNum": 3500,
+        "growth": "+8.8%",
+        "growthNum": 8.8,
+        "type": "Residential",
+        "count": "80+ Properties",
+        "rentalYield": "4.4% Yield"
+      },
+      {
+        "name": "Shastri Nagar",
+        "city": "Bhilwara",
+        "avgPrice": "₹3,900",
+        "avgPriceNum": 3900,
+        "growth": "+9.5%",
+        "growthNum": 9.5,
+        "type": "Textile Commercial",
+        "count": "65+ Properties",
+        "rentalYield": "5.5% Yield"
+      },
+      {
+        "name": "Bhopal Ganj",
+        "city": "Bhilwara",
+        "avgPrice": "₹4,100",
+        "avgPriceNum": 4100,
+        "growth": "+7.2%",
+        "growthNum": 7.2,
+        "type": "City Center",
+        "count": "55+ Properties",
+        "rentalYield": "4.9% Yield"
+      },
+      {
+        "name": "Patel Nagar",
+        "city": "Bhilwara",
+        "avgPrice": "₹3,100",
+        "avgPriceNum": 3100,
+        "growth": "+8.0%",
+        "growthNum": 8,
+        "type": "Affordable",
+        "count": "70+ Properties",
+        "rentalYield": "4.1% Yield"
+      }
+    ],
+    "Alwar": [
+      {
+        "name": "Moti Doongri",
+        "city": "Alwar",
+        "avgPrice": "₹3,900",
+        "avgPriceNum": 3900,
+        "growth": "+10.5%",
+        "growthNum": 10.5,
+        "type": "Prime Residential",
+        "count": "70+ Properties",
+        "rentalYield": "4.6% Yield"
+      },
+      {
+        "name": "Neemrana Corridor",
+        "city": "Alwar",
+        "avgPrice": "₹4,600",
+        "avgPriceNum": 4600,
+        "growth": "+15.8%",
+        "growthNum": 15.8,
+        "type": "Industrial & NCR Hub",
+        "count": "135+ Properties",
+        "rentalYield": "6.2% Yield"
+      },
+      {
+        "name": "Scheme 2",
+        "city": "Alwar",
+        "avgPrice": "₹3,400",
+        "avgPriceNum": 3400,
+        "growth": "+8.9%",
+        "growthNum": 8.9,
+        "type": "Gated Housing",
+        "count": "80+ Properties",
+        "rentalYield": "4.3% Yield"
+      }
+    ]
   }
 }

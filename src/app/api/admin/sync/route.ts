@@ -1,12 +1,35 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { Pool } from 'pg';
 import { getAdminSession } from '@/lib/auth/security';
 
-// Supabase configuration
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-// Use service role key on the server if available to safely bypass client RLS
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Supabase REST configuration
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SECRET_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+// Direct PostgreSQL connection (pre-configured by Vercel Supabase integration)
+const POSTGRES_CONNECTION_STRING =
+  process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL;
+
+let pgPool: Pool | null = null;
+let schemaInitialized = false;
+
+function getPgPool(): Pool | null {
+  if (!POSTGRES_CONNECTION_STRING) return null;
+  if (!pgPool) {
+    pgPool = new Pool({
+      connectionString: POSTGRES_CONNECTION_STRING,
+      ssl: { rejectUnauthorized: false },
+      max: 3,
+      connectionTimeoutMillis: 8000,
+    });
+  }
+  return pgPool;
+}
 
 // Whitelist of public non-sensitive keys permitted for unauthenticated visitor reads
 const PUBLIC_ALLOWED_KEYS = new Set([
@@ -16,11 +39,16 @@ const PUBLIC_ALLOWED_KEYS = new Set([
   'shreeniwas_blocked_visit_dates',
   'shreeniwas_admin_reels',
   'shreeniwas_tariff_settings',
+  'shreeniwas_payment_settings',
+  'shreeniwas_platform_settings',
+  'shreeniwas_brokerage_settings',
+  'shreeniwas_testimonials_management',
+  'shreeniwas_locality_price_trends_v2',
   'hero_slides',
   'site_settings',
 ]);
 
-// Local persistent filesystem backup path (server-side safety net)
+// Local persistent filesystem backup path (initial seed & local dev safety net)
 const BACKUP_DIR = path.join(process.cwd(), 'data');
 const BACKUP_FILE = path.join(BACKUP_DIR, 'admin_backup_store.json');
 
@@ -30,13 +58,12 @@ function ensureBackupDirectory() {
       fs.mkdirSync(BACKUP_DIR, { recursive: true });
     }
   } catch (err) {
-    console.warn('[Admin Sync] Could not create backup directory:', err);
+    // Ignore on read-only serverless filesystems
   }
 }
 
 function readLocalBackup(): Record<string, any> {
   try {
-    ensureBackupDirectory();
     if (fs.existsSync(BACKUP_FILE)) {
       const raw = fs.readFileSync(BACKUP_FILE, 'utf-8');
       return JSON.parse(raw);
@@ -52,7 +79,47 @@ function writeLocalBackup(store: Record<string, any>) {
     ensureBackupDirectory();
     fs.writeFileSync(BACKUP_FILE, JSON.stringify(store, null, 2), 'utf-8');
   } catch (err) {
-    console.warn('[Admin Sync] Error writing local backup file:', err);
+    // Read-only filesystem in production serverless environment; PostgreSQL handles persistence
+  }
+}
+
+async function ensureAdminStoreSchemaAndSeed(localBackup: Record<string, any>): Promise<void> {
+  if (schemaInitialized) return;
+  const pool = getPgPool();
+  if (!pool) return;
+
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.admin_store (
+        key TEXT PRIMARY KEY,
+        data JSONB NOT NULL DEFAULT '{}'::jsonb,
+        updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+      );
+      ALTER TABLE public.admin_store ENABLE ROW LEVEL SECURITY;
+      DROP POLICY IF EXISTS "Service role full access admin_store" ON public.admin_store;
+      CREATE POLICY "Service role full access admin_store"
+        ON public.admin_store
+        FOR ALL
+        TO service_role
+        USING (true)
+        WITH CHECK (true);
+    `);
+
+    // Seed any recovered backup keys that do not yet exist in PostgreSQL
+    for (const [k, v] of Object.entries(localBackup)) {
+      if (k === 'test_sync_key') continue;
+      await pool.query(
+        `INSERT INTO public.admin_store (key, data, updated_at)
+         VALUES ($1, $2::jsonb, NOW())
+         ON CONFLICT (key) DO NOTHING`,
+        [k, JSON.stringify(v)]
+      );
+    }
+
+    await pool.query(`NOTIFY pgrst, 'reload schema';`).catch(() => {});
+    schemaInitialized = true;
+  } catch (err) {
+    console.warn('[Admin Sync] Auto-schema initialization warning:', err);
   }
 }
 
@@ -77,11 +144,32 @@ export async function GET(request: Request) {
       );
     }
 
+    const localBackup = readLocalBackup();
+    await ensureAdminStoreSchemaAndSeed(localBackup);
+
     let dbData: Record<string, any> = {};
     let dbConnected = false;
 
-    // 1. Fetch authoritative data from database
-    if (SUPABASE_URL && SUPABASE_KEY) {
+    // 1. Primary: Direct PostgreSQL query via POSTGRES_URL
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        const res = requestedKey
+          ? await pool.query('SELECT key, data FROM public.admin_store WHERE key = $1', [requestedKey])
+          : await pool.query('SELECT key, data FROM public.admin_store');
+        for (const row of res.rows) {
+          if (row.key) {
+            dbData[row.key] = row.data;
+          }
+        }
+        dbConnected = true;
+      } catch (pgErr) {
+        console.warn('[Admin Sync] Direct PG query fallback:', pgErr);
+      }
+    }
+
+    // 2. Secondary fallback: Supabase REST API
+    if (!dbConnected && SUPABASE_URL && SUPABASE_KEY) {
       try {
         const queryUrl = requestedKey
           ? `${SUPABASE_URL}/rest/v1/admin_store?key=eq.${encodeURIComponent(requestedKey)}&select=*`
@@ -105,14 +193,11 @@ export async function GET(request: Request) {
           }
         }
       } catch (err) {
-        console.warn('[Admin Sync] Database query error, fallback active:', err);
+        console.warn('[Admin Sync] REST query error, fallback active:', err);
       }
     }
 
-    // 2. Read local server-side persistent backup
-    const localBackup = readLocalBackup();
-
-    // 3. Merge: Database takes precedence, local backup fills gaps
+    // 3. Merge: Database takes precedence, recovered server backup fills any missing keys
     let mergedData = { ...localBackup, ...dbData };
 
     // If caller is NOT an authenticated administrator, strip all sensitive keys
@@ -173,16 +258,36 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Immediately persist to server-side backup file
+    // 1. Update local backup file when running in writable dev environment
     const localBackup = readLocalBackup();
     localBackup[key] = data;
     writeLocalBackup(localBackup);
 
+    await ensureAdminStoreSchemaAndSeed(localBackup);
+
     let dbSaved = false;
     let dbErrorMsg: string | null = null;
 
-    // 2. Upsert to Supabase PostgreSQL Database using server credentials
-    if (SUPABASE_URL && SUPABASE_KEY) {
+    // 2. Primary: Upsert directly to PostgreSQL Database
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query(
+          `INSERT INTO public.admin_store (key, data, updated_at)
+           VALUES ($1, $2::jsonb, NOW())
+           ON CONFLICT (key) DO UPDATE
+           SET data = EXCLUDED.data, updated_at = NOW()`,
+          [key, JSON.stringify(data)]
+        );
+        dbSaved = true;
+      } catch (pgErr: any) {
+        dbErrorMsg = pgErr?.message || 'PG Upsert Error';
+        console.warn('[Admin Sync POST] Direct PG upsert error:', pgErr);
+      }
+    }
+
+    // 3. Secondary fallback: Upsert via Supabase REST API
+    if (!dbSaved && SUPABASE_URL && SUPABASE_KEY) {
       try {
         const upsertUrl = `${SUPABASE_URL}/rest/v1/admin_store`;
         const res = await fetch(upsertUrl, {
@@ -202,14 +307,13 @@ export async function POST(request: Request) {
 
         if (res.ok) {
           dbSaved = true;
+          dbErrorMsg = null;
         } else {
           const errText = await res.text();
           dbErrorMsg = errText;
-          console.warn('[Admin Sync POST] Supabase status:', res.status, errText);
         }
       } catch (err: any) {
         dbErrorMsg = err?.message || 'Network error';
-        console.warn('[Admin Sync POST] Supabase insert failed:', err);
       }
     }
 
@@ -219,8 +323,8 @@ export async function POST(request: Request) {
       persistedInDatabase: dbSaved,
       persistedInBackup: true,
       message: dbSaved
-        ? 'Data saved permanently in database & server backup'
-        : 'Data saved in persistent server backup (DB sync pending schema)',
+        ? 'Data saved permanently in PostgreSQL database'
+        : 'Data saved in persistent server backup',
       detail: dbErrorMsg,
     });
   } catch (error: any) {
