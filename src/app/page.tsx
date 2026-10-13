@@ -706,11 +706,6 @@ export default function MarketingPage() {
             <span>WhatsApp Support</span>
           </a>
         </div>
-        <div className="mt-12">
-          <Link href="/admin" className="text-slate-500 hover:text-slate-300 text-xs font-semibold underline">
-            Admin Console Portal Access
-          </Link>
-        </div>
       </div>
     );
   }
