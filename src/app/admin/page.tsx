@@ -303,8 +303,20 @@ export default function AdminDashboard() {
   };
 
   // Make Admin Modal
+  // Make Admin Modal State
   const [showMakeAdminModal, setShowMakeAdminModal] = useState(false);
-  const [adminForm, setAdminForm] = useState({ name: '', email: '', role: 'Query Coordinator', password: '', level: 'staff' });
+  const [adminForm, setAdminForm] = useState({
+    name: '',
+    email: '',
+    role: 'Query Coordinator',
+    password: '',
+    confirmPassword: '',
+    level: 'staff' as 'staff' | 'super',
+  });
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [adminFormError, setAdminFormError] = useState('');
+  const [adminFormSuccess, setAdminFormSuccess] = useState('');
+  const [isAdminCreating, setIsAdminCreating] = useState(false);
 
   // Expanded Platform & Social Settings State
   const [siteSettings, setSiteSettings] = useState({
@@ -981,41 +993,145 @@ export default function AdminDashboard() {
     notifyDataUpdated('shreeniwas_testimonials_management', updated);
   };
 
-  // Make Admin Handler
-  const handleCreateAdmin = (e: React.FormEvent) => {
+  // Make Admin Handler with Custom Email, Password & Database Persistence
+  const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adminForm.name || !adminForm.email) return;
+    setAdminFormError('');
+    setAdminFormSuccess('');
 
-    const newAdmin = {
-      id: `ADM-0${adminAccountsList.length + 1}`,
-      name: adminForm.name,
-      email: adminForm.email,
-      role: adminForm.role,
-      level: adminForm.level,
-      status: "Active"
-    };
+    const trimmedName = adminForm.name.trim();
+    const trimmedEmail = adminForm.email.trim().toLowerCase();
+    const password = adminForm.password;
+    const confirmPassword = adminForm.confirmPassword;
 
-    const updated = [newAdmin, ...adminAccountsList];
-    setAdminAccountsList(updated);
-    localStorage.setItem('shreeniwas_admin_accounts', JSON.stringify(updated));
+    if (!trimmedName || trimmedName.length < 2) {
+      setAdminFormError('Please enter a valid administrator name (min 2 characters).');
+      return;
+    }
 
-    setShowMakeAdminModal(false);
-    setAdminForm({ name: '', email: '', role: 'Query Coordinator', password: '', level: 'staff' });
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setAdminFormError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setAdminFormError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setAdminFormError('Passwords do not match. Please verify your password entry.');
+      return;
+    }
+
+    setIsAdminCreating(true);
+
+    try {
+      const response = await fetch('/api/admin/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: trimmedName,
+          email: trimmedEmail,
+          password: password,
+          role: adminForm.role.trim() || 'Staff Coordinator',
+          level: adminForm.level,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        setAdminFormError(result.error || 'Failed to create admin account. Please try again.');
+        setIsAdminCreating(false);
+        return;
+      }
+
+      // Successfully created on server & persistent database
+      const newAdmin = result.admin;
+      const updated = result.accounts || [
+        newAdmin,
+        ...adminAccountsList.filter((a) => a.email?.toLowerCase().trim() !== trimmedEmail),
+      ];
+
+      setAdminAccountsList(updated);
+      try {
+        localStorage.setItem('shreeniwas_admin_accounts', JSON.stringify(updated));
+      } catch (err) {}
+      notifyDataUpdated('shreeniwas_admin_accounts', updated);
+
+      setAdminFormSuccess(`Admin account for ${trimmedEmail} successfully created with login credentials!`);
+
+      // Auto-close after showing confirmation
+      setTimeout(() => {
+        setShowMakeAdminModal(false);
+        setAdminForm({
+          name: '',
+          email: '',
+          role: 'Query Coordinator',
+          password: '',
+          confirmPassword: '',
+          level: 'staff',
+        });
+        setAdminFormError('');
+        setAdminFormSuccess('');
+        setIsAdminCreating(false);
+      }, 1500);
+
+    } catch (err: any) {
+      setAdminFormError(err?.message || 'Network error occurred while creating admin account.');
+      setIsAdminCreating(false);
+    }
+  };
+
+  // Revoke/Delete Admin Handler
+  const handleDeleteAdmin = async (targetEmail: string) => {
+    if (!targetEmail) return;
+    if (targetEmail.toLowerCase() === 'superadmin@shreeniwasproperties.com') {
+      alert('Cannot delete the primary Super Administrator account.');
+      return;
+    }
+
+    const confirmed = window.confirm(`Are you sure you want to revoke admin access for ${targetEmail}?`);
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch('/api/admin/accounts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail }),
+      });
+
+      const result = await response.json();
+      if (response.ok && result.success) {
+        const updated = result.accounts || adminAccountsList.filter((a) => a.email?.toLowerCase() !== targetEmail.toLowerCase());
+        setAdminAccountsList(updated);
+        try {
+          localStorage.setItem('shreeniwas_admin_accounts', JSON.stringify(updated));
+        } catch (err) {}
+        notifyDataUpdated('shreeniwas_admin_accounts', updated);
+        alert(`Admin access for ${targetEmail} has been revoked.`);
+      } else {
+        alert(result.error || 'Failed to remove admin account.');
+      }
+    } catch (err) {
+      alert('Network error while removing admin account.');
+    }
   };
 
   const handlePromoteUserToAdmin = (user: any) => {
-    const newAdmin = {
-      id: `ADM-0${adminAccountsList.length + 1}`,
-      name: user.name || user.email?.split('@')[0] || "Staff Admin",
-      email: user.email,
-      role: "Staff Coordinator",
-      level: "staff",
-      status: "Active"
-    };
-    const updated = [newAdmin, ...adminAccountsList];
-    setAdminAccountsList(updated);
-    localStorage.setItem('shreeniwas_admin_accounts', JSON.stringify(updated));
-    alert(`${user.email} has been promoted to Staff Admin!`);
+    // Open Make Admin modal pre-filled with the user's details for easy credential assignment
+    setAdminForm({
+      name: user.name || user.email?.split('@')[0] || 'Staff Admin',
+      email: user.email || '',
+      role: 'Staff Coordinator',
+      password: '',
+      confirmPassword: '',
+      level: 'staff',
+    });
+    setAdminFormError('');
+    setAdminFormSuccess('');
+    setShowMakeAdminModal(true);
   };
 
   // Media Gallery Handlers
@@ -3700,12 +3816,13 @@ export default function AdminDashboard() {
                         <th className="p-4">Email ID</th>
                         <th className="p-4">Designated Role</th>
                         <th className="p-4">Level</th>
-                        <th className="p-4 text-right pr-6">Status</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4 text-right pr-6">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
-                      {adminAccountsList.map((adm) => (
-                        <tr key={adm.id} className="hover:bg-slate-50 transition-colors">
+                      {adminAccountsList.map((adm, idx) => (
+                        <tr key={adm.id || adm.email || idx} className="hover:bg-slate-50 transition-colors">
                           <td className="p-4 pl-6 font-bold text-[#0A1628] flex items-center gap-2">
                             <Crown className="w-4 h-4 text-[#C9A96E]" /> {adm.name}
                           </td>
@@ -3718,10 +3835,23 @@ export default function AdminDashboard() {
                               {adm.level === 'super' ? 'SUPER ADMIN' : 'STAFF ADMIN'}
                             </span>
                           </td>
-                          <td className="p-4 text-right pr-6">
+                          <td className="p-4">
                             <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                              {adm.status}
+                              {adm.status || 'Active'}
                             </span>
+                          </td>
+                          <td className="p-4 text-right pr-6">
+                            {adm.email?.toLowerCase() !== 'superadmin@shreeniwasproperties.com' ? (
+                              <button
+                                onClick={() => handleDeleteAdmin(adm.email)}
+                                title="Revoke Admin Access"
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 font-semibold italic">Primary Master</span>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -5217,13 +5347,41 @@ export default function AdminDashboard() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-[#0A1628] space-y-4">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h4 className="font-serif font-bold text-lg">Make New Admin Account</h4>
-                <button onClick={() => setShowMakeAdminModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"><XCircle className="w-5 h-5" /></button>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#0A1628] flex items-center justify-center text-[#C9A96E]">
+                    <UserPlus className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-base">Make New Admin Account</h4>
+                    <p className="text-[11px] text-slate-500">Assign staff privileges & login credentials</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowMakeAdminModal(false)} 
+                  disabled={isAdminCreating}
+                  className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer disabled:opacity-50"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
               </div>
+
+              {adminFormError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>{adminFormError}</span>
+                </div>
+              )}
+
+              {adminFormSuccess && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <span>{adminFormSuccess}</span>
+                </div>
+              )}
 
               <form onSubmit={handleCreateAdmin} className="space-y-3 text-xs">
                 <div>
-                  <label className="font-bold uppercase text-slate-700 block mb-1">Staff Admin Name</label>
+                  <label className="font-bold uppercase text-slate-700 block mb-1">Admin Full Name</label>
                   <input
                     type="text"
                     required
@@ -5241,7 +5399,7 @@ export default function AdminDashboard() {
                     required
                     value={adminForm.email}
                     onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
-                    placeholder="e.g. rajesh@domain.com"
+                    placeholder="e.g. rajesh@shreeniwasproperties.com"
                     className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                   />
                 </div>
@@ -5254,7 +5412,7 @@ export default function AdminDashboard() {
                       required
                       value={adminForm.role}
                       onChange={(e) => setAdminForm({ ...adminForm, role: e.target.value })}
-                      placeholder="e.g. Query Admin"
+                      placeholder="e.g. Query Coordinator"
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                     />
                   </div>
@@ -5263,7 +5421,7 @@ export default function AdminDashboard() {
                     <label className="font-bold uppercase text-slate-700 block mb-1">Admin Level</label>
                     <select
                       value={adminForm.level}
-                      onChange={(e) => setAdminForm({ ...adminForm, level: e.target.value })}
+                      onChange={(e) => setAdminForm({ ...adminForm, level: e.target.value as 'staff' | 'super' })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
                     >
                       <option value="staff">Staff Admin</option>
@@ -5272,9 +5430,69 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2">
-                  <button type="button" onClick={() => setShowMakeAdminModal(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer">Cancel</button>
-                  <button type="submit" className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer">Create Admin</button>
+                {/* Password Fields with Toggle */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <label className="font-bold uppercase text-slate-700 block">Set Admin Password</label>
+                    <span className="text-[10px] text-slate-400 font-medium">Min 6 characters</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showAdminPassword ? "text" : "password"}
+                      required
+                      minLength={6}
+                      value={adminForm.password}
+                      onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
+                      placeholder="Enter new password"
+                      className="w-full p-2.5 pr-10 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAdminPassword(!showAdminPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                    >
+                      {showAdminPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold uppercase text-slate-700 block">Confirm Password</label>
+                  <input
+                    type={showAdminPassword ? "text" : "password"}
+                    required
+                    minLength={6}
+                    value={adminForm.confirmPassword}
+                    onChange={(e) => setAdminForm({ ...adminForm, confirmPassword: e.target.value })}
+                    placeholder="Re-enter password"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-[#C9A96E]"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button 
+                    type="button" 
+                    disabled={isAdminCreating}
+                    onClick={() => setShowMakeAdminModal(false)} 
+                    className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl cursor-pointer hover:bg-slate-200 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={isAdminCreating}
+                    className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl shadow cursor-pointer hover:bg-[#0A1628]/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {isAdminCreating ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" /> Saving Admin...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" /> Create Admin
+                      </>
+                    )}
+                  </button>
                 </div>
               </form>
             </motion.div>

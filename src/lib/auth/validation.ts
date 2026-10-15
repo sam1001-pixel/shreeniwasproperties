@@ -46,6 +46,30 @@ export const RegisterSchema = z.object({
 
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 
+export const CreateAdminSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, 'Admin name must be at least 2 characters')
+    .max(80, 'Admin name is too long'),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('Please enter a valid email address'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters long'),
+  role: z
+    .string()
+    .trim()
+    .min(2, 'Designated role is required')
+    .default('Staff Coordinator'),
+  level: z.enum(['staff', 'super']).default('staff'),
+});
+
+export type CreateAdminInput = z.infer<typeof CreateAdminSchema>;
+
 export const ForgotPasswordSchema = z.object({
   email: z
     .string()

@@ -122,6 +122,49 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if this account has administrative privileges
+    const isAdminRole = 
+      existingUser.role === 'SUPER_ADMIN' || 
+      existingUser.role === 'STAFF_ADMIN' || 
+      existingUser.role === 'super_admin' || 
+      existingUser.role === 'admin';
+
+    if (isAdminRole) {
+      const isSuper = existingUser.role === 'SUPER_ADMIN' || existingUser.role === 'super_admin';
+      const token = await createAdminSessionToken({
+        email: normalizedEmail,
+        role: isSuper ? 'SUPER_ADMIN' : 'STAFF_ADMIN',
+        level: isSuper ? 'super' : 'staff',
+      });
+
+      const response = NextResponse.json({
+        success: true,
+        user: {
+          id: existingUser.id,
+          name: existingUser.name,
+          email: normalizedEmail,
+          role: isSuper ? 'SUPER_ADMIN' : 'STAFF_ADMIN',
+          level: isSuper ? 'super' : 'staff',
+          phone: existingUser.phone || '+91 6376117833',
+          city: 'Jodhpur, Rajasthan',
+          memberSince: existingUser.createdAt
+            ? new Date(existingUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            : 'Oct 2024',
+        },
+      });
+
+      // Set secure, HttpOnly session cookie
+      response.cookies.set('shreeniwas_admin_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24, // 24 hours
+      });
+
+      return response;
+    }
+
     return NextResponse.json({
       success: true,
       user: {
