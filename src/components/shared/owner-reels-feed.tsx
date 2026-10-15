@@ -21,62 +21,13 @@ interface ReelItem {
   tag: string;
 }
 
-const REELS_DATA: ReelItem[] = [
-  {
-    id: "reel-1",
-    title: "4 BHK Royal Villa Inside Tour (Vaishali Nagar)",
-    location: "Jaipur, Rajasthan",
-    thumbnail: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=600",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-living-room-of-a-modern-house-41804-large.mp4",
-    instaUrl: "https://www.instagram.com/reels/",
-    views: "24.5K",
-    likes: "3.2K",
-    duration: "0:45",
-    tag: "Exclusive Walkthrough"
-  },
-  {
-    id: "reel-2",
-    title: "Lakeview Penthouse Sunset Views",
-    location: "Udaipur, Rajasthan",
-    thumbnail: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-modern-interior-of-a-contemporary-flat-41793-large.mp4",
-    instaUrl: "https://www.instagram.com/reels/",
-    views: "18.9K",
-    likes: "2.8K",
-    duration: "0:30",
-    tag: "Luxury Penthouse"
-  },
-  {
-    id: "reel-3",
-    title: "Heritage Haveli Renovation Story",
-    location: "Jodhpur, Rajasthan",
-    thumbnail: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&q=80&w=600",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-countryside-house-with-a-modern-swimming-pool-41806-large.mp4",
-    instaUrl: "https://www.instagram.com/reels/",
-    views: "42.1K",
-    likes: "5.6K",
-    duration: "0:58",
-    tag: "Heritage Property"
-  },
-  {
-    id: "reel-4",
-    title: "How to Spot RERA Approved Land in Rajasthan",
-    location: "Founder's Desk",
-    thumbnail: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=600",
-    videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-living-room-with-a-patio-41807-large.mp4",
-    instaUrl: "https://www.instagram.com/reels/",
-    views: "31.0K",
-    likes: "4.1K",
-    duration: "0:40",
-    tag: "Owner Advice"
-  }
-];
+const REELS_DATA: ReelItem[] = [];
 
 export default function OwnerReelsFeed() {
   const [selectedReel, setSelectedReel] = useState<ReelItem | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [reelsList, setReelsList] = useState<ReelItem[]>(REELS_DATA);
+  const [reelsList, setReelsList] = useState<ReelItem[]>([]);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
   const loadLiveReels = () => {
@@ -114,9 +65,9 @@ export default function OwnerReelsFeed() {
           }
         }
       }
-      setReelsList(REELS_DATA);
+      setReelsList([]);
     } catch (e) {
-      setReelsList(REELS_DATA);
+      setReelsList([]);
     }
   };
 
@@ -152,6 +103,8 @@ export default function OwnerReelsFeed() {
     }
     return 'https://www.instagram.com/reels/';
   };
+
+  if (reelsList.length === 0) return null;
 
   // Duplicate reels array to ensure smooth continuous marquee looping
   const loopedReels = [...reelsList, ...reelsList, ...reelsList];

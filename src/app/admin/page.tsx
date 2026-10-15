@@ -25,64 +25,19 @@ import { syncAdminDataToDatabase, fetchAdminDataFromDatabase } from '@/lib/sync/
 
 // Initial Seed Data (Fallbacks if localStorage is empty)
 // Initial Seed Data (Fallbacks if localStorage is empty)
-const DEFAULT_SITE_PROPERTIES = [
-  { id: "PROP-001", title: "The Royal Heritage Residency", location: "Vaishali Nagar, Jaipur", price: "₹3.5 Cr", status: "Active", type: "Luxury Villa", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800" },
-  { id: "PROP-002", title: "Lakeview Palace Heights", location: "Fatehpura, Udaipur", price: "₹1.8 Cr", status: "Active", type: "Penthouse", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800" },
-  { id: "PROP-003", title: "Commercial Business Hub", location: "C-Scheme, Jaipur", price: "₹2.2 Cr", status: "Active", type: "Commercial", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800" },
-  { id: "PROP-004", title: "Heritage Haveli Jodhpur", location: "Ratanada, Jodhpur", price: "₹5.5 Cr", status: "Active", type: "Heritage", image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800" },
-  { id: "PROP-005", title: "Modern 3BHK Apartment", location: "Vaishali Nagar, Jaipur", price: "₹45,000/mo", status: "Active", type: "Rent", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800" },
-  { id: "PROP-006", title: "Luxury Penthouse", location: "Mansarovar, Jaipur", price: "₹1.25 Cr", status: "Active", type: "Sale", image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=800" },
-  { id: "PROP-007", title: "Exclusive Villa", location: "Jagatpura, Jaipur", price: "₹2.1 Cr", status: "Active", type: "Sale", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800" },
-  { id: "PROP-008", title: "Studio Apartment", location: "Malviya Nagar, Jaipur", price: "₹18,000/mo", status: "Active", type: "Rent", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800" },
-];
+const DEFAULT_SITE_PROPERTIES: any[] = [];
 
-const DEFAULT_BLOGS = [
-  { id: "BLOG-1", title: "Why Jaipur is the Next Big Real Estate Hub in India", category: "Market Trends", author: "Aditi Sharma", readTime: "5 min read", status: "Published", image: "https://images.unsplash.com/photo-1599661559882-6296fc1cb475?auto=format&fit=crop&w=800&q=80" },
-  { id: "BLOG-2", title: "The Ultimate Guide for First-Time Homebuyers in Rajasthan", category: "Buying Guide", author: "Vikram Singh", readTime: "7 min read", status: "Published", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80" },
-  { id: "BLOG-3", title: "Understanding RERA Rajasthan: What Every Buyer Must Know", category: "Tenant Advisory", author: "Rajesh Rathore", readTime: "4 min read", status: "Published", image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80" },
-];
+const DEFAULT_BLOGS: any[] = [];
 
 const DEFAULT_ADMIN_ACCOUNTS = [
   { id: "ADM-01", name: "Super Administrator", email: "superadmin@shreeniwasproperties.com", role: "Super Admin", level: "super", status: "Active" },
   { id: "ADM-02", name: "Ananya Sharma", email: "admin@shreeniwasproperties.com", role: "Client Query Admin", level: "staff", status: "Active" },
 ];
 
-const DEFAULT_REELS = [
-  { id: "REEL-01", title: "4 BHK Royal Villa 360° Walkthrough", property: "The Royal Heritage Residency", instaUrl: "https://www.instagram.com/reel/C8XYZ12345/", embedUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800", views: "14.2K", status: "Active" },
-  { id: "REEL-02", title: "Lakeview Penthouse Sunset Tour Udaipur", property: "Lakeview Palace Heights", instaUrl: "https://www.instagram.com/reel/C9ABC67890/", embedUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800", views: "9.8K", status: "Active" },
-  { id: "REEL-03", title: "Heritage Haveli Jodhpur Royal Courtyard", property: "Heritage Haveli Jodhpur", instaUrl: "https://www.instagram.com/reel/C7DEF11223/", embedUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800", views: "22.5K", status: "Active" },
-];
+const DEFAULT_REELS: any[] = [];
+const DEFAULT_REVIEWS: any[] = [];
 
-const DEFAULT_REVIEWS = [
-  { id: "REV-01", name: "Dr. Alok & Sunita Mehta", role: "Villa Buyers in Jaipur", rating: 5, quote: "Shreeniwas Properties made buying our 4 BHK villa in Vaishali Nagar effortless. The VIP site visit with guaranteed cab pickup gave us 100% peace of mind.", status: "Featured", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400" },
-  { id: "REV-02", name: "Vikramaditya Singh", role: "Heritage Property Investor", rating: 5, quote: "Their team has unmatched local authority across Udaipur & Jodhpur. I found a prime lakeview commercial plot direct from owner with zero hassle.", status: "Featured", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400" },
-  { id: "REV-03", name: "Radhika Khandelwal", role: "Apartment Landlord", rating: 5, quote: "Listed my C-Scheme apartment on Shreeniwas Properties and got verified corporate tenants within 48 hours. Excellent service!", status: "Featured", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400" }
-];
-
-const DEFAULT_MEDIA_GALLERY = [
-  { id: "MED-01", title: "Royal Villa Exterior & Pool", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-02", title: "Lakeview Penthouse Sunset", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-03", title: "Heritage Haveli Courtyard", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-04", title: "Luxury Living Room Interior", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-05", title: "Modern Modular Kitchen", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-06", title: "Master Bedroom Suite", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-07", title: "Commercial Business Tower", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-08", title: "Executive Villa Lawn", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-09", title: "High-rise Terrace View", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-10", title: "Green Residential Plot", category: "Properties", type: "image", url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800" },
-  { id: "MED-11", title: "4 BHK Villa 360° Walkthrough", category: "Reels & Videos", type: "video", url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800", instaUrl: "https://www.instagram.com/reel/C8XYZ12345/" },
-  { id: "MED-12", title: "Lakeview Penthouse Sunset Tour", category: "Reels & Videos", type: "video", url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800", instaUrl: "https://www.instagram.com/reel/C9ABC67890/" },
-  { id: "MED-13", title: "Heritage Haveli Royal Courtyard", category: "Reels & Videos", type: "video", url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800", instaUrl: "https://www.instagram.com/reel/C7DEF11223/" },
-  { id: "MED-14", title: "Infinity Pool Walkaround Reel", category: "Reels & Videos", type: "video", url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800", instaUrl: "https://www.instagram.com/reel/C6JKL55667/" },
-  { id: "MED-15", title: "Shreeniwas Gold Crest Emblem", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1599661559886-41b80c541b00?auto=format&fit=crop&q=80&w=400" },
-  { id: "MED-16", title: "Executive Director Avatar", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400" },
-  { id: "MED-17", title: "Luxury Consultant Avatar", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400" },
-  { id: "MED-18", title: "Client Reviewer Avatar 1", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400" },
-  { id: "MED-19", title: "Client Reviewer Avatar 2", category: "Logos & Avatars", type: "image", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400" },
-  { id: "MED-20", title: "Jaipur Real Estate Growth Cover", category: "Blogs", type: "image", url: "https://images.unsplash.com/photo-1599661559882-6296fc1cb475?auto=format&fit=crop&w=800&q=80" },
-  { id: "MED-21", title: "First-Time Buyer Keys Cover", category: "Blogs", type: "image", url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80" },
-  { id: "MED-22", title: "RERA Law & Advisory Cover", category: "Blogs", type: "image", url: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80" }
-];
+const DEFAULT_MEDIA_GALLERY: any[] = [];
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -224,6 +179,10 @@ export default function AdminDashboard() {
     image: '',
     images: [] as string[],
     googleMapsUrl: '',
+    youtubeUrl: '',
+    googleDriveUrl: '',
+    instagramUrl: '',
+    facebookUrl: '',
     description: '',
     amenities: ['24x7 Security', 'Power Backup', 'Car Parking'] as string[]
   });
@@ -397,46 +356,7 @@ export default function AdminDashboard() {
     const savedVisitRecords = localStorage.getItem('shreeniwas_property_visit_records');
     if (savedVisitRecords) {
       try { setVisitRecordsList(JSON.parse(savedVisitRecords)); } catch (e) {}
-    } else {
-      // Seed initial samples so the table has demonstration data from day 1
-      const initialSeedVisitRecords: PropertyVisitRecordItem[] = [
-        {
-          id: 'VR-101',
-          clientName: 'Rahul Choudhary',
-          clientMobile: '+91 98290 12345',
-          propertyOwnerName: 'Narpat Singh Rathore',
-          ownerMobile: '+91 98291 99887',
-          propertyLocation: 'Vaishali Nagar, Jaipur (The Royal Heritage Residency)',
-          visitDate: new Date().toISOString().split('T')[0],
-          visitTime: '11:30 AM',
-          coordinatorName: 'Priyanka',
-          visitCharge: '₹500',
-          paymentStatus: 'Paid',
-          feedback: '❤️ पसंद आई',
-          followUpRemark: 'Price negotiation meeting scheduled with owner this Friday.',
-          visitNumber: '1',
-          recordedBy: 'Super Admin',
-          createdAt: new Date().toLocaleString()
-        },
-        {
-          id: 'VR-102',
-          clientName: 'Sunita Meena',
-          clientMobile: '+91 94140 88765',
-          propertyOwnerName: 'Dinesh Bhati',
-          ownerMobile: '+91 94142 33445',
-          propertyLocation: 'Ratanada, Jodhpur (Heritage Haveli)',
-          visitDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-          visitTime: '04:00 PM',
-          coordinatorName: 'Suman',
-          visitCharge: '₹1,000',
-          paymentStatus: 'Paid',
-          feedback: '🤔 सोचकर बताएगा',
-          followUpRemark: 'Family wants to check Vastu direction again on Sunday.',
-          visitNumber: '2',
-          recordedBy: 'Suman (Staff)',
-          createdAt: new Date(Date.now() - 86400000).toLocaleString()
-        }
-      ];
+      const initialSeedVisitRecords: PropertyVisitRecordItem[] = [];
       setVisitRecordsList(initialSeedVisitRecords);
       try { localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(initialSeedVisitRecords)); } catch (e) {}
     }
@@ -750,6 +670,10 @@ export default function AdminDashboard() {
       image: '',
       images: [],
       googleMapsUrl: '',
+      youtubeUrl: '',
+      googleDriveUrl: '',
+      instagramUrl: '',
+      facebookUrl: '',
       description: '',
       amenities: ['24x7 Security', 'Power Backup', 'Car Parking']
     });
@@ -2015,6 +1939,10 @@ export default function AdminDashboard() {
                         image: '',
                         images: [],
                         googleMapsUrl: '',
+                        youtubeUrl: '',
+                        googleDriveUrl: '',
+                        instagramUrl: '',
+                        facebookUrl: '',
                         description: '',
                         amenities: ['24x7 Security', 'Power Backup', 'Car Parking']
                       });
@@ -2198,6 +2126,10 @@ export default function AdminDashboard() {
                                     image: prop.image || '',
                                     images: prop.images || (prop.image ? [prop.image] : []),
                                     googleMapsUrl: prop.googleMapsUrl || '',
+                                    youtubeUrl: prop.youtubeUrl || '',
+                                    googleDriveUrl: prop.googleDriveUrl || '',
+                                    instagramUrl: prop.instagramUrl || '',
+                                    facebookUrl: prop.facebookUrl || '',
                                     description: prop.description || '',
                                     amenities: prop.amenities || ['24x7 Security', 'Power Backup', 'Car Parking']
                                   });
@@ -4815,6 +4747,79 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* 8. Media, Social & Resource Links (Super Admin Managed) */}
+                <div className="bg-gradient-to-br from-slate-50 to-[#C9A96E]/5 p-4 rounded-2xl border border-[#C9A96E]/30 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+                    <h5 className="font-bold text-[11px] uppercase tracking-wider text-[#0A1628] flex items-center gap-1.5">
+                      <Share2 className="w-3.5 h-3.5 text-[#C9A96E]" /> Media, Social & Resource Links (Super Admin Managed)
+                    </h5>
+                    <span className="text-[10px] bg-[#0A1628] text-[#C9A96E] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Crown className="w-2.5 h-2.5" /> Super Admin
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-500">
+                    Add direct external links for YouTube video walkthrough, Google Drive brochure/documents folder, Instagram reels, and Facebook property posts. These will appear as branded interactive buttons on the public property page.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* YouTube Video Link */}
+                    <div className="space-y-1">
+                      <label className="font-bold text-[10px] uppercase text-slate-700 flex items-center gap-1">
+                        <Video className="w-3 h-3 text-rose-600" /> YouTube Video / Walkthrough URL
+                      </label>
+                      <input
+                        type="url"
+                        value={propForm.youtubeUrl || ''}
+                        onChange={(e) => setPropForm({ ...propForm, youtubeUrl: e.target.value })}
+                        placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                        className="w-full p-2 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E] text-xs"
+                      />
+                    </div>
+
+                    {/* Google Drive Link */}
+                    <div className="space-y-1">
+                      <label className="font-bold text-[10px] uppercase text-slate-700 flex items-center gap-1">
+                        <FileText className="w-3 h-3 text-blue-600" /> Google Drive Documents / Brochure URL
+                      </label>
+                      <input
+                        type="url"
+                        value={propForm.googleDriveUrl || ''}
+                        onChange={(e) => setPropForm({ ...propForm, googleDriveUrl: e.target.value })}
+                        placeholder="https://drive.google.com/drive/folders/... or file link"
+                        className="w-full p-2 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E] text-xs"
+                      />
+                    </div>
+
+                    {/* Instagram Link */}
+                    <div className="space-y-1">
+                      <label className="font-bold text-[10px] uppercase text-slate-700 flex items-center gap-1">
+                        <Camera className="w-3 h-3 text-pink-600" /> Instagram Post / Reel URL
+                      </label>
+                      <input
+                        type="url"
+                        value={propForm.instagramUrl || ''}
+                        onChange={(e) => setPropForm({ ...propForm, instagramUrl: e.target.value })}
+                        placeholder="https://www.instagram.com/reel/... or /p/..."
+                        className="w-full p-2 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E] text-xs"
+                      />
+                    </div>
+
+                    {/* Facebook Link */}
+                    <div className="space-y-1">
+                      <label className="font-bold text-[10px] uppercase text-slate-700 flex items-center gap-1">
+                        <Globe className="w-3 h-3 text-blue-700" /> Facebook Post / Page URL
+                      </label>
+                      <input
+                        type="url"
+                        value={propForm.facebookUrl || ''}
+                        onChange={(e) => setPropForm({ ...propForm, facebookUrl: e.target.value })}
+                        placeholder="https://www.facebook.com/..."
+                        className="w-full p-2 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[#C9A96E] text-xs"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">

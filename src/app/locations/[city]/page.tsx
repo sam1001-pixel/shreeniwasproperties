@@ -266,7 +266,7 @@ export default function CityLocationPage() {
   const [sharingProperty, setSharingProperty] = useState<ShareableProperty | null>(null);
 
   const loadProperties = () => {
-    let allProps = [...BASE_MOCK_PROPERTIES];
+    let allProps: any[] = [];
 
     try {
       const saved = localStorage.getItem('shreeniwas_admin_properties');
@@ -275,13 +275,15 @@ export default function CityLocationPage() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           const formatted = parsed.map((p: any, idx: number) => ({
             id: p.id || String(idx + 100),
-            slug: p.id?.toString().toLowerCase() || `prop-${idx}`,
+            slug: p.slug || p.id?.toString().toLowerCase() || `prop-${idx}`,
             title: p.title || 'Luxury Property',
             location: p.location || `${cityData.name}, Rajasthan`,
-            city: p.location?.toLowerCase().includes('udaipur') ? 'Udaipur' :
-                  p.location?.toLowerCase().includes('jodhpur') ? 'Jodhpur' :
-                  p.location?.toLowerCase().includes('kota') ? 'Kota' :
-                  p.location?.toLowerCase().includes('ajmer') ? 'Ajmer' : 'Jaipur',
+            city: p.city || (
+              p.location?.toLowerCase().includes('udaipur') ? 'Udaipur' :
+              p.location?.toLowerCase().includes('jodhpur') ? 'Jodhpur' :
+              p.location?.toLowerCase().includes('kota') ? 'Kota' :
+              p.location?.toLowerCase().includes('ajmer') ? 'Ajmer' : 'Jaipur'
+            ),
             price: p.price || 'Price on Request',
             purpose: p.purpose === 'rent' ? 'Rent' : p.type?.includes('Commercial') ? 'Commercial' : 'Buy',
             type: p.type || 'Luxury Villa',
@@ -290,11 +292,11 @@ export default function CityLocationPage() {
             baths: p.bathrooms || 3,
             status: p.status || 'Ready to Move',
             verified: true,
-            reraApproved: true,
-            zeroBrokerage: true,
+            reraApproved: p.reraApproved ?? true,
+            zeroBrokerage: p.zeroBrokerage ?? true,
             image: p.image || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800'
           }));
-          allProps = [...formatted, ...allProps];
+          allProps = formatted;
         }
       }
     } catch (e) {}
@@ -305,8 +307,7 @@ export default function CityLocationPage() {
       p.location.toLowerCase().includes(cityKey)
     );
 
-    // If city has few properties, keep cityProps or show at least general Rajasthan luxury options
-    setProperties(cityProps.length > 0 ? cityProps : allProps.slice(0, 4));
+    setProperties(cityProps);
   };
 
   useEffect(() => {

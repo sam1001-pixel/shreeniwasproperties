@@ -13,26 +13,7 @@ import { ProfileUpdateSchema, PasswordChangeSchema } from '@/lib/auth/validation
 import { comparePassword, hashPassword } from '@/lib/auth/security';
 import { getSavedProperties, removeSavedProperty } from '@/lib/saved-properties';
 
-const MOCK_VIP_VISITS = [
-  {
-    id: "VISIT-901",
-    property: "The Royal Heritage Residency",
-    location: "Vaishali Nagar, Jaipur",
-    date: "Oct 15, 2024 (11:00 AM)",
-    agent: "Shreeniwas Advisor (+91 6376117833)",
-    fee: "₹499 Paid",
-    status: "Confirmed & Scheduled"
-  },
-  {
-    id: "VISIT-804",
-    property: "Lakeview Palace Heights",
-    location: "Fatehpura, Udaipur",
-    date: "Oct 18, 2024 (3:30 PM)",
-    agent: "Shreeniwas Senior Executive (+91 6376117833)",
-    fee: "₹499 Paid",
-    status: "Cab Pickup Assigned"
-  }
-];
+const MOCK_VIP_VISITS: any[] = [];
 
 export default function UserProfileDashboard() {
   const router = useRouter();
@@ -133,9 +114,9 @@ export default function UserProfileDashboard() {
                 }
               }
 
-              setVipVisits(combined.length > 0 ? combined : MOCK_VIP_VISITS);
+              setVipVisits(combined);
             } catch (e) {
-              setVipVisits(MOCK_VIP_VISITS);
+              setVipVisits([]);
             }
           };
 
@@ -463,52 +444,65 @@ export default function UserProfileDashboard() {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto no-scrollbar">
-                <table className="w-full text-left border-collapse min-w-[650px]">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                      <th className="p-4 pl-6">Visit ID</th>
-                      <th className="p-4">Property</th>
-                      <th className="p-4">Date & Time</th>
-                      <th className="p-4">Assigned Agent</th>
-                      <th className="p-4">Fee Status</th>
-                      <th className="p-4 text-right pr-6">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs">
-                    {vipVisits.map((visit) => (
-                      <tr key={visit.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="p-4 pl-6 font-mono font-bold text-slate-500">
-                          <span>{visit.id}</span>
-                          {visit.utrNumber && (
-                            <span className="block text-[9px] text-emerald-700 font-mono font-semibold">
-                              UTR: {visit.utrNumber}
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-4">
-                          <p className="font-bold text-[#0A1628]">{visit.property}</p>
-                          <p className="text-[10px] text-slate-400">{visit.location}</p>
-                        </td>
-                        <td className="p-4 font-semibold text-slate-700">{visit.date}</td>
-                        <td className="p-4 font-medium text-slate-800">{visit.agent}</td>
-                        <td className="p-4">
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#C9A96E]/15 text-[#0A1628] border border-[#C9A96E]/30">
-                            {visit.fee}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right pr-6">
-                          <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                            {visit.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {vipVisits.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm max-w-md mx-auto my-8">
+                <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <h4 className="text-lg font-serif font-bold text-[#0A1628]">No Scheduled Visits</h4>
+                <p className="text-xs text-slate-500 mt-1 mb-6">You have no upcoming or past property site visits scheduled.</p>
+                <Link href="/properties">
+                  <button className="px-6 py-3 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow-md cursor-pointer hover:bg-[#0A1628]/90 transition-all">
+                    Explore Properties
+                  </button>
+                </Link>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[650px]">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                        <th className="p-4 pl-6">Visit ID</th>
+                        <th className="p-4">Property</th>
+                        <th className="p-4">Date & Time</th>
+                        <th className="p-4">Assigned Agent</th>
+                        <th className="p-4">Fee Status</th>
+                        <th className="p-4 text-right pr-6">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {vipVisits.map((visit) => (
+                        <tr key={visit.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="p-4 pl-6 font-mono font-bold text-slate-500">
+                            <span>{visit.id}</span>
+                            {visit.utrNumber && (
+                              <span className="block text-[9px] text-emerald-700 font-mono font-semibold">
+                                UTR: {visit.utrNumber}
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <p className="font-bold text-[#0A1628]">{visit.property}</p>
+                            <p className="text-[10px] text-slate-400">{visit.location}</p>
+                          </td>
+                          <td className="p-4 font-semibold text-slate-700">{visit.date}</td>
+                          <td className="p-4 font-medium text-slate-800">{visit.agent}</td>
+                          <td className="p-4">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#C9A96E]/15 text-[#0A1628] border border-[#C9A96E]/30">
+                              {visit.fee}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right pr-6">
+                            <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              {visit.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

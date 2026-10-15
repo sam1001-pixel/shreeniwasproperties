@@ -31,72 +31,7 @@ export interface NewProjectItem {
   featured?: boolean;
 }
 
-export const DEFAULT_NEW_PROJECTS: NewProjectItem[] = [
-  {
-    id: 'proj-mahima-florence',
-    name: 'Mahima Florence & Panache',
-    builder: 'Mahima Group',
-    reraNumber: 'RAJ/P/2023/1842',
-    city: 'Jaipur',
-    location: 'Patrakar Colony, Mansarovar, Jaipur',
-    priceRange: '₹65 Lakh - ₹1.85 Cr',
-    configurations: ['2 BHK', '3 BHK', '4 BHK Luxury'],
-    status: 'Under Construction',
-    possessionDate: 'March 2026',
-    coverImage: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=1000',
-    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Patrakar+Colony+Mansarovar+Jaipur',
-    highlights: ['45,000 sq.ft Clubhouse', 'Sky Walk Terrace', 'Near Metro Station', 'RERA Approved'],
-    featured: true
-  },
-  {
-    id: 'proj-manglam-grand-city',
-    name: 'Manglam Grand City & Greens',
-    builder: 'Manglam Group',
-    reraNumber: 'RAJ/P/2022/1410',
-    city: 'Jaipur',
-    location: 'Ajmer Road Express Corridor, Jaipur',
-    priceRange: '₹48 Lakh - ₹1.35 Cr',
-    configurations: ['2 BHK', '3 BHK', 'Villas'],
-    status: 'Ready to Move',
-    possessionDate: 'Immediate',
-    coverImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1000',
-    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Ajmer+Road+Jaipur',
-    highlights: ['70% Open Green Space', 'Olympic Size Pool', 'Gated Security', 'Vastu Compliant'],
-    featured: true
-  },
-  {
-    id: 'proj-ashiana-daksh',
-    name: 'Ashiana Daksh Townhomes',
-    builder: 'Ashiana Housing',
-    reraNumber: 'RAJ/P/2023/2199',
-    city: 'Jaipur',
-    location: 'Jagatpura, Near Akshaya Patra, Jaipur',
-    priceRange: '₹82 Lakh - ₹2.10 Cr',
-    configurations: ['2 BHK', '3 BHK', 'Penthouse'],
-    status: 'Under Construction',
-    possessionDate: 'December 2025',
-    coverImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1000',
-    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Jagatpura+Jaipur',
-    highlights: ['Kid-Centric Amenities', 'EV Charging Slots', 'Sports Complex', 'Zero Water Waste'],
-    featured: true
-  },
-  {
-    id: 'proj-trimurty-arabella',
-    name: 'Trimurty Arabella Lake View',
-    builder: 'Trimurty Builders',
-    reraNumber: 'RAJ/P/2021/0987',
-    city: 'Udaipur',
-    location: 'Shobhagpura - 100 Feet Road, Udaipur',
-    priceRange: '₹1.15 Cr - ₹3.40 Cr',
-    configurations: ['3 BHK', '4 BHK', '5 BHK Sky Duplex'],
-    status: 'New Launch',
-    possessionDate: 'June 2027',
-    coverImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1000',
-    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Shobhagpura+Udaipur',
-    highlights: ['Unobstructed Aravalli Views', 'Infinity Pool', 'Private Elevators', 'IGBC Gold Rated'],
-    featured: true
-  }
-];
+export const DEFAULT_NEW_PROJECTS: NewProjectItem[] = [];
 
 export default function NewProjectsSection() {
   const [projects, setProjects] = useState<NewProjectItem[]>(DEFAULT_NEW_PROJECTS);
@@ -113,7 +48,7 @@ export default function NewProjectsSection() {
       const saved = localStorage.getItem('shreeniwas_new_projects');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           setProjects(parsed);
         }
       }
@@ -124,7 +59,7 @@ export default function NewProjectsSection() {
         const saved = localStorage.getItem('shreeniwas_new_projects');
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             setProjects(parsed);
           }
         }
@@ -323,6 +258,8 @@ export default function NewProjectsSection() {
       </div>
     </div>
   );
+
+  if (projects.length === 0) return null;
 
   return (
     <section id="new-projects" className="py-8 sm:py-10 px-4 bg-[#F8F9FB] border-b border-slate-200/80">

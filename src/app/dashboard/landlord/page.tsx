@@ -16,15 +16,11 @@ interface LandlordProperty {
   inquiries?: number;
 }
 
-const DEFAULT_LANDLORD_PROPERTIES: LandlordProperty[] = [
-  { id: 'royal-heritage-residency-jaipur', title: 'The Royal Heritage Residency Villa', locality: 'Vaishali Nagar, Jaipur', status: 'Active', price: '₹3.5 Cr', views: 342, inquiries: 18 },
-  { id: 'lakeview-palace-heights-udaipur', title: 'Lakeview Palace Heights Penthouse', locality: 'Fatehpura, Udaipur', status: 'Active', price: '₹1.8 Cr', views: 289, inquiries: 12 },
-  { id: 'sun-city-heritage-haveli-jodhpur', title: 'Sun City Heritage Haveli', locality: 'Ratanada, Jodhpur', status: 'Pending Approval', price: '₹5.2 Cr', views: 312, inquiries: 17 }
-];
+const DEFAULT_LANDLORD_PROPERTIES: LandlordProperty[] = [];
 
 export default function LandlordDashboard() {
-  const [properties, setProperties] = useState<LandlordProperty[]>(DEFAULT_LANDLORD_PROPERTIES);
-  const [inquiryCount, setInquiryCount] = useState<number>(47);
+  const [properties, setProperties] = useState<LandlordProperty[]>([]);
+  const [inquiryCount, setInquiryCount] = useState<number>(0);
   const [rawInquiries, setRawInquiries] = useState<any[]>([]);
 
   const loadLandlordData = () => {
@@ -32,18 +28,20 @@ export default function LandlordDashboard() {
       const savedProps = localStorage.getItem('shreeniwas_admin_properties');
       if (savedProps) {
         const parsed = JSON.parse(savedProps);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           const formatted: LandlordProperty[] = parsed.map((p: any, idx: number) => ({
             id: p.id || `prop-${idx}`,
             title: p.title || 'Untitled Property',
             locality: p.location || 'Jaipur, Rajasthan',
             status: p.status || 'Active',
             price: p.price || '₹45,000/mo',
-            views: p.views || (250 + (idx * 45)),
-            inquiries: p.inquiries || (10 + (idx * 3))
+            views: p.views || (idx + 1) * 12,
+            inquiries: p.inquiries || 0
           }));
           setProperties(formatted);
         }
+      } else {
+        setProperties([]);
       }
 
       const savedInqs = localStorage.getItem('shreeniwas_inquiries');
@@ -51,8 +49,11 @@ export default function LandlordDashboard() {
         const parsedInqs = JSON.parse(savedInqs);
         if (Array.isArray(parsedInqs)) {
           setRawInquiries(parsedInqs);
-          setInquiryCount(parsedInqs.length > 0 ? parsedInqs.length : 47);
+          setInquiryCount(parsedInqs.length);
         }
+      } else {
+        setRawInquiries([]);
+        setInquiryCount(0);
       }
     } catch (e) {}
   };
@@ -219,46 +220,56 @@ export default function LandlordDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {properties.map((property) => (
-                  <tr key={property.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4 px-6">
-                      <p className="font-semibold text-[#0A1628]">{property.title}</p>
-                      <p className="text-xs text-gray-500">{property.locality}</p>
-                    </td>
-                    <td className="py-4 px-6">
-                      <button 
-                        onClick={() => handleToggleStatus(property.id)}
-                        title="Click to toggle status"
-                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full transition-transform active:scale-95 cursor-pointer ${
-                          property.status === 'Active' 
-                            ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                            : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                        }`}
-                      >
-                        {property.status}
-                      </button>
-                    </td>
-                    <td className="py-4 px-6 font-medium text-[#0A1628]">{property.price}</td>
-                    <td className="py-4 px-6 text-gray-600">{property.views}</td>
-                    <td className="py-4 px-6 text-gray-600">{property.inquiries}</td>
-                    <td className="py-4 px-6 text-right space-x-2">
-                      <Link 
-                        href={`/properties/${property.id}`} 
-                        className="inline-block p-2 text-gray-500 hover:text-[#C9A96E] transition-colors"
-                        title="View Public Listing"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Link>
-                      <button 
-                        onClick={() => handleDeleteProperty(property.id)} 
-                        className="p-2 text-gray-500 hover:text-rose-600 transition-colors cursor-pointer"
-                        title="Delete Property"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                {properties.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-slate-500">
+                      <Home className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                      <p className="font-semibold text-[#0A1628]">No properties listed yet</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Click &ldquo;Add New Property&rdquo; to create your first listing.</p>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  properties.map((property) => (
+                    <tr key={property.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="py-4 px-6">
+                        <p className="font-semibold text-[#0A1628]">{property.title}</p>
+                        <p className="text-xs text-gray-500">{property.locality}</p>
+                      </td>
+                      <td className="py-4 px-6">
+                        <button 
+                          onClick={() => handleToggleStatus(property.id)} 
+                          title="Click to toggle status"
+                          className={`inline-block px-3 py-1 text-xs font-semibold rounded-full transition-transform active:scale-95 cursor-pointer ${
+                            property.status === 'Active' 
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                              : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                          }`}
+                        >
+                          {property.status}
+                        </button>
+                      </td>
+                      <td className="py-4 px-6 font-medium text-[#0A1628]">{property.price}</td>
+                      <td className="py-4 px-6 text-gray-600">{property.views}</td>
+                      <td className="py-4 px-6 text-gray-600">{property.inquiries}</td>
+                      <td className="py-4 px-6 text-right space-x-2">
+                        <Link 
+                          href={`/properties/${property.id}`} 
+                          className="inline-block p-2 text-gray-500 hover:text-[#C9A96E] transition-colors"
+                          title="View Public Listing"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Link>
+                        <button 
+                          onClick={() => handleDeleteProperty(property.id)} 
+                          className="p-2 text-gray-500 hover:text-rose-600 transition-colors cursor-pointer"
+                          title="Delete Property"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

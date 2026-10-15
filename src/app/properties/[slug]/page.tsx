@@ -8,7 +8,7 @@ import {
   BedDouble, Bath, Square, Car, Shield, Wifi, 
   Trees, Phone, MessageSquare, Building2, ImageIcon, Video, Home, Crown, CreditCard, ChevronLeft,
   Clock, ShieldCheck, Zap, Compass, Navigation, School, Stethoscope, Plane, Train, Sparkles, Check,
-  AlertCircle, ExternalLink
+  AlertCircle, ExternalLink, FileText, Camera, Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScheduleVisitModal from '@/components/shared/schedule-visit-modal';
@@ -17,336 +17,14 @@ import PropertyShareModal from '@/components/shared/property-share-modal';
 import { generatePropertyDetailSchema } from '@/lib/seo/schema-generators';
 import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
-const BASE_MOCK_PROPERTIES: Record<string, any> = {
-  'royal-heritage-residency-jaipur': {
-    title: 'The Royal Heritage Residency Villa',
-    location: 'Vaishali Nagar, Jaipur',
-    city: 'Jaipur',
-    price: '₹3.5 Cr',
-    pricePerSqft: '₹10,937/sq.ft',
-    status: 'Ready to Move',
-    type: 'Luxury Villa',
-    bhk: '4 BHK',
-    area: '3,200 sq.ft',
-    carpetArea: '2,850 sq.ft',
-    baths: 4,
-    balconies: 3,
-    furnishing: 'Fully Furnished',
-    floor: 'G+2 Villa',
-    parking: '2 Covered Slots',
-    facing: 'East (Vastu Compliant)',
-    age: '0-1 Years',
-    available: 'Immediate',
-    reraApproved: true,
-    zeroBrokerage: true,
-    description: 'Experience unparalleled luxury in this exquisite 4 BHK villa located in the heart of Vaishali Nagar, Jaipur. Featuring premium Italian marble flooring, state-of-the-art modular kitchen, double-height ceilings, and private terrace lounge overlooking the Pink City landscape.',
-    amenities: [
-      { name: 'Private Elevator', icon: Building2 },
-      { name: 'Infinity Pool', icon: Bath },
-      { name: 'Fitness Gym', icon: Shield },
-      { name: 'Covered Parking', icon: Car },
-      { name: '100% Power Backup', icon: Zap },
-      { name: '24x7 Smart Security', icon: ShieldCheck },
-      { name: 'Landscaped Garden', icon: Trees },
-      { name: 'High-Speed Wi-Fi', icon: Wifi },
-    ],
-    nearbyHighlights: [
-      { name: 'Jaipur International Airport', distance: '12.5 km', icon: Plane },
-      { name: 'Jaipur Junction Railway Station', distance: '5.2 km', icon: Train },
-      { name: 'DPS & Tagored Public School', distance: '1.2 km', icon: School },
-      { name: 'Fortis & Eternal Hospital', distance: '2.4 km', icon: Stethoscope },
-      { name: 'Mansarovar Metro Station', distance: '1.8 km', icon: Navigation },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&q=80&w=800',
-    ]
-  },
-  'lakeview-palace-heights-udaipur': {
-    title: 'Lakeview Palace Heights Penthouse',
-    location: 'Fatehpura, Udaipur',
-    city: 'Udaipur',
-    price: '₹1.8 Cr',
-    pricePerSqft: '₹8,181/sq.ft',
-    status: 'Under Construction',
-    type: 'Penthouse Apartment',
-    bhk: '3 BHK',
-    area: '2,200 sq.ft',
-    carpetArea: '1,950 sq.ft',
-    baths: 3,
-    balconies: 2,
-    furnishing: 'Semi-Furnished',
-    floor: '12th Floor (Top Penthouse)',
-    parking: '1 Covered Slot',
-    facing: 'North-East',
-    age: 'New Construction',
-    available: 'Possession in Dec 2024',
-    reraApproved: true,
-    zeroBrokerage: false,
-    description: 'Overlooking the serene waters of Lake Pichola and Fateh Sagar, this exclusive 3 BHK Penthouse combines contemporary architecture with iconic Mewar royal elegance. Features private sky lounge and panoramic city views.',
-    amenities: [
-      { name: 'Rooftop Pool', icon: Bath },
-      { name: 'Clubhouse & Lounge', icon: Building2 },
-      { name: '24x7 Security', icon: ShieldCheck },
-      { name: 'Covered Parking', icon: Car },
-      { name: 'Power Backup', icon: Zap },
-      { name: 'High-Speed Wi-Fi', icon: Wifi },
-    ],
-    nearbyHighlights: [
-      { name: 'Maharana Pratap Airport', distance: '21.0 km', icon: Plane },
-      { name: 'Udaipur City Railway Station', distance: '4.8 km', icon: Train },
-      { name: 'Fateh Sagar Lakefront', distance: '1.1 km', icon: Navigation },
-      { name: 'Geetanjali Hospital', distance: '6.2 km', icon: Stethoscope },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
-    ]
-  },
-  'sun-city-heritage-haveli-jodhpur': {
-    title: 'Sun City Heritage Haveli',
-    location: 'Ratanada, Jodhpur',
-    city: 'Jodhpur',
-    price: '₹5.2 Cr',
-    pricePerSqft: '₹11,555/sq.ft',
-    status: 'Ready to Move',
-    type: 'Heritage Haveli',
-    bhk: '5+ BHK',
-    area: '4,500 sq.ft',
-    carpetArea: '4,100 sq.ft',
-    baths: 6,
-    balconies: 4,
-    furnishing: 'Fully Furnished (Heritage Decor)',
-    floor: 'Palatial Courtyard Estate',
-    parking: '4 Covered Slots',
-    facing: 'East (Auspicious)',
-    age: 'Restored Landmark',
-    available: 'Immediate',
-    reraApproved: true,
-    zeroBrokerage: true,
-    description: 'An architectural jewel in Jodhpur featuring authentic carved sandstone jharokhas, private central courtyard pool, and majestic Mehrangarh Fort views. Ideal for luxury family living or high-end heritage boutique residency.',
-    amenities: [
-      { name: 'Private Courtyard', icon: Trees },
-      { name: 'Heritage Fountain Pool', icon: Bath },
-      { name: 'Carved Jharokha Balcony', icon: Building2 },
-      { name: 'Full Power Backup', icon: Zap },
-      { name: 'CCTV Security', icon: ShieldCheck },
-    ],
-    nearbyHighlights: [
-      { name: 'Jodhpur Civil Airport', distance: '4.5 km', icon: Plane },
-      { name: 'Jodhpur Railway Station', distance: '3.2 km', icon: Train },
-      { name: 'Mehrangarh Fort', distance: '5.0 km', icon: Navigation },
-      { name: 'AIIMS Jodhpur', distance: '4.8 km', icon: Stethoscope },
-    ],
-  },
-  'shreeniwas-prime-enclave-jaipur': {
-    id: 4,
-    slug: 'shreeniwas-prime-enclave-jaipur',
-    title: 'Shreeniwas Prime Enclave',
-    location: 'Mansarovar, Jaipur',
-    city: 'Jaipur',
-    price: '₹85 Lakh',
-    pricePerSqft: '₹5,666/sq.ft',
-    status: 'Ready to Move',
-    type: 'Modern Apartment',
-    bhk: '3 BHK',
-    area: '1,500 sq.ft',
-    carpetArea: '1,320 sq.ft',
-    baths: 3,
-    balconies: 2,
-    furnishing: 'Semi-Furnished',
-    floor: '6th Floor of 12',
-    parking: '1 Covered Slot',
-    facing: 'North-East',
-    age: 'Ready to Move',
-    available: 'Immediate',
-    reraApproved: true,
-    zeroBrokerage: true,
-    description: 'A contemporary 3 BHK apartment in the thriving locality of Mansarovar, Jaipur. Features cross-ventilation, Italian-style tiles, branded fittings, and access to an exclusive community clubhouse and rooftop yoga zone.',
-    amenities: [
-      { name: 'Clubhouse', icon: Building2 },
-      { name: 'Children Play Area', icon: Trees },
-      { name: '24x7 Security', icon: ShieldCheck },
-      { name: 'Power Backup', icon: Zap },
-      { name: 'Covered Parking', icon: Car },
-    ],
-    nearbyHighlights: [
-      { name: 'Mansarovar Metro Station', distance: '1.2 km', icon: Navigation },
-      { name: 'Jaipur International Airport', distance: '8.5 km', icon: Plane },
-      { name: 'Apex Hospital', distance: '1.8 km', icon: Stethoscope },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
-    ]
-  },
-  'pink-city-commercial-plaza-jaipur': {
-    id: 5,
-    slug: 'pink-city-commercial-plaza-jaipur',
-    title: 'Pink City Commercial Plaza',
-    location: 'C-Scheme, Jaipur',
-    city: 'Jaipur',
-    price: '₹2.1 Cr',
-    pricePerSqft: '₹14,000/sq.ft',
-    status: 'Ready to Move',
-    type: 'Commercial',
-    bhk: 'Office Space',
-    area: '1,500 sq.ft',
-    carpetArea: '1,400 sq.ft',
-    baths: 2,
-    balconies: 1,
-    furnishing: 'Bare Shell / Fitted',
-    floor: '4th Floor Commercial Complex',
-    parking: '3 Reserved Slots',
-    facing: 'Main Road Frontage',
-    age: 'New Construction',
-    available: 'Immediate',
-    reraApproved: true,
-    zeroBrokerage: false,
-    description: 'Grade-A premium commercial office suite in prestigious C-Scheme, Jaipur. Equipped with high-speed elevators, centralized HVAC, round-the-clock facility management, and glass facade frontage ideal for corporate headquarters or legal consultancies.',
-    amenities: [
-      { name: 'Central Air Conditioning', icon: Zap },
-      { name: 'High-Speed Elevators', icon: Building2 },
-      { name: 'Triple Tier Security', icon: ShieldCheck },
-      { name: 'Valet Parking', icon: Car },
-    ],
-    nearbyHighlights: [
-      { name: 'MI Road Business Hub', distance: '0.8 km', icon: Navigation },
-      { name: 'Jaipur Junction', distance: '3.0 km', icon: Train },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800',
-    ]
-  },
-  'lake-city-royal-residency-udaipur': {
-    id: 6,
-    slug: 'lake-city-royal-residency-udaipur',
-    title: 'Lake City Royal Residency',
-    location: 'Shobhagpura, Udaipur',
-    city: 'Udaipur',
-    price: '₹65 Lakh',
-    pricePerSqft: '₹4,814/sq.ft',
-    status: 'Ready to Move',
-    type: 'Apartment',
-    bhk: '2 BHK',
-    area: '1,350 sq.ft',
-    carpetArea: '1,180 sq.ft',
-    baths: 2,
-    balconies: 2,
-    furnishing: 'Semi-Furnished',
-    floor: '3rd Floor of 7',
-    parking: '1 Covered Slot',
-    facing: 'East Facing',
-    age: 'Ready to Move',
-    available: 'Immediate',
-    reraApproved: true,
-    zeroBrokerage: true,
-    description: 'Charming 2 BHK residence in prime Shobhagpura, Udaipur. Peaceful residential neighborhood, landscaped gardens, water treatment plant, and rapid connectivity to Sukher and the university campus.',
-    amenities: [
-      { name: 'Gated Security', icon: ShieldCheck },
-      { name: 'Community Garden', icon: Trees },
-      { name: 'Covered Parking', icon: Car },
-      { name: 'Power Backup', icon: Zap },
-    ],
-    nearbyHighlights: [
-      { name: 'Sukher Circle', distance: '1.5 km', icon: Navigation },
-      { name: 'Fateh Sagar Lake', distance: '4.2 km', icon: Trees },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800',
-    ]
-  },
-  'royal-palms-luxury-villa-jodhpur': {
-    id: 7,
-    slug: 'royal-palms-luxury-villa-jodhpur',
-    title: 'Royal Palms Luxury Villa',
-    location: 'Sardarpura, Jodhpur',
-    city: 'Jodhpur',
-    price: '₹4.1 Cr',
-    pricePerSqft: '₹11,080/sq.ft',
-    status: 'Ready to Move',
-    type: 'Luxury Villa',
-    bhk: '4 BHK',
-    area: '3,700 sq.ft',
-    carpetArea: '3,300 sq.ft',
-    baths: 4,
-    balconies: 3,
-    furnishing: 'Fully Furnished',
-    floor: 'Independent G+2 Villa',
-    parking: '2 Covered Slots',
-    facing: 'North-East (Vastu Compliant)',
-    age: '0-1 Years',
-    available: 'Immediate',
-    reraApproved: true,
-    zeroBrokerage: true,
-    description: 'Palatial 4 BHK luxury villa situated in prestigious Sardarpura, Jodhpur. Designed with Jodhpur red stone accents, private lawn, modular chef kitchen, home theatre lounge, and private rooftop deck.',
-    amenities: [
-      { name: 'Private Garden Lawn', icon: Trees },
-      { name: 'Home Automation', icon: Zap },
-      { name: '24x7 Security', icon: ShieldCheck },
-      { name: 'Covered Parking', icon: Car },
-    ],
-    nearbyHighlights: [
-      { name: 'Jodhpur Junction', distance: '2.5 km', icon: Train },
-      { name: 'AIIMS Jodhpur', distance: '3.8 km', icon: Stethoscope },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
-    ]
-  },
-  'marwar-courtyard-heritage-haveli-jodhpur': {
-    id: 8,
-    slug: 'marwar-courtyard-heritage-haveli-jodhpur',
-    title: 'Marwar Courtyard Heritage Haveli',
-    location: 'Old City, Jodhpur',
-    city: 'Jodhpur',
-    price: '₹6.8 Cr',
-    pricePerSqft: '₹13,600/sq.ft',
-    status: 'Ready to Move',
-    type: 'Heritage Haveli',
-    bhk: '6 BHK',
-    area: '5,000 sq.ft',
-    carpetArea: '4,600 sq.ft',
-    baths: 6,
-    balconies: 5,
-    furnishing: 'Heritage Restored Furnishing',
-    floor: 'Heritage Courtyard Mansion',
-    parking: '3 Covered Slots',
-    facing: 'East Facing',
-    age: 'Historically Restored',
-    available: 'Immediate',
-    reraApproved: true,
-    zeroBrokerage: true,
-    description: 'Majestic 6 BHK restored Marwari haveli offering undisturbed views of Mehrangarh Fort. Features hand-carved stone arches, central open courtyard, frescoed ceilings, and heritage brass fittings throughout.',
-    amenities: [
-      { name: 'Heritage Courtyard', icon: Trees },
-      { name: 'Fort View Terrace', icon: Building2 },
-      { name: '24x7 Smart CCTV', icon: ShieldCheck },
-      { name: 'Complete Power Backup', icon: Zap },
-    ],
-    nearbyHighlights: [
-      { name: 'Mehrangarh Fort', distance: '1.2 km', icon: Navigation },
-      { name: 'Clock Tower Market', distance: '0.6 km', icon: Trees },
-    ],
-    images: [
-      'https://images.unsplash.com/photo-1582407947304-fd86f028f716?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
-    ]
-  }
-};
+const BASE_MOCK_PROPERTIES: Record<string, any> = {};
 
 export default function PropertyDetailPage() {
   const params = useParams();
   const slug = (params?.slug as string) || '';
 
-  const [property, setProperty] = useState<any>(BASE_MOCK_PROPERTIES['royal-heritage-residency-jaipur']);
+  const [property, setProperty] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeSection, setActiveSection] = useState('overview');
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
@@ -405,11 +83,16 @@ export default function PropertyDetailPage() {
                 { name: 'Top Educational Institution', distance: '1.5 km', icon: School },
                 { name: 'Super Specialty Hospital', distance: '2.0 km', icon: Stethoscope },
               ],
+              youtubeUrl: match.youtubeUrl || '',
+              googleDriveUrl: match.googleDriveUrl || '',
+              instagramUrl: match.instagramUrl || '',
+              facebookUrl: match.facebookUrl || '',
               images: match.image ? [match.image] : (match.images && match.images.length > 0 ? match.images : [
                 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200'
               ]),
               googleMapsUrl: match.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${match.title} ${match.location}`)}`
             });
+            setIsLoading(false);
             return;
           }
         }
@@ -437,7 +120,8 @@ export default function PropertyDetailPage() {
       }
 
       // 4. Fallback default
-      setProperty(BASE_MOCK_PROPERTIES['royal-heritage-residency-jaipur']);
+      setProperty(null);
+      setIsLoading(false);
     };
 
     resolveProperty();
@@ -560,6 +244,41 @@ export default function PropertyDetailPage() {
     images: property.images,
     slug: String(slug),
   }) : null;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center pt-24">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-3 border-[#C9A96E] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Loading Property Listing...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] pt-28 sm:pt-36 pb-20 px-4">
+        <div className="max-w-md mx-auto bg-white p-8 rounded-3xl border border-slate-200 shadow-sm text-center space-y-4">
+          <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto">
+            <Building2 className="w-7 h-7" />
+          </div>
+          <h1 className="text-2xl font-serif font-bold text-[#0A1628]">Property Not Found</h1>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            This property listing is not currently active, has been updated, or does not exist in our live inventory.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/properties"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0A1628] hover:bg-[#15233c] text-[#C9A96E] text-xs font-bold rounded-xl shadow transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" /> Browse All Properties
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#0A1628] pb-32 lg:pb-24">
@@ -779,6 +498,110 @@ export default function PropertyDetailPage() {
                 ))}
               </div>
             </section>
+
+            {/* Official Media, Social & Document Links (Super Admin Managed) */}
+            {(property.youtubeUrl || property.googleDriveUrl || property.instagramUrl || property.facebookUrl) && (
+              <section id="media-links" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Share2 className="w-5 h-5 text-[#C9A96E]" />
+                    <h2 className="text-xl md:text-2xl font-serif font-bold text-[#0A1628]">Official Property Media &amp; Documents</h2>
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-[#0A1628] bg-[#C9A96E]/20 border border-[#C9A96E]/40 px-3 py-1 rounded-full w-fit">
+                    Verified Resource Links
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Access direct video walkthroughs, high-resolution document drives, brochures, and official social media posts for this property.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  {/* YouTube Link */}
+                  {property.youtubeUrl && (
+                    <a
+                      href={property.youtubeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3.5 bg-rose-50/70 hover:bg-rose-100/80 text-rose-950 border border-rose-200 rounded-2xl transition-all shadow-xs group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                          <Video className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold block text-rose-950">Watch Video Walkthrough</span>
+                          <span className="text-[10px] text-rose-700 font-medium">YouTube Video Tour</span>
+                        </div>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-rose-600 group-hover:translate-x-0.5 transition-transform" />
+                    </a>
+                  )}
+
+                  {/* Google Drive Link */}
+                  {property.googleDriveUrl && (
+                    <a
+                      href={property.googleDriveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3.5 bg-blue-50/70 hover:bg-blue-100/80 text-blue-950 border border-blue-200 rounded-2xl transition-all shadow-xs group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold block text-blue-950">Brochure &amp; Legal Documents</span>
+                          <span className="text-[10px] text-blue-700 font-medium">Google Drive Folder</span>
+                        </div>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-blue-600 group-hover:translate-x-0.5 transition-transform" />
+                    </a>
+                  )}
+
+                  {/* Instagram Link */}
+                  {property.instagramUrl && (
+                    <a
+                      href={property.instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3.5 bg-pink-50/70 hover:bg-pink-100/80 text-pink-950 border border-pink-200 rounded-2xl transition-all shadow-xs group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                          <Camera className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold block text-pink-950">View Instagram Reel / Post</span>
+                          <span className="text-[10px] text-pink-700 font-medium">Official Instagram Coverage</span>
+                        </div>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-pink-600 group-hover:translate-x-0.5 transition-transform" />
+                    </a>
+                  )}
+
+                  {/* Facebook Link */}
+                  {property.facebookUrl && (
+                    <a
+                      href={property.facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3.5 bg-indigo-50/70 hover:bg-indigo-100/80 text-indigo-950 border border-indigo-200 rounded-2xl transition-all shadow-xs group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#1877F2] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                          <Globe className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold block text-indigo-950">View Facebook Post / Album</span>
+                          <span className="text-[10px] text-indigo-700 font-medium">Official Facebook Page</span>
+                        </div>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-indigo-600 group-hover:translate-x-0.5 transition-transform" />
+                    </a>
+                  )}
+                </div>
+              </section>
+            )}
 
             {/* Amenities Grid */}
             <section id="amenities" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">

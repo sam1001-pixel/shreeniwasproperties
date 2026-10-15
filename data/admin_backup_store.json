@@ -1,177 +1,8 @@
 {
-  "shreeniwas_inquiries": [
-    {
-      "id": "VISIT-7943",
-      "user": "tamana solanki",
-      "phone": "6376117833",
-      "email": "mistysolanki@gmail.com",
-      "property": "Manglam Grand City & Greens by Manglam Group",
-      "type": "Paid VIP Site Visit (₹499)",
-      "status": "Confirmed & Scheduled (₹499 Paid)",
-      "query": "Scheduled Paid VIP Site Visit on 2026-10-07 during 12 - 3pm (12:00 PM – 3:00 PM). ₹499 fee refundable.",
-      "visitDate": "2026-10-07",
-      "visitTimeSlot": "12:00 PM – 3:00 PM",
-      "slotLabel": "12 - 3pm",
-      "reply": ""
-    },
-    {
-      "id": "VISIT-3281",
-      "user": "tamana solanki",
-      "phone": "6376117833",
-      "email": "mistysolanki@gmail.com",
-      "property": "Manglam Grand City & Greens by Manglam Group",
-      "type": "1st Complimentary Free Visit",
-      "status": "Confirmed (Free 1st Visit)",
-      "query": "Scheduled 1st FREE Complimentary Visit on 2026-10-07 during 12 - 3pm (12:00 PM – 3:00 PM).",
-      "visitDate": "2026-10-07",
-      "visitTimeSlot": "12:00 PM – 3:00 PM",
-      "slotLabel": "12 - 3pm",
-      "reply": ""
-    },
-    {
-      "id": "INQ-1791301427131",
-      "name": "sujal",
-      "phone": "9079199951",
-      "email": "",
-      "propertyTitle": "[Brochure Request] Mahima Florence & Panache (Mahima Group)",
-      "propertyPrice": "₹65 Lakh - ₹1.85 Cr",
-      "message": "Requested RERA brochure and price breakdown for Mahima Florence & Panache.",
-      "date": "6 Oct 2026",
-      "status": "Hot Lead"
-    },
-    {
-      "id": "TXN-377911",
-      "user": "Direct UPI Customer",
-      "email": "direct.pay@upi",
-      "phone": "UTR-1545",
-      "property": "Premium Pass (₹999)",
-      "type": "UPI Payment (UTR Submitted)",
-      "amount": 999,
-      "utrNumber": "435132135241545",
-      "status": "Payment Under Verification",
-      "query": "UPI payment of ₹999 submitted for \"Premium Pass (₹999)\". UTR: 435132135241545. Awaiting Super Admin bank confirmation before issuing visit pass.",
-      "reply": "",
-      "date": "7 Oct 2026",
-      "isPayment": true
-    }
-  ],
-  "shreeniwas_property_visit_records": [
-    {
-      "clientName": "sujal",
-      "clientMobile": "9079199951",
-      "propertyOwnerName": "sujal",
-      "ownerMobile": "9079199951",
-      "propertyLocation": "MILKMAN COLONY",
-      "visitDate": "2026-10-11",
-      "visitTime": "11:00 AM",
-      "coordinatorName": "Tammana",
-      "visitCharge": "₹500",
-      "paymentStatus": "Partial",
-      "feedback": "❌ पसंद नहीं आई",
-      "followUpRemark": "AYEGA SOON",
-      "visitNumber": "1",
-      "id": "VR-82002",
-      "recordedBy": "Super Administrator",
-      "createdAt": "11/10/2026, 08:01:22"
-    },
-    {
-      "id": "VR-101",
-      "clientName": "Rahul Choudhary",
-      "clientMobile": "+91 98290 12345",
-      "propertyOwnerName": "Narpat Singh Rathore",
-      "ownerMobile": "+91 98291 99887",
-      "propertyLocation": "Vaishali Nagar, Jaipur (The Royal Heritage Residency)",
-      "visitDate": "2026-10-07",
-      "visitTime": "11:30 AM",
-      "coordinatorName": "Priyanka",
-      "visitCharge": "₹500",
-      "paymentStatus": "Paid",
-      "feedback": "❤️ पसंद आई",
-      "followUpRemark": "Price negotiation meeting scheduled with owner this Friday.",
-      "visitNumber": "1",
-      "recordedBy": "Super Admin",
-      "createdAt": "07/10/2026, 14:32:14"
-    },
-    {
-      "id": "VR-102",
-      "clientName": "Sunita Meena",
-      "clientMobile": "+91 94140 88765",
-      "propertyOwnerName": "Dinesh Bhati",
-      "ownerMobile": "+91 94142 33445",
-      "propertyLocation": "Ratanada, Jodhpur (Heritage Haveli)",
-      "visitDate": "2026-10-06",
-      "visitTime": "04:00 PM",
-      "coordinatorName": "Suman",
-      "visitCharge": "₹1,000",
-      "paymentStatus": "Paid",
-      "feedback": "🤔 सोचकर बताएगा",
-      "followUpRemark": "Family wants to check Vastu direction again on Sunday.",
-      "visitNumber": "2",
-      "recordedBy": "Suman (Staff)",
-      "createdAt": "06/10/2026, 14:32:14"
-    }
-  ],
-  "shreeniwas_admin_reels": [
-    {
-      "id": "REEL-01",
-      "title": "4 BHK Royal Villa 360° Walkthrough",
-      "property": "The Royal Heritage Residency",
-      "instaUrl": "https://www.instagram.com/reel/DeOqtsUTFXF/?utm_source=ig_web_copy_link&rpxt=MzRlODBiNWFlZA==&srtk=MzRlODBiNWFlZA==",
-      "embedUrl": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800",
-      "views": "14.2K",
-      "status": "Active"
-    },
-    {
-      "id": "REEL-02",
-      "title": "Lakeview Penthouse Sunset Tour Udaipur",
-      "property": "Lakeview Palace Heights",
-      "instaUrl": "https://www.instagram.com/reel/C9ABC67890/",
-      "embedUrl": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800",
-      "views": "9.8K",
-      "status": "Active"
-    },
-    {
-      "id": "REEL-03",
-      "title": "Heritage Haveli Jodhpur Royal Courtyard",
-      "property": "Heritage Haveli Jodhpur",
-      "instaUrl": "https://www.instagram.com/reel/C7DEF11223/",
-      "embedUrl": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800",
-      "views": "22.5K",
-      "status": "Active"
-    }
-  ],
-  "shreeniwas_admin_attendance": [
-    {
-      "id": "ATT-1791125047547",
-      "staffName": "Super Administrator",
-      "role": "Super Administrator",
-      "date": "Today",
-      "clockIn": "20:14",
-      "clockOut": "20:14",
-      "status": "Present (On Time)",
-      "hours": "0.1 hrs"
-    },
-    {
-      "id": "ATT-1791124919659",
-      "staffName": "Staff Admin",
-      "role": "Query Coordinator",
-      "date": "Today",
-      "clockIn": "20:11",
-      "clockOut": "20:12",
-      "status": "Present (On Time)",
-      "hours": "0.1 hrs"
-    },
-    {
-      "id": "ATT-1791365208457",
-      "staffName": "Super Administrator",
-      "role": "Super Administrator",
-      "date": "Today",
-      "clockIn": "14:56",
-      "clockOut": "14:56",
-      "status": "Present (On Time)",
-      "hours": "0.1 hrs"
-    }
-  ],
+  "shreeniwas_inquiries": [],
+  "shreeniwas_property_visit_records": [],
+  "shreeniwas_admin_reels": [],
+  "shreeniwas_admin_attendance": [],
   "shreeniwas_registered_users": [
     {
       "name": "Sujal solaki",
@@ -202,18 +33,6 @@
       "preferredCity": "Jaipur",
       "avatar": "",
       "registeredAt": "2026-10-06T16:02:04.239Z"
-    },
-    {
-      "name": "Demo User",
-      "email": "demo@shreeniwasproperties.com",
-      "role": "Property Seeker",
-      "phone": "+91 98765 43210"
-    },
-    {
-      "name": "Admin User",
-      "email": "admin@shreeniwasproperties.com",
-      "role": "Property Owner",
-      "phone": "+91 99999 88888"
     },
     {
       "name": "sujal Solanki",
@@ -729,5 +548,9 @@
         "rentalYield": "4.3% Yield"
       }
     ]
-  }
+  },
+  "shreeniwas_admin_properties": [],
+  "shreeniwas_new_projects": [],
+  "shreeniwas_testimonials_management": [],
+  "shreeniwas_blog_posts": []
 }

@@ -26,176 +26,7 @@ const CITIES = ["All Cities", "Jaipur", "Udaipur", "Jodhpur", "Kota", "Ajmer", "
 const PROPERTY_TYPES = ["All Types", "Luxury Villa", "Apartment", "Penthouse", "Heritage Haveli", "Commercial Office", "Plot / Land"];
 const BHK_OPTIONS = ["All BHK", "1 BHK", "2 BHK", "3 BHK", "4+ BHK"];
 
-const MOCK_PROPERTIES = [
-  {
-    id: "1",
-    slug: "royal-heritage-residency-jaipur",
-    title: "The Royal Heritage Residency",
-    location: "Vaishali Nagar, Jaipur",
-    city: "Jaipur",
-    price: "₹3.5 Cr",
-    rawPrice: 35000000,
-    purpose: "Buy",
-    type: "Luxury Villa",
-    bhk: "4+ BHK",
-    area: "3,200 sq.ft",
-    carpetArea: "2,850 sq.ft",
-    facing: "East (Vastu)",
-    baths: 4,
-    status: "Ready to Move",
-    verified: true,
-    reraApproved: true,
-    zeroBrokerage: true,
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800&sig=1",
-  },
-  {
-    id: "2",
-    slug: "lakeview-palace-heights-udaipur",
-    title: "Lakeview Palace Heights",
-    location: "Fatehpura, Udaipur",
-    city: "Udaipur",
-    price: "₹1.8 Cr",
-    rawPrice: 18000000,
-    purpose: "Buy",
-    type: "Penthouse",
-    bhk: "3 BHK",
-    area: "2,200 sq.ft",
-    carpetArea: "1,950 sq.ft",
-    facing: "North-East",
-    baths: 3,
-    status: "Under Construction",
-    verified: true,
-    reraApproved: true,
-    zeroBrokerage: false,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800&sig=2",
-  },
-  {
-    id: "3",
-    slug: "sun-city-heritage-haveli-jodhpur",
-    title: "Sun City Heritage Haveli",
-    location: "Ratanada, Jodhpur",
-    city: "Jodhpur",
-    price: "₹5.2 Cr",
-    rawPrice: 52000000,
-    purpose: "Buy",
-    type: "Heritage Haveli",
-    bhk: "4+ BHK",
-    area: "4,500 sq.ft",
-    carpetArea: "4,100 sq.ft",
-    facing: "East",
-    baths: 6,
-    status: "Ready to Move",
-    verified: true,
-    reraApproved: true,
-    zeroBrokerage: true,
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800&sig=3",
-  },
-  {
-    id: "4",
-    slug: "shreeniwas-prime-enclave-jaipur",
-    title: "Shreeniwas Prime Enclave",
-    location: "Mansarovar, Jaipur",
-    city: "Jaipur",
-    price: "₹85 Lakh",
-    rawPrice: 8500000,
-    purpose: "Buy",
-    type: "Apartment",
-    bhk: "3 BHK",
-    area: "1,500 sq.ft",
-    carpetArea: "1,320 sq.ft",
-    facing: "North",
-    baths: 3,
-    status: "Ready to Move",
-    verified: true,
-    reraApproved: true,
-    zeroBrokerage: true,
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800&sig=4",
-  },
-  {
-    id: "5",
-    slug: "pink-city-commercial-plaza-jaipur",
-    title: "Pink City Commercial Plaza",
-    location: "C-Scheme, Jaipur",
-    city: "Jaipur",
-    price: "₹2.1 Cr",
-    rawPrice: 21000000,
-    purpose: "Buy",
-    type: "Commercial Office",
-    bhk: "Commercial",
-    area: "1,500 sq.ft",
-    carpetArea: "1,400 sq.ft",
-    facing: "East",
-    baths: 2,
-    status: "Ready to Move",
-    verified: true,
-    reraApproved: true,
-    zeroBrokerage: false,
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800&sig=5",
-  },
-  {
-    id: "6",
-    slug: "lake-city-royal-residency-udaipur",
-    title: "Lake City Royal Residency",
-    location: "Shobhagpura, Udaipur",
-    city: "Udaipur",
-    price: "₹65 Lakh",
-    rawPrice: 6500000,
-    purpose: "Rent",
-    type: "Apartment",
-    bhk: "2 BHK",
-    area: "1,350 sq.ft",
-    carpetArea: "1,180 sq.ft",
-    facing: "East",
-    baths: 2,
-    status: "Ready to Move",
-    verified: true,
-    reraApproved: true,
-    zeroBrokerage: true,
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=800&sig=6",
-  },
-  {
-    id: "7",
-    slug: "chambal-riverfront-villa-kota",
-    title: "Chambal Riverfront Royal Villa",
-    location: "RK Puram, Kota",
-    city: "Kota",
-    price: "₹1.4 Cr",
-    rawPrice: 14000000,
-    purpose: "Buy",
-    type: "Luxury Villa",
-    bhk: "3 BHK",
-    area: "2,100 sq.ft",
-    carpetArea: "1,850 sq.ft",
-    facing: "North",
-    baths: 3,
-    status: "Ready to Move",
-    verified: true,
-    reraApproved: true,
-    zeroBrokerage: true,
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800&sig=7",
-  },
-  {
-    id: "8",
-    slug: "ana-sagar-lake-enclave-ajmer",
-    title: "Ana Sagar Lakefront Residency",
-    location: "Vaishali Nagar, Ajmer",
-    city: "Ajmer",
-    price: "₹75 Lakh",
-    rawPrice: 7500000,
-    purpose: "Buy",
-    type: "Apartment",
-    bhk: "2 BHK",
-    area: "1,250 sq.ft",
-    carpetArea: "1,100 sq.ft",
-    facing: "East",
-    baths: 2,
-    status: "Ready to Move",
-    verified: true,
-    reraApproved: true,
-    zeroBrokerage: true,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800&sig=8",
-  }
-];
+const MOCK_PROPERTIES: any[] = [];
 
 function PropertiesContent() {
   const searchParams = useSearchParams();
@@ -213,7 +44,7 @@ function PropertiesContent() {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [compareItems, setCompareItems] = useState<PropertyCompareItem[]>([]);
-  const [propertiesList, setPropertiesList] = useState<any[]>(MOCK_PROPERTIES);
+  const [propertiesList, setPropertiesList] = useState<any[]>([]);
   const [isLocating, setIsLocating] = useState(false);
   const [detectedNote, setDetectedNote] = useState<string | null>(null);
   const [bookingProperty, setBookingProperty] = useState<any>(null);
@@ -310,14 +141,14 @@ function PropertiesContent() {
               reraApproved: true,
               zeroBrokerage: true,
               image: p.image || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800',
+              youtubeUrl: p.youtubeUrl || '',
+              googleDriveUrl: p.googleDriveUrl || '',
+              instagramUrl: p.instagramUrl || '',
+              facebookUrl: p.facebookUrl || '',
             };
           });
           
-          // Filter out default listings that are already defined or overridden by admin
-          const adminIds = new Set(formattedProps.map(p => p.id));
-          const adminSlugs = new Set(formattedProps.map(p => p.slug));
-          const remainingMocks = MOCK_PROPERTIES.filter(m => !adminIds.has(m.id) && !adminSlugs.has(m.slug));
-          setPropertiesList([...formattedProps, ...remainingMocks]);
+          setPropertiesList(formattedProps);
         } else if (Array.isArray(parsed) && parsed.length === 0) {
           // Admin deleted everything
           setPropertiesList([]);

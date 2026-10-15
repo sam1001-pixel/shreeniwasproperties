@@ -52,152 +52,7 @@ import { useSiteSettings } from "@/lib/settings/site-settings-context";
 import { syncFromServerToLocal } from "@/lib/sync/admin-sync";
 
 // Featured Properties
-const FEATURED_PROPERTIES = [
-  {
-    id: 1,
-    slug: "royal-heritage-residency-jaipur",
-    title: "The Royal Heritage Residency",
-    location: "Vaishali Nagar, Jaipur",
-    city: "Jaipur",
-    price: "₹3.5 Cr",
-    pricePerSqft: "₹10,937/sq.ft",
-    sqft: 3200,
-    bhk: "4 BHK",
-    type: "Luxury Villa",
-    category: "Luxury Villas",
-    status: "Ready to Move",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop&sig=1",
-    reraApproved: true,
-    verified: true,
-    zeroBrokerage: true
-  },
-  {
-    id: 2,
-    slug: "lakeview-palace-heights-udaipur",
-    title: "Lakeview Palace Heights",
-    location: "Fatehpura, Udaipur",
-    city: "Udaipur",
-    price: "₹1.8 Cr",
-    pricePerSqft: "₹8,181/sq.ft",
-    sqft: 2200,
-    bhk: "3 BHK",
-    type: "Penthouse Apartment",
-    category: "Apartments",
-    status: "Under Construction",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop&sig=2",
-    reraApproved: true,
-    verified: true,
-    zeroBrokerage: false
-  },
-  {
-    id: 3,
-    slug: "sun-city-heritage-haveli-jodhpur",
-    title: "Sun City Heritage Haveli",
-    location: "Ratanada, Jodhpur",
-    city: "Jodhpur",
-    price: "₹5.2 Cr",
-    pricePerSqft: "₹11,555/sq.ft",
-    sqft: 4500,
-    bhk: "5+ BHK",
-    type: "Heritage Haveli",
-    category: "Havelis",
-    status: "Ready to Move",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop&sig=3",
-    reraApproved: true,
-    verified: true,
-    zeroBrokerage: true
-  },
-  {
-    id: 4,
-    slug: "shreeniwas-prime-enclave-jaipur",
-    title: "Shreeniwas Prime Enclave",
-    location: "Mansarovar, Jaipur",
-    city: "Jaipur",
-    price: "₹85 Lakh",
-    pricePerSqft: "₹5,666/sq.ft",
-    sqft: 1500,
-    bhk: "3 BHK",
-    type: "Modern Apartment",
-    category: "Apartments",
-    status: "Ready to Move",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800&auto=format&fit=crop&sig=4",
-    reraApproved: true,
-    verified: true,
-    zeroBrokerage: true
-  },
-  {
-    id: 5,
-    slug: "pink-city-commercial-plaza-jaipur",
-    title: "Pink City Commercial Plaza",
-    location: "C-Scheme, Jaipur",
-    city: "Jaipur",
-    price: "₹2.1 Cr",
-    pricePerSqft: "₹14,000/sq.ft",
-    sqft: 1500,
-    bhk: "Office Space",
-    type: "Commercial",
-    category: "Commercial",
-    status: "Ready to Move",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop&sig=5",
-    reraApproved: true,
-    verified: true,
-    zeroBrokerage: false
-  },
-  {
-    id: 6,
-    slug: "lake-city-royal-residency-udaipur",
-    title: "Lake City Royal Residency",
-    location: "Shobhagpura, Udaipur",
-    city: "Udaipur",
-    price: "₹65 Lakh",
-    pricePerSqft: "₹4,814/sq.ft",
-    sqft: 1350,
-    bhk: "2 BHK",
-    type: "Apartment",
-    category: "Apartments",
-    status: "Ready to Move",
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800&auto=format&fit=crop&sig=6",
-    reraApproved: true,
-    verified: true,
-    zeroBrokerage: true
-  },
-  {
-    id: 7,
-    slug: "royal-palms-luxury-villa-jodhpur",
-    title: "Royal Palms Luxury Villa",
-    location: "Sardarpura, Jodhpur",
-    city: "Jodhpur",
-    price: "₹4.1 Cr",
-    pricePerSqft: "₹11,080/sq.ft",
-    sqft: 3700,
-    bhk: "4 BHK",
-    type: "Luxury Villa",
-    category: "Luxury Villas",
-    status: "Ready to Move",
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=800&auto=format&fit=crop&sig=7",
-    reraApproved: true,
-    verified: true,
-    zeroBrokerage: true
-  },
-  {
-    id: 8,
-    slug: "marwar-courtyard-heritage-haveli-jodhpur",
-    title: "Marwar Courtyard Heritage Haveli",
-    location: "Old City, Jodhpur",
-    city: "Jodhpur",
-    price: "₹6.8 Cr",
-    pricePerSqft: "₹13,600/sq.ft",
-    sqft: 5000,
-    bhk: "6 BHK",
-    type: "Heritage Haveli",
-    category: "Havelis",
-    status: "Ready to Move",
-    image: "https://images.unsplash.com/photo-1582407947304-fd86f028f716?q=80&w=800&auto=format&fit=crop&sig=8",
-    reraApproved: true,
-    verified: true,
-    zeroBrokerage: true
-  }
-];
+const FEATURED_PROPERTIES: any[] = [];
 
 // Top Rajasthan Localities Price Trends Data
 const LOCALITY_PRICE_TRENDS = [
@@ -210,38 +65,7 @@ const LOCALITY_PRICE_TRENDS = [
 ];
 
 // Market Insights & Blog Articles
-const BLOG_POSTS = [
-  {
-    id: 1,
-    slug: "top-10-investment-locations-jaipur-2024",
-    title: "Top 10 High-Return Property Investment Hotspots in Jaipur",
-    category: "Market Trends",
-    date: "Oct 12, 2024",
-    readTime: "5 min read",
-    excerpt: "Discover why Mansarovar Extension and Jagatpura are yielding up to 14.2% annual capital appreciation.",
-    image: "https://images.unsplash.com/photo-1599661559886-41b80c541b00?q=80&w=600"
-  },
-  {
-    id: 2,
-    slug: "understanding-rera-guidelines-rajasthan",
-    title: "Complete Guide to RERA Guidelines & Buyer Safety in Rajasthan",
-    category: "Legal & RERA",
-    date: "Oct 08, 2024",
-    readTime: "7 min read",
-    excerpt: "Everything you need to verify before handing over down payments for under-construction flats.",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600"
-  },
-  {
-    id: 3,
-    slug: "vastu-tips-for-luxury-villas",
-    title: "Essential Vastu Shastra Guidelines for Buying Luxury Villas in Udaipur",
-    category: "Architecture & Vastu",
-    date: "Oct 02, 2024",
-    readTime: "4 min read",
-    excerpt: "How East-facing entrances and north-east water bodies enhance prosperity and peace.",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600"
-  }
-];
+const BLOG_POSTS: any[] = [];
 
 // Home Buying Journey Steps Data
 const JOURNEY_STEPS = [
@@ -252,20 +76,7 @@ const JOURNEY_STEPS = [
 ];
 
 // Testimonials Data
-const TESTIMONIALS = [
-  {
-    name: "Dr. Alok & Sunita Mehta",
-    role: "Villa Buyers in Jaipur",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200",
-    quote: "Shreeniwas Properties made buying our 4 BHK villa in Vaishali Nagar effortless. The VIP site visit with guaranteed cab pickup and RERA title checks gave us 100% peace of mind."
-  },
-  {
-    name: "Vikramaditya Singh",
-    role: "Heritage Property Investor",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200",
-    quote: "Their team has unmatched local authority across Udaipur & Jodhpur. I found a prime lakeview commercial plot direct from owner!"
-  }
-];
+const TESTIMONIALS: any[] = [];
 
 // EMI Calculator Component (Sleek Mobile-First Compact UI)
 const EMICalculator = () => {
@@ -1121,6 +932,7 @@ export default function MarketingPage() {
       <PricingTariffSection />
 
       {/* 7. Rajasthan Market Insights & Guides (Scrollable Track) */}
+      {blogPostsList.length > 0 && (
       <section className="py-10 px-4 bg-white border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-row justify-between items-center mb-6 gap-2">
@@ -1177,6 +989,7 @@ export default function MarketingPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* 8. Interactive Home Buying Journey Steps (Bottom Unique Left-to-Right Scrollable Track) */}
       <section className="py-10 px-4 bg-[#0A1628] text-white border-y border-slate-800 relative overflow-hidden">
@@ -1216,6 +1029,7 @@ export default function MarketingPage() {
       </section>
 
       {/* 9. Verified Buyer & Landlord Testimonials (Bottom Unique Left-to-Right Scrollable Track) */}
+      {testimonialsList.length > 0 && (
       <section className="py-10 px-4 bg-white border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-row justify-between items-center mb-6 gap-2">
@@ -1257,6 +1071,7 @@ export default function MarketingPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* 10. Interactive EMI / Mortgage Calculator */}
       <section className="py-12 sm:py-16 px-4 bg-slate-50">

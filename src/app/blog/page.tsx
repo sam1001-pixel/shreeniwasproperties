@@ -8,41 +8,10 @@ import { syncFromServerToLocal } from '@/lib/sync/admin-sync';
 
 const categories = ["All", "Market Trends", "Buying Guide", "Tenant Advisory", "Commercial Real Estate"];
 
-const DEFAULT_BLOGS = [
-  {
-    slug: "why-jaipur-is-the-next-big-real-estate-hub",
-    title: "Why Jaipur is the Next Big Real Estate Hub in India",
-    excerpt: "Discover the driving factors behind Jaipur's booming real estate market and why investors are flocking to the Pink City.",
-    category: "Market Trends",
-    author: "Aditi Sharma",
-    date: "Oct 12, 2023",
-    readTime: "5 min read",
-    image: "https://images.unsplash.com/photo-1599661559882-6296fc1cb475?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    slug: "first-time-homebuyer-guide",
-    title: "The Ultimate Guide for First-Time Homebuyers in Rajasthan",
-    excerpt: "A comprehensive step-by-step guide to help you navigate the complex process of buying your first home.",
-    category: "Buying Guide",
-    author: "Vikram Singh",
-    date: "Oct 08, 2023",
-    readTime: "7 min read",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    slug: "understanding-rera-rajasthan",
-    title: "Understanding RERA Rajasthan: What Every Buyer Must Know",
-    excerpt: "Learn how RERA protects property buyers in Rajasthan and how to check RERA registration of a project.",
-    category: "Tenant Advisory",
-    author: "Rajesh Rathore",
-    date: "Sep 28, 2023",
-    readTime: "4 min read",
-    image: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80"
-  }
-];
+const DEFAULT_BLOGS: any[] = [];
 
 export default function BlogListingPage() {
-  const [blogsList, setBlogsList] = useState<any[]>(DEFAULT_BLOGS);
+  const [blogsList, setBlogsList] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   const loadLiveBlogs = () => {
@@ -62,9 +31,13 @@ export default function BlogListingPage() {
             image: b.image || 'https://images.unsplash.com/photo-1599661559882-6296fc1cb475?auto=format&fit=crop&w=800&q=80'
           }));
           setBlogsList(formatted);
+          return;
         }
       }
-    } catch (e) {}
+      setBlogsList([]);
+    } catch (e) {
+      setBlogsList([]);
+    }
   };
 
   useEffect(() => {
@@ -105,57 +78,69 @@ export default function BlogListingPage() {
           ))}
         </div>
 
-        {/* Featured Post */}
-        {blogsList.length > 0 && (
-          <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-2">
-            <div className="relative h-64 lg:h-full min-h-[300px]">
-              <Image src={blogsList[0].image} alt={blogsList[0].title} fill className="object-cover" />
-            </div>
-            <div className="p-8 lg:p-12 flex flex-col justify-center space-y-4">
-              <span className="bg-[#C9A96E]/20 text-[#0A1628] text-xs font-bold px-3 py-1 rounded-full w-fit">
-                {blogsList[0].category}
-              </span>
-              <h2 className="text-3xl font-bold font-serif text-[#0A1628] hover:text-[#C9A96E] transition-colors">
-                <Link href={`/blog/${blogsList[0].slug}`}>{blogsList[0].title}</Link>
-              </h2>
-              <p className="text-gray-600 text-sm leading-relaxed">{blogsList[0].excerpt}</p>
-              <div className="flex items-center text-xs text-gray-500 gap-4 pt-4 border-t border-gray-100">
-                <span className="flex items-center gap-1 font-medium"><User className="w-3.5 h-3.5 text-[#C9A96E]" /> {blogsList[0].author}</span>
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {blogsList[0].readTime}</span>
-              </div>
-            </div>
+        {blogsList.length === 0 ? (
+          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-xs max-w-lg mx-auto">
+            <h4 className="text-xl font-serif font-bold text-[#0A1628]">No Articles Published Yet</h4>
+            <p className="text-slate-500 text-sm mt-2 mb-6">Our property analysts and editorial team will publish market reports and guides soon.</p>
+            <Link href="/properties">
+              <button className="px-6 py-3 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow-md cursor-pointer hover:bg-[#0A1628]/90 transition-all">
+                Explore Properties
+              </button>
+            </Link>
           </div>
-        )}
-
-        {/* Blog Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogsList
-            .filter(b => selectedCategory === "All" || b.category === selectedCategory)
-            .map((blog, idx) => (
-              <div key={idx} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
-                <div className="relative h-48 w-full">
-                  <Image src={blog.image} alt={blog.title} fill className="object-cover" />
-                  <span className="absolute top-3 left-3 bg-[#0A1628] text-[#C9A96E] text-xs font-bold px-3 py-1 rounded-full">
-                    {blog.category}
-                  </span>
-                </div>
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <h3 className="text-xl font-bold font-serif text-[#0A1628] hover:text-[#C9A96E] transition-colors mb-2">
-                      <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
-                    </h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">{blog.excerpt}</p>
-                  </div>
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                    <span>{blog.author}</span>
-                    <Link href={`/blog/${blog.slug}`} className="text-[#C9A96E] font-semibold flex items-center gap-1 hover:underline">
-                      Read <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
+        ) : (
+          <>
+            {/* Featured Post */}
+            <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-2">
+              <div className="relative h-64 lg:h-full min-h-[300px]">
+                <Image src={blogsList[0].image} alt={blogsList[0].title} fill className="object-cover" />
+              </div>
+              <div className="p-8 lg:p-12 flex flex-col justify-center space-y-4">
+                <span className="bg-[#C9A96E]/20 text-[#0A1628] text-xs font-bold px-3 py-1 rounded-full w-fit">
+                  {blogsList[0].category}
+                </span>
+                <h2 className="text-3xl font-bold font-serif text-[#0A1628] hover:text-[#C9A96E] transition-colors">
+                  <Link href={`/blog/${blogsList[0].slug}`}>{blogsList[0].title}</Link>
+                </h2>
+                <p className="text-gray-600 text-sm leading-relaxed">{blogsList[0].excerpt}</p>
+                <div className="flex items-center text-xs text-gray-500 gap-4 pt-4 border-t border-gray-100">
+                  <span className="flex items-center gap-1 font-medium"><User className="w-3.5 h-3.5 text-[#C9A96E]" /> {blogsList[0].author}</span>
+                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {blogsList[0].readTime}</span>
                 </div>
               </div>
-            ))}
-        </div>
+            </div>
+
+            {/* Blog Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {blogsList
+                .filter(b => selectedCategory === "All" || b.category === selectedCategory)
+                .map((blog, idx) => (
+                  <div key={idx} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
+                    <div className="relative h-48 w-full">
+                      <Image src={blog.image} alt={blog.title} fill className="object-cover" />
+                      <span className="absolute top-3 left-3 bg-[#0A1628] text-[#C9A96E] text-xs font-bold px-3 py-1 rounded-full">
+                        {blog.category}
+                      </span>
+                    </div>
+                    <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                      <div>
+                        <h3 className="text-xl font-bold font-serif text-[#0A1628] hover:text-[#C9A96E] transition-colors mb-2">
+                          <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">{blog.excerpt}</p>
+                      </div>
+                      <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                        <span>{blog.author}</span>
+                        <Link href={`/blog/${blog.slug}`} className="text-[#C9A96E] font-semibold flex items-center gap-1 hover:underline">
+                          Read <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
