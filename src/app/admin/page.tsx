@@ -362,9 +362,6 @@ export default function AdminDashboard() {
     const savedVisitRecords = localStorage.getItem('shreeniwas_property_visit_records');
     if (savedVisitRecords) {
       try { setVisitRecordsList(JSON.parse(savedVisitRecords)); } catch (e) {}
-      const initialSeedVisitRecords: PropertyVisitRecordItem[] = [];
-      setVisitRecordsList(initialSeedVisitRecords);
-      try { localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(initialSeedVisitRecords)); } catch (e) {}
     }
 
     // Load Blocked / Blackout Visit Dates
@@ -451,25 +448,61 @@ export default function AdminDashboard() {
     setIsLoaded(true);
   }, []);
 
+  const mergeCollectionSafely = (
+    key: string,
+    serverItems: any[] | undefined,
+    setter: (items: any[]) => void
+  ) => {
+    try {
+      const localRaw = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
+      const localItems: any[] = localRaw ? JSON.parse(localRaw) : [];
+
+      if (serverItems && Array.isArray(serverItems) && serverItems.length > 0) {
+        if (!localItems || localItems.length === 0) {
+          setter(serverItems);
+          try { localStorage.setItem(key, JSON.stringify(serverItems)); } catch (e) {}
+        } else {
+          // Merge by id/date, prioritizing local edits while keeping any remote entries
+          const map = new Map<string, any>();
+          serverItems.forEach((item: any, idx: number) => {
+            const id = item?.id || item?.date || item?.email || `server-${idx}`;
+            map.set(String(id), item);
+          });
+          localItems.forEach((item: any, idx: number) => {
+            const id = item?.id || item?.date || item?.email || `local-${idx}`;
+            map.set(String(id), item);
+          });
+          const merged = Array.from(map.values());
+          setter(merged);
+          try { localStorage.setItem(key, JSON.stringify(merged)); } catch (e) {}
+        }
+      } else if (localItems && Array.isArray(localItems) && localItems.length > 0) {
+        // Local has data but server is empty: keep local and push to server database
+        setter(localItems);
+        syncAdminDataToDatabase(key, localItems);
+      }
+    } catch (e) {
+      if (serverItems && Array.isArray(serverItems) && serverItems.length > 0) {
+        setter(serverItems);
+      }
+    }
+  };
+
   const loadAdminDataFromServer = () => {
     fetchAdminDataFromDatabase().then((dbData) => {
       if (dbData && typeof dbData === 'object' && Object.keys(dbData).length > 0) {
-        if (dbData.shreeniwas_admin_properties && Array.isArray(dbData.shreeniwas_admin_properties)) {
-          setPropertiesList(dbData.shreeniwas_admin_properties);
-          try { localStorage.setItem('shreeniwas_admin_properties', JSON.stringify(dbData.shreeniwas_admin_properties)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_property_visit_records && Array.isArray(dbData.shreeniwas_property_visit_records)) {
-          setVisitRecordsList(dbData.shreeniwas_property_visit_records);
-          try { localStorage.setItem('shreeniwas_property_visit_records', JSON.stringify(dbData.shreeniwas_property_visit_records)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_blocked_visit_dates && Array.isArray(dbData.shreeniwas_blocked_visit_dates)) {
-          setBlockedDatesList(dbData.shreeniwas_blocked_visit_dates);
-          try { localStorage.setItem('shreeniwas_blocked_visit_dates', JSON.stringify(dbData.shreeniwas_blocked_visit_dates)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_admin_reels && Array.isArray(dbData.shreeniwas_admin_reels)) {
-          setReelsList(dbData.shreeniwas_admin_reels);
-          try { localStorage.setItem('shreeniwas_admin_reels', JSON.stringify(dbData.shreeniwas_admin_reels)); } catch (e) {}
-        }
+        mergeCollectionSafely('shreeniwas_admin_properties', dbData.shreeniwas_admin_properties, setPropertiesList);
+        mergeCollectionSafely('shreeniwas_property_visit_records', dbData.shreeniwas_property_visit_records, setVisitRecordsList);
+        mergeCollectionSafely('shreeniwas_blocked_visit_dates', dbData.shreeniwas_blocked_visit_dates, setBlockedDatesList);
+        mergeCollectionSafely('shreeniwas_admin_reels', dbData.shreeniwas_admin_reels, setReelsList);
+        mergeCollectionSafely('shreeniwas_inquiries', dbData.shreeniwas_inquiries, setInquiriesList);
+        mergeCollectionSafely('shreeniwas_blog_posts', dbData.shreeniwas_blog_posts, setBlogsList);
+        mergeCollectionSafely('shreeniwas_testimonials_management', dbData.shreeniwas_testimonials_management, setReviewsList);
+        mergeCollectionSafely('shreeniwas_admin_attendance', dbData.shreeniwas_admin_attendance, setAttendanceList);
+        mergeCollectionSafely('shreeniwas_new_projects', dbData.shreeniwas_new_projects, setNewProjectsList);
+        mergeCollectionSafely('shreeniwas_registered_users', dbData.shreeniwas_registered_users, setUsersList);
+        mergeCollectionSafely('shreeniwas_admin_accounts', dbData.shreeniwas_admin_accounts, setAdminAccountsList);
+
         if (dbData.shreeniwas_tariff_settings && typeof dbData.shreeniwas_tariff_settings === 'object') {
           setTariffSettings(prev => ({ ...prev, ...dbData.shreeniwas_tariff_settings }));
           try { localStorage.setItem('shreeniwas_tariff_settings', JSON.stringify(dbData.shreeniwas_tariff_settings)); } catch (e) {}
@@ -482,37 +515,9 @@ export default function AdminDashboard() {
           setSiteSettings(prev => ({ ...prev, ...dbData.shreeniwas_platform_settings }));
           try { localStorage.setItem('shreeniwas_platform_settings', JSON.stringify(dbData.shreeniwas_platform_settings)); } catch (e) {}
         }
-        if (dbData.shreeniwas_inquiries && Array.isArray(dbData.shreeniwas_inquiries)) {
-          setInquiriesList(dbData.shreeniwas_inquiries);
-          try { localStorage.setItem('shreeniwas_inquiries', JSON.stringify(dbData.shreeniwas_inquiries)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_blog_posts && Array.isArray(dbData.shreeniwas_blog_posts)) {
-          setBlogsList(dbData.shreeniwas_blog_posts);
-          try { localStorage.setItem('shreeniwas_blog_posts', JSON.stringify(dbData.shreeniwas_blog_posts)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_testimonials_management && Array.isArray(dbData.shreeniwas_testimonials_management)) {
-          setReviewsList(dbData.shreeniwas_testimonials_management);
-          try { localStorage.setItem('shreeniwas_testimonials_management', JSON.stringify(dbData.shreeniwas_testimonials_management)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_admin_attendance && Array.isArray(dbData.shreeniwas_admin_attendance)) {
-          setAttendanceList(dbData.shreeniwas_admin_attendance);
-          try { localStorage.setItem('shreeniwas_admin_attendance', JSON.stringify(dbData.shreeniwas_admin_attendance)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_new_projects && Array.isArray(dbData.shreeniwas_new_projects)) {
-          setNewProjectsList(dbData.shreeniwas_new_projects);
-          try { localStorage.setItem('shreeniwas_new_projects', JSON.stringify(dbData.shreeniwas_new_projects)); } catch (e) {}
-        }
         if (dbData.shreeniwas_brokerage_settings && typeof dbData.shreeniwas_brokerage_settings === 'object') {
           setBrokerageSettings(prev => ({ ...prev, ...dbData.shreeniwas_brokerage_settings }));
           try { localStorage.setItem('shreeniwas_brokerage_settings', JSON.stringify(dbData.shreeniwas_brokerage_settings)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_registered_users && Array.isArray(dbData.shreeniwas_registered_users)) {
-          setUsersList(dbData.shreeniwas_registered_users);
-          try { localStorage.setItem('shreeniwas_registered_users', JSON.stringify(dbData.shreeniwas_registered_users)); } catch (e) {}
-        }
-        if (dbData.shreeniwas_admin_accounts && Array.isArray(dbData.shreeniwas_admin_accounts)) {
-          setAdminAccountsList(dbData.shreeniwas_admin_accounts);
-          try { localStorage.setItem('shreeniwas_admin_accounts', JSON.stringify(dbData.shreeniwas_admin_accounts)); } catch (e) {}
         }
         if (dbData.shreeniwas_locality_price_trends_v2 && typeof dbData.shreeniwas_locality_price_trends_v2 === 'object') {
           setAllTrends(prev => ({ ...prev, ...dbData.shreeniwas_locality_price_trends_v2 }));
