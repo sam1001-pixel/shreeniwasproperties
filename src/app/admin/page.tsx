@@ -298,6 +298,12 @@ export default function AdminDashboard() {
   // Super Admin Payment Gateway & UPI Settings State
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(DEFAULT_PAYMENT_SETTINGS);
 
+  // Super Admin Daily Automated Excel & Owner Dispatch States
+  const [dailyReportEmail, setDailyReportEmail] = useState('contact@shreeniwasproperties.com');
+  const [dailyReportPhone, setDailyReportPhone] = useState('+91 6376117833');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [dailyReportStatusMsg, setDailyReportStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
   useEffect(() => {
     const authSession = sessionStorage.getItem('shreeniwas_admin_auth');
     const storedRole = sessionStorage.getItem('shreeniwas_admin_role');
@@ -376,8 +382,19 @@ export default function AdminDashboard() {
           parsed.logoUrl = '/logo/shreeniwas-logo-dark.png';
         }
         setSiteSettings(parsed); 
+        if (parsed.contactEmail && !localStorage.getItem('shreeniwas_daily_report_email')) {
+          setDailyReportEmail(parsed.contactEmail);
+        }
+        if (parsed.supportPhone && !localStorage.getItem('shreeniwas_daily_report_phone')) {
+          setDailyReportPhone(parsed.supportPhone);
+        }
       } catch (e) {} 
     }
+
+    const savedRepEmail = localStorage.getItem('shreeniwas_daily_report_email');
+    if (savedRepEmail) setDailyReportEmail(savedRepEmail);
+    const savedRepPhone = localStorage.getItem('shreeniwas_daily_report_phone');
+    if (savedRepPhone) setDailyReportPhone(savedRepPhone);
 
     // Load Media Gallery
     const savedGallery = localStorage.getItem('shreeniwas_media_gallery');
@@ -1404,8 +1421,103 @@ export default function AdminDashboard() {
     setShowGalleryPicker(true);
   };
 
+  // ==========================================
+  // SUPER ADMIN DAILY AUTOMATED EXCEL REPORTS
+  // ==========================================
+  const handleSaveDailyReportContacts = () => {
+    localStorage.setItem('shreeniwas_daily_report_email', dailyReportEmail.trim());
+    localStorage.setItem('shreeniwas_daily_report_phone', dailyReportPhone.trim());
+    setDailyReportStatusMsg({
+      type: 'success',
+      text: 'Owner dispatch contacts successfully saved for daily automated reports!',
+    });
+    setTimeout(() => setDailyReportStatusMsg(null), 4000);
+  };
+
+  const handleDailyReportAction = async (action: 'download' | 'email' | 'whatsapp') => {
+    setIsGeneratingReport(true);
+    setDailyReportStatusMsg({
+      type: 'info',
+      text: action === 'download' 
+        ? 'Generating multi-sheet Excel workbook...' 
+        : action === 'email' 
+          ? `Generating Excel & dispatching to ${dailyReportEmail}...` 
+          : 'Preparing WhatsApp business summary...',
+    });
+
+    try {
+      const response = await fetch('/api/cron/daily-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetEmail: dailyReportEmail.trim(),
+          targetPhone: dailyReportPhone.trim(),
+          sendEmail: action === 'email',
+          inquiries: inquiriesList,
+          visitRecords: visitRecordsList,
+          attendance: attendanceList,
+          users: usersList,
+          properties: propertiesList,
+        }),
+      });
+
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.error || 'Failed to generate report');
+      }
+
+      if (action === 'download' && resData.excelBase64) {
+        // Trigger browser file download from base64 buffer
+        const byteCharacters = atob(resData.excelBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const blobUrl = URL.createObjectURL(blob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = blobUrl;
+        downloadLink.download = resData.filename || `Shreeniwas_Daily_Business_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(blobUrl);
+
+        setDailyReportStatusMsg({
+          type: 'success',
+          text: `Multi-sheet Excel workbook downloaded successfully! (${resData.filename})`,
+        });
+      } else if (action === 'email') {
+        const msg = resData.emailResult?.simulated
+          ? `Excel generated! Simulated dispatch logged for ${dailyReportEmail} (Configure GMAIL_USER & GMAIL_PASS in Vercel for live delivery).`
+          : `Automated daily Excel report successfully delivered to ${dailyReportEmail}!`;
+        setDailyReportStatusMsg({ type: 'success', text: msg });
+      } else if (action === 'whatsapp') {
+        if (resData.whatsappUrl) {
+          window.open(resData.whatsappUrl, '_blank');
+          setDailyReportStatusMsg({
+            type: 'success',
+            text: `WhatsApp dispatch window opened for ${dailyReportPhone}!`,
+          });
+        }
+      }
+    } catch (err: any) {
+      console.error('Daily report action error:', err);
+      setDailyReportStatusMsg({
+        type: 'error',
+        text: err?.message || 'Failed to process report action. Please try again.',
+      });
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   const navItems = adminRole === 'super' ? [
     { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
+    { id: 'daily-reports', label: 'Daily Automated Reports & Excel', icon: FileSpreadsheet },
     { id: 'visit-records', label: 'Property Visit Records (13-Point)', icon: ClipboardList },
     { id: 'properties', label: 'Properties Inventory', icon: Building2 },
     { id: 'projects', label: 'Builder Projects & Townships', icon: Layers },
@@ -1655,6 +1767,321 @@ export default function AdminDashboard() {
                     </p>
                     <p className="text-xs font-bold text-slate-500">On Approved Leave</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Daily Automated Excel Reports & Owner Dispatch Card */}
+              <div className="bg-gradient-to-r from-[#0A1628] to-[#14233c] p-6 rounded-3xl border border-[#C9A96E]/30 shadow-md text-white">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#C9A96E]/20 text-[#C9A96E] text-[11px] font-bold uppercase tracking-wider border border-[#C9A96E]/30">
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-[#C9A96E]" /> Automated Daily Excel Engine • 9:00 PM IST
+                    </div>
+                    <h3 className="text-lg font-serif font-bold text-white">
+                      Daily Business Report to Owner (Excel + Email + WhatsApp)
+                    </h3>
+                    <p className="text-xs text-slate-300">
+                      Target: <strong>{dailyReportEmail}</strong> • WhatsApp: <strong>{dailyReportPhone}</strong>
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => handleDailyReportAction('download')}
+                      disabled={isGeneratingReport}
+                      className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 border border-white/20 transition cursor-pointer disabled:opacity-50"
+                    >
+                      <Download className="w-3.5 h-3.5 text-[#C9A96E]" />
+                      Download Excel
+                    </button>
+                    <button
+                      onClick={() => handleDailyReportAction('email')}
+                      disabled={isGeneratingReport}
+                      className="px-3.5 py-2 rounded-xl bg-[#C9A96E] hover:bg-[#d8b87d] text-[#0A1628] font-bold text-xs flex items-center gap-1.5 shadow transition cursor-pointer disabled:opacity-50"
+                    >
+                      {isGeneratingReport ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                      Email Owner Now
+                    </button>
+                    <button
+                      onClick={() => handleDailyReportAction('whatsapp')}
+                      disabled={isGeneratingReport}
+                      className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      WhatsApp
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('daily-reports')}
+                      className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs transition cursor-pointer"
+                    >
+                      Configure →
+                    </button>
+                  </div>
+                </div>
+
+                {dailyReportStatusMsg && (
+                  <div className={`mt-3 p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                    dailyReportStatusMsg.type === 'success'
+                      ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30'
+                      : dailyReportStatusMsg.type === 'error'
+                      ? 'bg-rose-500/20 text-rose-200 border border-rose-500/30'
+                      : 'bg-blue-500/20 text-blue-200 border border-blue-500/30'
+                  }`}>
+                    <span>{dailyReportStatusMsg.text}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* DAILY AUTOMATED EXCEL REPORTS & OWNER DISPATCH TAB */}
+          {activeTab === 'daily-reports' && adminRole === 'super' && (
+            <div className="space-y-6">
+              {/* Header Banner */}
+              <div className="bg-gradient-to-r from-[#0A1628] via-[#14233c] to-[#0A1628] p-6 lg:p-8 rounded-3xl border border-[#C9A96E]/30 shadow-xl text-white relative overflow-hidden">
+                <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-[#C9A96E]/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C9A96E]/20 text-[#C9A96E] text-xs font-bold uppercase tracking-wider border border-[#C9A96E]/40">
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-[#C9A96E]" /> Automated Daily Excel Engine • Vercel Cron 9:00 PM IST
+                    </div>
+                    <h2 className="text-2xl lg:text-3xl font-serif font-bold text-white">
+                      Daily Automated Business Reports & Owner Dispatch
+                    </h2>
+                    <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                      Every day at 9:00 PM IST, the platform compiles all inquiries, 13-point visit inspection records, staff attendance, user accounts, and inventory into a 5-sheet formatted Microsoft Excel workbook (<code className="text-[#C9A96E] font-mono">.xlsx</code>) and automatically dispatches it to the owner.
+                    </p>
+                  </div>
+
+                  {/* Top Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={() => handleDailyReportAction('download')}
+                      disabled={isGeneratingReport}
+                      className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-2 border border-white/20 transition cursor-pointer disabled:opacity-50"
+                    >
+                      <Download className="w-4 h-4 text-[#C9A96E]" />
+                      Download Today's Excel
+                    </button>
+                    <button
+                      onClick={() => handleDailyReportAction('email')}
+                      disabled={isGeneratingReport}
+                      className="px-5 py-2.5 rounded-xl bg-[#C9A96E] hover:bg-[#d8b87d] text-[#0A1628] font-bold text-xs flex items-center gap-2 shadow-lg transition cursor-pointer disabled:opacity-50"
+                    >
+                      {isGeneratingReport ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                      Email to Owner Now
+                    </button>
+                    <button
+                      onClick={() => handleDailyReportAction('whatsapp')}
+                      disabled={isGeneratingReport}
+                      className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg transition cursor-pointer disabled:opacity-50"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Share WhatsApp
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status / Feedback Banner if any */}
+                {dailyReportStatusMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`mt-4 p-3 rounded-2xl text-xs font-semibold flex items-center gap-2.5 ${
+                      dailyReportStatusMsg.type === 'success'
+                        ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30'
+                        : dailyReportStatusMsg.type === 'error'
+                        ? 'bg-rose-500/20 text-rose-200 border border-rose-500/30'
+                        : 'bg-blue-500/20 text-blue-200 border border-blue-500/30'
+                    }`}
+                  >
+                    {dailyReportStatusMsg.type === 'success' ? (
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                    ) : dailyReportStatusMsg.type === 'error' ? (
+                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4 shrink-0 animate-spin text-blue-400" />
+                    )}
+                    <span>{dailyReportStatusMsg.text}</span>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* 2-Column Grid: Recipient Config & Automation Status */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Automation Schedule & Architecture Card */}
+                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-[#C9A96E]" />
+                    <h3 className="font-serif font-bold text-[#0A1628]">Automated Cron Schedule</h3>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 font-medium">Cron Schedule:</span>
+                      <span className="font-mono font-bold text-[#0A1628] bg-slate-200 px-2 py-0.5 rounded">30 15 * * *</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 font-medium">Daily Dispatch Time:</span>
+                      <span className="font-bold text-[#0A1628]">09:00 PM IST (Daily)</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 font-medium">Scheduler:</span>
+                      <span className="font-bold text-emerald-600 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Vercel Cron Active
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 font-medium">Format:</span>
+                      <span className="font-bold text-slate-700">Multi-Sheet .xlsx + HTML</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Automated background trigger runs securely at <code className="text-[#0A1628] font-mono">/api/cron/daily-report</code> using persistent snapshot data.
+                  </p>
+                </div>
+
+                {/* Owner Recipient Configuration Card */}
+                <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-[#C9A96E]" />
+                      <h3 className="font-serif font-bold text-[#0A1628]">Owner Dispatch Recipient Information</h3>
+                    </div>
+                    <span className="text-[10px] uppercase font-bold text-[#C9A96E] bg-[#C9A96E]/10 px-2 py-1 rounded-full border border-[#C9A96E]/20">
+                      Super Admin Controlled
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase">
+                        Owner Target Email *
+                      </label>
+                      <div className="relative">
+                        <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="email"
+                          value={dailyReportEmail}
+                          onChange={(e) => setDailyReportEmail(e.target.value)}
+                          placeholder="e.g. owner@shreeniwasproperties.com"
+                          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-[#0A1628] focus:outline-none focus:ring-2 focus:ring-[#C9A96E]/50"
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">Recipient of the automated evening email and attachment.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase">
+                        Owner Phone / WhatsApp *
+                      </label>
+                      <div className="relative">
+                        <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={dailyReportPhone}
+                          onChange={(e) => setDailyReportPhone(e.target.value)}
+                          placeholder="e.g. +91 6376117833"
+                          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-[#0A1628] focus:outline-none focus:ring-2 focus:ring-[#C9A96E]/50"
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">Direct destination for WhatsApp business summary dispatches.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <p className="text-[11px] text-slate-500">
+                      Syncs with platform settings or custom destination overrides.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleSaveDailyReportContacts}
+                      className="px-4 py-2 bg-[#0A1628] text-[#C9A96E] hover:bg-[#14233c] font-bold text-xs rounded-xl shadow transition cursor-pointer border border-[#C9A96E]/30 flex items-center gap-1.5"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Save Contacts
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Multi-Sheet Workbook Architecture & Live Metrics Breakdown */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-serif font-bold text-lg text-[#0A1628] flex items-center gap-2">
+                      <FileSpreadsheet className="w-5 h-5 text-[#C9A96E]" />
+                      5-Sheet Professional Excel Architecture
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Standardized open standard (.xlsx) spreadsheet structured for high legibility in MS Excel, Google Sheets & Apple Numbers.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDailyReportAction('download')}
+                    disabled={isGeneratingReport}
+                    className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#C9A96E]" />
+                    Export Full .xlsx Now
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-2">
+                  {[
+                    {
+                      sheet: '1. Executive Summary',
+                      records: `${propertiesList.length} items`,
+                      desc: 'Daily KPIs, inquiries, visits, revenue collected & staff attendance.',
+                      color: 'bg-amber-50 text-amber-800 border-amber-200',
+                    },
+                    {
+                      sheet: '2. Inquiries & Leads',
+                      records: `${inquiriesList.length} total`,
+                      desc: 'Full prospect contact details, inquiry type, schedule slots & admin reply.',
+                      color: 'bg-blue-50 text-blue-800 border-blue-200',
+                    },
+                    {
+                      sheet: '3. Visit Records (13-Point)',
+                      records: `${visitRecordsList.length} inspections`,
+                      desc: '13-Point field inspection data, custom fees, coordinator & follow-ups.',
+                      color: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                    },
+                    {
+                      sheet: '4. Staff Attendance',
+                      records: `${attendanceList.length} entries`,
+                      desc: 'Clock-in, clock-out timestamps, shift hours & on-time compliance.',
+                      color: 'bg-purple-50 text-purple-800 border-purple-200',
+                    },
+                    {
+                      sheet: '5. Registered Accounts',
+                      records: `${usersList.length} users`,
+                      desc: 'Property seekers, verified owners & admin personnel catalog.',
+                      color: 'bg-slate-50 text-slate-800 border-slate-200',
+                    },
+                  ].map((s, idx) => (
+                    <div key={idx} className={`p-4 rounded-2xl border ${s.color} flex flex-col justify-between space-y-2`}>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">Sheet {idx + 1}</span>
+                        <h4 className="font-bold text-xs mt-0.5">{s.sheet.split('. ')[1]}</h4>
+                        <p className="text-[11px] opacity-80 mt-1.5 leading-relaxed">{s.desc}</p>
+                      </div>
+                      <div className="pt-2 border-t border-black/10 flex items-center justify-between text-[11px] font-bold">
+                        <span>Current Data:</span>
+                        <span>{s.records}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -6118,6 +6545,27 @@ export default function AdminDashboard() {
                           {ch}
                         </button>
                       ))}
+                    </div>
+                    {/* Custom / Random Payment Amount Option */}
+                    <div className="mt-2 relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
+                      <input
+                        type="text"
+                        placeholder="Or custom amount (e.g. 750, 1500, 2500)"
+                        value={['₹500', '₹1,000', 'FREE (₹0)'].includes(visitRecordForm.visitCharge) ? '' : visitRecordForm.visitCharge.replace(/[^0-9]/g, '')}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9]/g, '');
+                          setVisitRecordForm({
+                            ...visitRecordForm,
+                            visitCharge: val ? `₹${Number(val).toLocaleString('en-IN')}` : 'FREE (₹0)',
+                          });
+                        }}
+                        className={`w-full pl-7 pr-3 py-1.5 text-xs font-bold rounded-xl border transition ${
+                          !['₹500', '₹1,000', 'FREE (₹0)'].includes(visitRecordForm.visitCharge) && visitRecordForm.visitCharge !== 'FREE (₹0)'
+                            ? 'border-[#C9A96E] bg-[#C9A96E]/10 text-[#0A1628]'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                        }`}
+                      />
                     </div>
                   </div>
 
