@@ -304,6 +304,15 @@ export default function AdminDashboard() {
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [dailyReportStatusMsg, setDailyReportStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
+  // Global Cloud Database Health & Setup States
+  const [cloudDbStatus, setCloudDbStatus] = useState<{ connected: boolean; details: string; loading: boolean }>({
+    connected: false,
+    details: 'Checking Cloud DB...',
+    loading: true,
+  });
+  const [showCloudSetupModal, setShowCloudSetupModal] = useState(false);
+  const [sqlCopied, setSqlCopied] = useState(false);
+
   useEffect(() => {
     const authSession = sessionStorage.getItem('shreeniwas_admin_auth');
     const storedRole = sessionStorage.getItem('shreeniwas_admin_role');
@@ -444,9 +453,24 @@ export default function AdminDashboard() {
     // Pulls from Supabase Database & Server Backup to ensure data is NEVER lost
     // -------------------------------------------------------------------------
     loadAdminDataFromServer();
+    checkCloudHealth();
 
     setIsLoaded(true);
   }, []);
+
+  const checkCloudHealth = async () => {
+    try {
+      const res = await fetch('/api/admin/sync?action=health');
+      const data = await res.json();
+      setCloudDbStatus({
+        connected: Boolean(data?.supabaseConnected),
+        details: data?.supabaseDetails || 'Online',
+        loading: false,
+      });
+    } catch {
+      setCloudDbStatus({ connected: false, details: 'Offline backup mode', loading: false });
+    }
+  };
 
   const mergeCollectionSafely = (
     key: string,
@@ -1674,6 +1698,29 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Global Cloud Database Live Status Indicator */}
+            {cloudDbStatus.connected ? (
+              <button
+                type="button"
+                onClick={() => setShowCloudSetupModal(true)}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition cursor-pointer"
+                title="Supabase PostgreSQL database is connected and globally synced across all devices"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Cloud DB: Live</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowCloudSetupModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition cursor-pointer"
+                title="Click to view 1-click SQL to activate permanent Supabase PostgreSQL storage"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Cloud DB:</span> <span>Activate SQL</span>
+              </button>
+            )}
+
             <button
               onClick={toggleClockIn}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
@@ -4675,6 +4722,134 @@ export default function AdminDashboard() {
                       className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold rounded-xl text-xs shadow cursor-pointer hover:bg-[#14233c]"
                     >
                       Yes, Publish Live
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Cloud Database Setup & Diagnostics Modal */}
+          <AnimatePresence>
+            {showCloudSetupModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl text-[#0A1628] space-y-5 max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-2xl bg-[#0A1628] text-[#C9A96E] flex items-center justify-center border border-[#C9A96E]/30">
+                        <Layers className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-serif font-bold text-lg text-[#0A1628]">Permanent Global Cloud Database</h4>
+                        <p className="text-[11px] text-slate-500">Supabase PostgreSQL • Global High Availability Sync</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setShowCloudSetupModal(false)} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer">
+                      <XCircle className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Connection Status Box */}
+                  <div className={`p-4 rounded-2xl border ${
+                    cloudDbStatus.connected
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                      : 'bg-amber-50 border-amber-200 text-amber-900'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${cloudDbStatus.connected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                      <strong className="text-xs uppercase tracking-wide">
+                        {cloudDbStatus.connected ? 'PostgreSQL Cloud Database Live' : 'Database Setup Required in Supabase'}
+                      </strong>
+                    </div>
+                    <p className="text-xs mt-1.5 opacity-90 leading-relaxed">
+                      {cloudDbStatus.connected
+                        ? 'All properties, visit records, inquiries, accounts, and platform settings are permanently synchronized to your Supabase PostgreSQL database. Data will never be lost even across device switches or cache clearing.'
+                        : 'Your local server backup is running safely, but the "public.admin_store" table has not yet been executed in your Supabase SQL editor. Run the 1-click script below to connect your PostgreSQL cloud table.'}
+                    </p>
+                  </div>
+
+                  {/* Supabase Instructions & 1-Click Copy */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700 uppercase">1-Click SQL Script:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const sql = `-- SHREENIWAS PROPERTIES PERMANENT CLOUD DATABASE
+CREATE TABLE IF NOT EXISTS public.admin_store (
+  key TEXT PRIMARY KEY,
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.admin_store ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Service role manages admin_store" ON public.admin_store;
+DROP POLICY IF EXISTS "Public reads admin_store" ON public.admin_store;
+DROP POLICY IF EXISTS "Allow sync writes to admin_store" ON public.admin_store;
+CREATE POLICY "Service role manages admin_store" ON public.admin_store FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "Public reads admin_store" ON public.admin_store FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Allow sync writes to admin_store" ON public.admin_store FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+NOTIFY pgrst, 'reload schema';`;
+                          navigator.clipboard.writeText(sql);
+                          setSqlCopied(true);
+                          setTimeout(() => setSqlCopied(false), 3000);
+                        }}
+                        className="text-xs font-bold px-3 py-1 bg-[#0A1628] text-[#C9A96E] rounded-lg border border-[#C9A96E]/30 hover:bg-[#14233c] transition cursor-pointer flex items-center gap-1"
+                      >
+                        {sqlCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-[#C9A96E]" />}
+                        {sqlCopied ? 'SQL Copied to Clipboard!' : 'Copy SQL Script'}
+                      </button>
+                    </div>
+
+                    <pre className="p-3 bg-slate-900 text-slate-200 rounded-xl text-[11px] font-mono overflow-x-auto max-h-36 leading-relaxed border border-slate-800">
+{`CREATE TABLE IF NOT EXISTS public.admin_store (
+  key TEXT PRIMARY KEY,
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.admin_store ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow sync writes to admin_store"
+ON public.admin_store FOR ALL
+TO anon, authenticated
+USING (true) WITH CHECK (true);`}
+                    </pre>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1.5">
+                      <p className="font-bold text-[#0A1628]">Quick Setup in 3 Steps:</p>
+                      <p>1. Click <strong>Copy SQL Script</strong> button above.</p>
+                      <p>
+                        2. Open your{' '}
+                        <a
+                          href="https://supabase.com/dashboard/project/oyvplcdyrvsmxeitpahq/sql"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#C9A96E] font-bold underline inline-flex items-center gap-0.5"
+                        >
+                          Supabase SQL Editor <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </p>
+                      <p>3. Paste the code and click <strong>"Run"</strong>.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        checkCloudHealth();
+                        loadAdminDataFromServer();
+                      }}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 text-[#C9A96E]" />
+                      Re-Check Connection
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCloudSetupModal(false)}
+                      className="px-5 py-2 bg-[#0A1628] text-[#C9A96E] font-bold text-xs rounded-xl shadow cursor-pointer hover:bg-[#14233c]"
+                    >
+                      Done
                     </button>
                   </div>
                 </motion.div>

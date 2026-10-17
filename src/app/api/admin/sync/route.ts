@@ -145,6 +145,41 @@ export async function GET(request: Request) {
     }
 
     const localBackup = readLocalBackup();
+    const action = searchParams.get('action');
+
+    // Health check endpoint for Admin Dashboard
+    if (action === 'health') {
+      let pgOk = false;
+      let pgDetails = 'Unchecked';
+      if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+        try {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_store?limit=1`, {
+            headers: {
+              apikey: SUPABASE_SERVICE_KEY,
+              Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+            },
+            cache: 'no-store',
+          });
+          if (res.ok) {
+            pgOk = true;
+            pgDetails = 'Connected & Operational';
+          } else {
+            const errText = await res.text();
+            pgDetails = errText.includes('PGRST205') ? 'Table public.admin_store not created yet in Supabase SQL editor' : `HTTP ${res.status}`;
+          }
+        } catch (e: any) {
+          pgDetails = e?.message || 'Connection error';
+        }
+      }
+      return NextResponse.json({
+        success: true,
+        supabaseConnected: pgOk,
+        supabaseDetails: pgDetails,
+        supabaseUrlConfigured: Boolean(SUPABASE_URL),
+        localBackupKeysCount: Object.keys(localBackup).length,
+      });
+    }
+
     let dbData: Record<string, any> = {};
     let dbConnected = false;
 
